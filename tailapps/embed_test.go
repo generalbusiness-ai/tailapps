@@ -132,6 +132,59 @@ func TestSessionCostMapsClaudeNativeCost(t *testing.T) {
 	}
 }
 
+func TestAgentGuardMapsObservedClaudeOTLPShape(t *testing.T) {
+	guard, err := Load("agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	input := observedClaudeInputs(t)["tool_result"]
+	normalized, err := guard.Evaluate("normalize_harness_event", input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	events := normalized.Events["otel_event"]
+	if normalized.Decision != "effective" || len(events) != 1 {
+		t.Fatalf("normalized = %#v", normalized)
+	}
+	event := events[0]
+	if event["harness"] != "claude-code" || event["session_id"] != "session-scrubbed" || event["tool"] != "read" {
+		t.Fatalf("identity = %#v", event)
+	}
+	if event["target"] != nil || event["target_coverage"] != "unknown" {
+		t.Fatalf("coverage = %#v", event)
+	}
+	encoded, err := json.Marshal(normalized)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(encoded), "tool_input") || strings.Contains(string(encoded), "<scrubbed>") {
+		t.Fatalf("raw tool input escaped normalized output: %s", encoded)
+	}
+}
+
+func TestSessionCostMapsObservedClaudeUsage(t *testing.T) {
+	cost, err := Load("session-cost")
+	if err != nil {
+		t.Fatal(err)
+	}
+	normalized, err := cost.Evaluate("normalize_usage", observedClaudeInputs(t)["api_request"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	events := normalized.Events["otel_event"]
+	if normalized.Decision != "effective" || len(events) != 1 {
+		t.Fatalf("normalized = %#v", normalized)
+	}
+	event := events[0]
+	for field, want := range map[string]string{
+		"input_tokens": "2", "output_tokens": "118", "cached_input_tokens": "53005", "cost_microusd": "69125",
+	} {
+		if got := fmt.Sprint(event[field]); got != want {
+			t.Fatalf("%s = %s, want %s; event = %#v", field, got, want, event)
+		}
+	}
+}
+
 func TestAgentGuardMapsObservedCodexOTLPShape(t *testing.T) {
 	guard, err := Load("agent-guard")
 	if err != nil {
@@ -234,6 +287,19 @@ func TestSessionCostMapsObservedCodexSSEUsage(t *testing.T) {
 func observedCodexInputs(t *testing.T) map[string]profile.EvaluationInput {
 	t.Helper()
 	encoded, err := os.ReadFile(filepath.Join("testdata", "codex-cli-0.150.1.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var inputs map[string]profile.EvaluationInput
+	if err := json.Unmarshal(encoded, &inputs); err != nil {
+		t.Fatal(err)
+	}
+	return inputs
+}
+
+func observedClaudeInputs(t *testing.T) map[string]profile.EvaluationInput {
+	t.Helper()
+	encoded, err := os.ReadFile(filepath.Join("testdata", "claude-code-2.1.250.json"))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -2,7 +2,10 @@
   $attrs := event.record.attributes ? event.record.attributes : {};
   $resource := event.record.resource.attributes ? event.record.resource.attributes : {};
   $semantic_name_raw := $lookup($attrs, "event.name");
-  $event_name := $exists($semantic_name_raw) and $string($semantic_name_raw) != "" ? $string($semantic_name_raw) : event.name;
+  $body_name := $exists(event.record.body) ? $string(event.record.body) : "";
+  $claude_body_name := event.source = "claude-code" and $substring($body_name, 0, 12) = "claude_code.";
+  $event_name := $claude_body_name ? $body_name :
+    ($exists($semantic_name_raw) and $string($semantic_name_raw) != "" ? $string($semantic_name_raw) : event.name);
   $harness := (event.source = "codex_cli_rs" or event.source = "codex_exec") ? "codex" : event.source;
   $event_time := event.time_unix_nano ? event.time_unix_nano :
     (event.observed_unix_nano ? event.observed_unix_nano : null);
@@ -21,7 +24,8 @@
   $input_raw := $exists($lookup($attrs, "input_tokens")) ? $lookup($attrs, "input_tokens") : $lookup($attrs, "input_token_count");
   $output_raw := $exists($lookup($attrs, "output_tokens")) ? $lookup($attrs, "output_tokens") : $lookup($attrs, "output_token_count");
   $cached_raw := $exists($lookup($attrs, "cached_input_tokens")) ? $lookup($attrs, "cached_input_tokens") :
-    ($exists($lookup($attrs, "cached_input_token_count")) ? $lookup($attrs, "cached_input_token_count") : $lookup($attrs, "cached_token_count"));
+    ($exists($lookup($attrs, "cache_read_tokens")) ? $lookup($attrs, "cache_read_tokens") :
+    ($exists($lookup($attrs, "cached_input_token_count")) ? $lookup($attrs, "cached_input_token_count") : $lookup($attrs, "cached_token_count")));
   $reasoning_raw := $exists($lookup($attrs, "reasoning_output_tokens")) ? $lookup($attrs, "reasoning_output_tokens") :
     ($exists($lookup($attrs, "reasoning_output_token_count")) ? $lookup($attrs, "reasoning_output_token_count") : $lookup($attrs, "reasoning_token_count"));
   $input := $exists($input_raw) ? $number($input_raw) : 0;

@@ -38,6 +38,8 @@ or `service.instance.id`; tool identity from `tool_name` or `tool`; target from
 `operation_kind`, `argument_digest`, and `progress_fingerprint` attributes.
 The normalizer prefers a nonempty semantic `event.name` attribute over the
 OTLP log-record name, which accommodates Codex's tracing-callsite envelope.
+For `claude-code`, whose current native records use a short `event.name`, a
+namespaced `claude_code.*` string body takes precedence.
 The canonical `harness` comes from the OTLP source, normally `service.name`;
 the native `codex_cli_rs` and `codex_exec` values are both normalized to
 `codex`. Event time uses the

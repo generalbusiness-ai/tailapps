@@ -1,0 +1,56 @@
+{
+  "tool_result": {
+    "meta": {"position": 51, "event_id": "local:51", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:51",
+      "signal": "log",
+      "name": "tool_result",
+      "source": "claude-code",
+      "time_unix_nano": "1787937900000000051",
+      "observed_unix_nano": "1787937900000000051",
+      "trace_id": null,
+      "span_id": null,
+      "content_digest": "sha256:scrubbed-claude-tool-result",
+      "record": {
+        "attributes": {
+          "event.name": "tool_result",
+          "session.id": "session-scrubbed",
+          "tool_name": "Read",
+          "success": true,
+          "tool_input": "<scrubbed>"
+        },
+        "body": "claude_code.tool_result",
+        "resource": {"attributes": {"service.name": "claude-code"}}
+      }
+    },
+    "rows": {}
+  },
+  "api_request": {
+    "meta": {"position": 52, "event_id": "local:52", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:52",
+      "signal": "log",
+      "name": "api_request",
+      "source": "claude-code",
+      "time_unix_nano": "1787937900000000052",
+      "observed_unix_nano": "1787937900000000052",
+      "trace_id": null,
+      "span_id": null,
+      "content_digest": "sha256:scrubbed-claude-api-request",
+      "record": {
+        "attributes": {
+          "event.name": "api_request",
+          "session.id": "session-scrubbed",
+          "input_tokens": 2,
+          "output_tokens": 118,
+          "cache_read_tokens": 53005,
+          "cache_creation_tokens": 510,
+          "cost_usd_micros": 69125
+        },
+        "body": "claude_code.api_request",
+        "resource": {"attributes": {"service.name": "claude-code"}}
+      }
+    },
+    "rows": {}
+  }
+}
