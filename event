@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at internal/engine/engine_test.go","body":{"commit":"3786ce69f21332ddfe407fc89a555e003cff82fc","path":"internal/engine/engine_test.go"}}
+{"kind":"artifact","text":"Merge published the current artifact at internal/inbox/inbox.go","body":{"commit":"3786ce69f21332ddfe407fc89a555e003cff82fc","path":"internal/inbox/inbox.go"}}
