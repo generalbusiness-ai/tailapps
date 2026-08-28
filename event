@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Documented the metrics CLI and query result-byte field.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"docs/reference/cli.md"}}
+{"kind":"artifact","text":"Documented tailapp_metrics, inbox age source, and query result-byte output.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"docs/reference/mcp.md"}}
