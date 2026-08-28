@@ -18,7 +18,7 @@ CREATE EVENT otel_event (
 CREATE TABLE telemetry_coverage (
   harness TEXT NOT NULL,
   capability TEXT NOT NULL,
-  state TEXT NOT NULL CHECK (state IN ('observed', 'missing', 'unknown')),
+  state TEXT NOT NULL CHECK (state IN ('observed', 'unknown')),
   reason TEXT NOT NULL,
   last_source_position INTEGER NOT NULL,
   PRIMARY KEY (harness, capability)
@@ -110,4 +110,3 @@ CREATE EXPORT loop_findings AS
   SELECT finding_id, finding_kind, harness, session_id, source_position,
          repeat_count, consecutive_failures, no_progress_count, evidence
   FROM loop_findings;
-

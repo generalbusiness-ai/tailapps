@@ -38,6 +38,7 @@ var (
 	ambientJSONataRE   = regexp.MustCompile(`(?i)\$(?:now|millis|random|shuffle|eval)\b`)
 	jsonataCallRE      = regexp.MustCompile(`(?i)\$([A-Za-z][A-Za-z0-9_]*)\s*\(`)
 	jsonataLambdaRE    = regexp.MustCompile(`(?i)\bfunction\s*\(`)
+	commaJoinRE        = regexp.MustCompile(`(?is)\b(?:FROM|JOIN)\s+[A-Za-z_][A-Za-z0-9_]*(?:\s+(?:AS\s+)?[A-Za-z_][A-Za-z0-9_]*)?\s*,`)
 	forbiddenSQLRE     = regexp.MustCompile(`(?i)\b(?:ALTER|DROP|TRIGGER|VIRTUAL|PRAGMA|ATTACH|DETACH|VACUUM|REINDEX|ANALYZE|INSERT|UPDATE|DELETE|REPLACE)\b`)
 	forbiddenQueryRE   = regexp.MustCompile(`(?i);|\b(?:WITH|UNION|INTERSECT|EXCEPT|PRAGMA|ATTACH|DETACH|INSERT|UPDATE|DELETE|REPLACE|CREATE|ALTER|DROP)\b|\(\s*SELECT\b`)
 	functionCallRE     = regexp.MustCompile(`(?i)\b[A-Za-z_][A-Za-z0-9_]*\s*\(`)
@@ -96,6 +97,9 @@ func (c *compiler) compile() error {
 				return err
 			}
 		case createTableRE.MatchString(statement):
+			if ambientSQLRE.MatchString(statement) {
+				return errors.New("table uses an ambient SQL function")
+			}
 			if err := c.compileTable(statement); err != nil {
 				return err
 			}
@@ -375,7 +379,7 @@ func (c *compiler) compileProgram(name, event, body string, normalizer bool) (Pr
 	}
 	expression.SetMaxDepth(MaxDepth)
 	expression.SetMaxRange(MaxRange)
-	expression.SetMaxTime(250)
+	expression.SetMaxTime(EvaluationWallTimeMilliseconds)
 	program := Program{Name: name, Event: event, Path: programPath, Reads: reads, Normalizer: normalizer, expression: expression}
 	if normalizer {
 		if event != "otlp_record" {
@@ -415,6 +419,9 @@ func validateJSONataSource(source []byte) error {
 	if jsonataLambdaRE.Match(source) {
 		return errors.New("user-defined JSONata functions are outside the bounded profile")
 	}
+	if hasUnquotedAsterisk(source) {
+		return errors.New("JSONata wildcard and multiplication syntax is outside the deterministic bounded profile")
+	}
 	allowed := stringSet(
 		"abs", "boolean", "ceil", "contains", "count", "exists", "floor",
 		"length", "lookup", "lowercase", "max", "min", "not", "number",
@@ -427,6 +434,38 @@ func validateJSONataSource(source []byte) error {
 		}
 	}
 	return nil
+}
+
+// hasUnquotedAsterisk rejects the evaluator's observable object wildcards.
+// Multiplication is rejected with them until Tailapp owns deterministic step
+// and allocation counters; reducing the language is safer than pretending a
+// machine-dependent timeout is a semantic bound.
+func hasUnquotedAsterisk(source []byte) bool {
+	var quote byte
+	escaped := false
+	for _, current := range source {
+		if quote != 0 {
+			if escaped {
+				escaped = false
+				continue
+			}
+			if current == '\\' && quote != '`' {
+				escaped = true
+				continue
+			}
+			if current == quote {
+				quote = 0
+			}
+			continue
+		}
+		switch current {
+		case '\'', '"', '`':
+			quote = current
+		case '*':
+			return true
+		}
+	}
+	return false
 }
 
 func compileReadClauses(prefix string) ([]Read, string, error) {
@@ -544,6 +583,9 @@ func validateQueryShape(query string, allowJoins bool) error {
 	if !allowJoins && regexp.MustCompile(`(?i)\bJOIN\b`).MatchString(query) {
 		return errors.New("fold reads may name only one relation")
 	}
+	if commaJoinRE.MatchString(query) {
+		return errors.New("comma-separated joins are outside the admitted SELECT profile")
+	}
 	return nil
 }
 
@@ -559,7 +601,9 @@ func (c *compiler) validateTopology() error {
 	}
 	eventFields := make(map[string]bool)
 	for _, column := range c.profile.Event.Columns {
-		eventFields[column.Name] = true
+		if column.Type != TypeJSON {
+			eventFields[column.Name] = true
+		}
 	}
 	writers := make(map[string]string)
 	programs := append([]Program{c.profile.Normalizer}, c.profile.Folds...)

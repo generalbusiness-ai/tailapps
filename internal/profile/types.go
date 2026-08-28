@@ -8,7 +8,7 @@ import jsonata "github.com/jsonata-go/jsonata/v206"
 const (
 	// RuntimeID binds the evaluator, DDL grammar, numeric rules and limits that
 	// give a revision its meaning. Change it whenever any of those change.
-	RuntimeID = "tailapp-ddl-jsonata-v206-sqlite-3.53.4@1"
+	RuntimeID = "tailapp-ddl-jsonata-v206-sqlite-3.53.4@2"
 
 	MaxElementBytes = 64 << 10
 	MaxSourceBytes  = 512 << 10
@@ -21,6 +21,12 @@ const (
 	MaxFacts        = 64
 	MaxRowChanges   = 1024
 	MaxManyRows     = 1024
+
+	// EvaluationWallTimeMilliseconds is only an outer process-safety net. It
+	// is deliberately part of RuntimeID, but active programs are also confined
+	// to the statically admitted profile; wall time is not a deterministic
+	// evaluation budget.
+	EvaluationWallTimeMilliseconds = 250
 )
 
 type LogicalType string

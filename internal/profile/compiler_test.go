@@ -241,6 +241,22 @@ CREATE INDEX sessions_failures`, 1)
 	}
 }
 
+func TestCommaJoinCannotEvadeReadAuthority(t *testing.T) {
+	ddl := strings.Replace(validDDL, "CREATE INDEX sessions_failures", `
+CREATE TABLE other_state (id TEXT PRIMARY KEY);
+CREATE FOLD other_writer ON otel_event USING 'folds/other.jsonata' WRITES other_state;
+CREATE VIEW leaked_state AS SELECT session_id, calls, failures FROM sessions, other_state;
+CREATE INDEX sessions_failures`, 1)
+	ddl = strings.Replace(ddl,
+		"SELECT session_id, calls, failures FROM sessions WHERE session_id = :event.session_id",
+		"SELECT session_id, calls, failures FROM leaked_state WHERE session_id = :event.session_id", 1)
+	files := validFS(ddl)
+	files["folds/other.jsonata"] = &fstest.MapFile{Data: []byte(`{"decision":"effective","facts":[],"tables":{"other_state":{"upsert":[{"id":event.session_id}]}}}`)}
+	if _, err := Load(files, ".", "agent-guard"); err == nil || !strings.Contains(err.Error(), "comma-separated joins") {
+		t.Fatalf("comma join accepted: %v", err)
+	}
+}
+
 func TestStatementSplitterHandlesQuotesAndComments(t *testing.T) {
 	source := `-- lead ;
 CREATE TABLE example (id TEXT PRIMARY KEY, note TEXT CHECK(note <> ';'));
@@ -308,9 +324,12 @@ func TestSourcePathsAndBounds(t *testing.T) {
 
 func TestJSONataSubsetRejectsUnboundedExtensionPoints(t *testing.T) {
 	for name, program := range map[string]string{
-		"user function":   `(function($x){$x})(1)`,
-		"higher order":    `$map([1,2], function($x){$x})`,
-		"unknown builtin": `$mystery(event)`,
+		"user function":       `(function($x){$x})(1)`,
+		"higher order":        `$map([1,2], function($x){$x})`,
+		"unknown builtin":     `$mystery(event)`,
+		"object wildcard":     `event.record.*`,
+		"descendant wildcard": `event.record.**`,
+		"generative multiply": `[1..4096].[1..4096].($ * 2)`,
 	} {
 		t.Run(name, func(t *testing.T) {
 			files := validFS(validDDL)
@@ -319,5 +338,11 @@ func TestJSONataSubsetRejectsUnboundedExtensionPoints(t *testing.T) {
 				t.Fatalf("program accepted: %v", err)
 			}
 		})
+	}
+}
+
+func TestJSONataAsteriskInsideStringIsAllowed(t *testing.T) {
+	if err := validateJSONataSource([]byte(`{"pattern":"*"}`)); err != nil {
+		t.Fatal(err)
 	}
 }
