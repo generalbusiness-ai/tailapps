@@ -39,7 +39,8 @@ or `service.instance.id`; tool identity from `tool_name` or `tool`; target from
 The normalizer prefers a nonempty semantic `event.name` attribute over the
 OTLP log-record name, which accommodates Codex's tracing-callsite envelope.
 The canonical `harness` comes from the OTLP source, normally `service.name`;
-the native `codex_cli_rs` value is normalized to `codex`. Event time uses the
+the native `codex_cli_rs` and `codex_exec` values are both normalized to
+`codex`. Event time uses the
 source timestamp when present and otherwise the observed timestamp. A
 recognized event with neither timestamp remains ineffective.
 

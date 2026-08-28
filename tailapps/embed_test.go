@@ -206,7 +206,7 @@ func TestSessionCostMapsObservedCodexSSEUsage(t *testing.T) {
 	if fmt.Sprint(row["cached_input_tokens"]) != "40" || fmt.Sprint(row["reasoning_output_tokens"]) != "9" || row["last_event_time_unix_nano"] != input.Event["observed_unix_nano"] {
 		t.Fatalf("row = %#v", row)
 	}
-	unrelated, err := cost.Evaluate("normalize_usage", harnessInput(44, "codex_cli_rs", "event <scrubbed-codex-callsite>", map[string]any{
+	unrelated, err := cost.Evaluate("normalize_usage", harnessInput(44, "codex_exec", "event <scrubbed-codex-callsite>", map[string]any{
 		"event.name": "codex.sse_event", "kind": "response.output_text.delta", "conversation.id": "session-scrubbed",
 	}))
 	if err != nil {
@@ -214,6 +214,20 @@ func TestSessionCostMapsObservedCodexSSEUsage(t *testing.T) {
 	}
 	if unrelated.Decision != "ineffective" || len(unrelated.Events["otel_event"]) != 0 {
 		t.Fatalf("unrelated SSE event = %#v", unrelated)
+	}
+	alternate, err := cost.Evaluate("normalize_usage", harnessInput(45, "codex_cli_rs", "event <scrubbed-codex-callsite>", map[string]any{
+		"event.name": "codex.sse_event", "event.kind": "response.completed", "conversation.id": "session-alternate",
+		"cached_input_token_count": 7, "reasoning_output_token_count": 3,
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if alternate.Decision != "effective" || len(alternate.Events["otel_event"]) != 1 {
+		t.Fatalf("alternate Codex counter aliases = %#v", alternate)
+	}
+	alternateEvent := alternate.Events["otel_event"][0]
+	if alternateEvent["harness"] != "codex" || fmt.Sprint(alternateEvent["cached_input_tokens"]) != "7" || fmt.Sprint(alternateEvent["reasoning_output_tokens"]) != "3" {
+		t.Fatalf("alternate Codex counter aliases = %#v", alternate)
 	}
 }
 

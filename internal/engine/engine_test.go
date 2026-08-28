@@ -786,11 +786,11 @@ func otlpRequest() *collectorlogsv1.ExportLogsServiceRequest {
 	return &collectorlogsv1.ExportLogsServiceRequest{
 		ResourceLogs: []*logsv1.ResourceLogs{
 			{
-				Resource: &resourcev1.Resource{Attributes: attrs(map[string]*commonv1.AnyValue{"service.name": stringValue("codex_cli_rs")})},
+				Resource: &resourcev1.Resource{Attributes: attrs(map[string]*commonv1.AnyValue{"service.name": stringValue("codex_exec")})},
 				ScopeLogs: []*logsv1.ScopeLogs{
 					{LogRecords: []*logsv1.LogRecord{
 						{EventName: "event <scrubbed-codex-callsite>", ObservedTimeUnixNano: 100, Attributes: attrs(map[string]*commonv1.AnyValue{"event.name": stringValue("codex.tool_result"), "conversation.id": stringValue("s1"), "tool_name": stringValue("read"), "arguments": stringValue("<scrubbed>"), "success": boolValue(true)})},
-						{EventName: "event <scrubbed-codex-callsite>", ObservedTimeUnixNano: 200, Attributes: attrs(map[string]*commonv1.AnyValue{"event.name": stringValue("codex.sse_event"), "kind": stringValue("response.completed"), "conversation.id": stringValue("s1"), "input_token_count": intValue(100), "output_token_count": intValue(25), "cached_input_token_count": intValue(40), "reasoning_output_token_count": intValue(9)})},
+						{EventName: "event <scrubbed-codex-callsite>", ObservedTimeUnixNano: 200, Attributes: attrs(map[string]*commonv1.AnyValue{"event.name": stringValue("codex.sse_event"), "event.kind": stringValue("response.completed"), "conversation.id": stringValue("s1"), "input_token_count": intValue(100), "output_token_count": intValue(25), "cached_token_count": intValue(40), "reasoning_token_count": intValue(9)})},
 					}},
 				},
 			},

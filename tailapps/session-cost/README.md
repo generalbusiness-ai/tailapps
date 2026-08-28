@@ -19,14 +19,16 @@ It reads session identity from `session.id`, `conversation.id`, `session_id`,
 or `service.instance.id`. If all are absent, events are grouped under
 `unknown:<harness>`. The normalizer prefers a nonempty semantic `event.name`
 attribute over the OTLP log-record name. The `harness` value comes from the
-OTLP source, normally `service.name`; Codex's native `codex_cli_rs` value is
-normalized to `codex`. Event time uses the source timestamp when present and
-otherwise the observed timestamp.
+OTLP source, normally `service.name`; Codex's native `codex_cli_rs` and
+`codex_exec` values are both normalized to `codex`. Event time uses the source
+timestamp when present and otherwise the observed timestamp.
 
 Generic numeric attributes are `input_tokens`, `output_tokens`,
 `cached_input_tokens`, and `reasoning_output_tokens`. Native Codex
 `codex.sse_event` attributes are `input_token_count`, `output_token_count`,
-`cached_input_token_count`, and `reasoning_output_token_count`. Cost may arrive
+`cached_token_count`, and `reasoning_token_count`; the alternate
+`cached_input_token_count` and `reasoning_output_token_count` aliases remain
+accepted for compatibility. Cost may arrive
 as the generic `cost_microusd` or Claude Code's native `cost_usd_micros`; the
 generic name takes precedence when both are present. Missing values become
 zero; this Tailapp does not record an `unknown` coverage state for individual

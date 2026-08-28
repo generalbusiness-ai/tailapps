@@ -157,13 +157,14 @@ asserted `service.name=tailapp-reader` would therefore hide claude_code
 and codex from every existing normalizer. The mapping contract is:
 
 - `service.name` carries the exact native value the live telemetry path
-  emits for that harness — for Codex that is `codex_cli_rs`, the observed
-  contract in the Codex effectiveness work, not a normalized alias — so
+  emits for that harness — the observed Codex profile includes both
+  `codex_cli_rs` and `codex_exec`, not a normalized alias — so
   canonical `event.source` is indistinguishable across capture paths.
   The definitive per-harness values are recorded by the paired-capture
   research below. Normalizing a native source to a harness key
-  (`codex_cli_rs` → `codex`) remains the normalizer's contract, exactly
-  as on the live path; the reader never invents or rewrites a source.
+  (`codex_cli_rs` / `codex_exec` → `codex`) remains the normalizer's
+  contract, exactly as on the live path; the reader never invents or
+  rewrites a source.
   The reader identifies itself in separate resource attributes
   (`tailapp.reader.name`, `tailapp.reader.version`) — provenance, not
   source.
@@ -213,7 +214,8 @@ is fixed, run a paired-capture study for at least Claude Code and Codex:
    in `claude_code.tool_result` / `codex.tool_result` match `tool_use` ids
    in the transcript? Are API message ids present in telemetry at all?
    Record the exact native `service.name` and canonical `event.source`
-   values observed per harness on both paths (`codex_cli_rs` for Codex);
+   values observed per harness on both paths (currently `codex_cli_rs` and
+   `codex_exec` for Codex);
    these become the mapping contract's fixed per-harness values.
    The answer determines whether stream fusion by domain key is possible
    or whether namespacing is not just the default but the only option.
