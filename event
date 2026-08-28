@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will fix array-shaped MCP tools/call replies without changing the existing engine result contract, add a regression test, run the full gates, and publish the exact head for independent checker review."}
+{"kind":"artifact","text":"MCP tools/call array envelope fix at exact head 4c0ee022e8a42ab283348e895535f138b6ffb6c4","body":{"commit":"4c0ee022e8a42ab283348e895535f138b6ffb6c4","path":"internal/mcp/server.go"}}
