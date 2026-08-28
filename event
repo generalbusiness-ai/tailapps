@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:8643a6892cc828036d294c141cb25e72f6ce723d","text":"Merge retired a covered predecessor; the successor is at examples/signal-counts/folds/normalize.jsonata."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:89d3cc0a90641967b3d3508f776d21a8c9109b8a","text":"Merge retired a covered predecessor; the successor is at testdata/otlp/one-metric.json."}
