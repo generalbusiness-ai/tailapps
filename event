@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Pinned Tailapp Go runtime dependencies at 699c206","body":{"commit":"699c206ac35a8f0be73b2f7e073f5f64e5c65a2f","path":"go.mod"}}
+{"kind":"artifact","text":"Resolved Tailapp Go dependency checksums at 699c206","body":{"commit":"699c206ac35a8f0be73b2f7e073f5f64e5c65a2f","path":"go.sum"}}
