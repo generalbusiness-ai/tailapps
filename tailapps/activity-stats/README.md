@@ -29,7 +29,8 @@ The normalizer recognizes:
   `opencode.user_prompt`, `opencode.assistant_response`,
   `opencode.turn_ttft`, and `opencode.websocket_request` families.
 
-Codex's native `codex_cli_rs` and `codex_exec` service names become `codex`.
+Codex's native `codex_cli_rs`, `codex_exec`, and `codex-app-server` service
+names become `codex`.
 Session identity uses the same bounded fallback as the other bundles; absent
 identity is grouped under `unknown:<harness>` and counted as unknown coverage.
 

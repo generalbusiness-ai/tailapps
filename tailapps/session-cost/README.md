@@ -23,9 +23,10 @@ or `service.instance.id`. If all are absent, events are grouped under
 attribute over the OTLP log-record name. For `claude-code`, whose current
 native records use a short `event.name`, a namespaced `claude_code.*` string
 body takes precedence. The `harness` value comes from the
-OTLP source, normally `service.name`; Codex's native `codex_cli_rs` and
-`codex_exec` values are both normalized to `codex`. Event time uses the source
-timestamp when present and otherwise the observed timestamp.
+OTLP source, normally `service.name`; Codex's native `codex_cli_rs`,
+`codex_exec`, and `codex-app-server` values are normalized to `codex`. Event
+time uses the source timestamp when present and otherwise the observed
+timestamp.
 
 Generic numeric attributes are `input_tokens`, `output_tokens`,
 `cached_input_tokens`, and `reasoning_output_tokens`. Native Codex
@@ -111,6 +112,11 @@ tailapp query \
 Treat the result as cumulative since the last reset activation. It is not a
 billing ledger: exporters can omit data, events can be missed while a
 projection is detached, and Tailapp v1 does not retain an event log for replay.
+Updating a normalizer with continue activation affects only newly consumed
+records: already-materialized rows keep their previous harness label. Reset
+activation would apply the new label to subsequently received records, but it
+also discards the existing projection history; Tailapp cannot replay that
+history, so a normalizer update does not force a reset.
 Updating an older installed copy to this schema requires reset activation
 because the materialized table gains cached-input, reasoning-output, and
 last-event-time columns.
