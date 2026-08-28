@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:348f73fba6636d7f939938074b50422cd0490a9a","text":"Replaced by the rebased exact-head DEVtheOPS OpenCode profile correction."}
+{"kind":"artifact","text":"Current scrubbed DEVtheOPS OpenCode fixture at the rebased exact head, after retiring predecessor worlds.","body":{"commit":"2242bcdab72328eb6adcf5dcbb4302c80242e558","path":"tailapps/testdata/opencode-adapter.json"}}
