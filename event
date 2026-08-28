@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:45e5815f5f57b4a495982df88e460fc5b46c458d","text":"Successor Claude Code privacy clarification is published at exact head a498991db9ef1d36e1392e039109dfeec84f35d5."}
+{"kind":"artifact","text":"Fresh README clarification candidate at exact head a498991db9ef1d36e1392e039109dfeec84f35d5, replacing the stale intermediate pointer while preserving the verified source tree.","body":{"commit":"a498991db9ef1d36e1392e039109dfeec84f35d5","path":"README.md"}}
