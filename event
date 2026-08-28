@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at testdata/otlp/one-span.json","body":{"commit":"f14a79fdb97e09d791b213b16cec1932d424574a","dead_basis_override":"true","path":"testdata/otlp/one-span.json"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:00c4d92b11d0480072660b61035a9f50850b3c8b","text":"Merge retired a covered predecessor; the successor is at internal/engine/engine.go."}
