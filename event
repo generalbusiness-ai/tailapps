@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will clear the builder-owned notes artifact that blocks checker from merging the already approved exact disk-ingestion note."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:79605f046d3c36893e81594bcd59603e96b84553","text":"Retire builder-owned directory artifact #562 so checker can merge approved exact disk-ingestion candidate fe4a0138da8d153a2c8dd2f7a426d6d4e0b540a1 and publish the reviewed narrower note succession."}
