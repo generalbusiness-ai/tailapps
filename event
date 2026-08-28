@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Updated embedded-bundle tests for observed OpenCode names, fields, dollar-to-microdollar conversion, and duplicate-span ineffectiveness.","body":{"commit":"6addc4093fb45c1f34551d28abe7115174dd6ec4","dead_basis_override":"true","path":"tailapps/embed_test.go"}}
+{"kind":"artifact","text":"Revised session-cost normalization for observed OpenCode api_request logs, token aliases, and cost_usd conversion.","body":{"commit":"6addc4093fb45c1f34551d28abe7115174dd6ec4","dead_basis_override":"true","path":"tailapps/session-cost/folds/normalize.jsonata"}}
