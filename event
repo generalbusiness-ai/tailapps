@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at tailapps/session-cost/README.md","body":{"commit":"4e4d4a993ebb91844695eccd30a749c6eb05ef1b","path":"tailapps/session-cost/README.md"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:07d2f45ab4c1236bf916786c7c7198543d5791b4","text":"Merge retired a covered predecessor; the successor is at docs/reference/mcp.md."}
