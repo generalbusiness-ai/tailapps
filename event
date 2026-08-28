@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"First-time Tailapp install and onboarding implementation","body":{"commit":"e249f58ef55e4d6b2e6662742bd923727d038973","path":"."}}
+{"kind":"artifact","text":"One-shot Tailapp install and first-time onboarding at exact head","body":{"commit":"e249f58ef55e4d6b2e6662742bd923727d038973","path":"internal/engine/engine.go"}}
