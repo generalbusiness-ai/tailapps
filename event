@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at docs/harnesses/claude-code.md","body":{"commit":"55266a9804dfd81af15a5c7cc37dc8e9a03e2bd3","path":"docs/harnesses/claude-code.md"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:38af66007ebfc77328e13a954dc1128e33ba2cf3","text":"Merge retired a covered predecessor; the successor is at docs/harnesses/claude-code.md."}
