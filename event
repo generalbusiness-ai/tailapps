@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at internal/profile/compiler.go","body":{"commit":"03689ee76d9a444a02875fa8d22b5e6fb2e068b2","path":"internal/profile/compiler.go"}}
+{"kind":"artifact","text":"Merge published the current artifact at internal/profile/compiler_test.go","body":{"commit":"03689ee76d9a444a02875fa8d22b5e6fb2e068b2","path":"internal/profile/compiler_test.go"}}
