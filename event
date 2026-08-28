@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Exposed the JSON-default tailapp metrics CLI command and discovery help.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"internal/cli/cli.go"}}
+{"kind":"artifact","text":"Verified metrics CLI discoverability and JSON-only output contract.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"internal/cli/cli_test.go"}}
