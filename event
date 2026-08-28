@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Re-anchored the unchanged MCP metrics tool at the corrected exact head.","body":{"commit":"0e3df616530546eb160ad5a1758847b323a5f2ba","path":"internal/mcp/server.go"}}
+{"kind":"artifact","text":"Re-anchored the unchanged MCP metrics tests at the corrected exact head.","body":{"commit":"0e3df616530546eb160ad5a1758847b323a5f2ba","path":"internal/mcp/server_test.go"}}
