@@ -99,7 +99,8 @@ Lists definitions with draft and optional active revision metadata.
 ### `tailapp apps create [--bundle NAME] --idempotency-key KEY APP`
 
 Creates a draft. Omit `--bundle` for an empty custom Tailapp. The only built-in
-bundle names in this release are `agent-guard` and `session-cost`.
+bundle names in this release are `activity-stats`, `agent-guard`, and
+`session-cost`.
 
 ### `tailapp apps install [options] --idempotency-key KEY APP [DIRECTORY]`
 

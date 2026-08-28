@@ -284,6 +284,110 @@ func TestSessionCostMapsObservedCodexSSEUsage(t *testing.T) {
 	}
 }
 
+func TestActivityStatsNormalizesCrossHarnessWithoutContent(t *testing.T) {
+	stats, err := Load("activity-stats")
+	if err != nil {
+		t.Fatal(err)
+	}
+	codex := observedCodexInputs(t)
+	claude := observedClaudeInputs(t)
+	opencode := observedOpenCodeInputs(t)
+	cases := []struct {
+		name        string
+		input       profile.EvaluationInput
+		harness     string
+		family      string
+		tool        string
+		endpoint    string
+		performance bool
+	}{
+		{"claude-response", claude["assistant_response"], "claude-code", "assistant-response", "not-applicable", "not-applicable", false},
+		{"codex-prompt", codex["user_prompt"], "codex", "user-prompt", "not-applicable", "not-applicable", false},
+		{"codex-ttft", codex["turn_ttft"], "codex", "turn-ttft", "not-applicable", "not-applicable", true},
+		{"codex-request", codex["api_request"], "codex", "api-request", "not-applicable", "responses", true},
+		{"codex-websocket", codex["websocket_request"], "codex", "websocket-request", "not-applicable", "websocket", true},
+		{"opencode-tool", opencode["tool_result"], "opencode", "tool", "shell", "not-applicable", false},
+		{"opencode-request", opencode["api_request"], "opencode", "api-request", "not-applicable", "chat-completions", true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			normalized, err := stats.Evaluate("normalize_activity", tc.input)
+			if err != nil {
+				t.Fatal(err)
+			}
+			events := normalized.Events["otel_event"]
+			if normalized.Decision != "effective" || len(events) != 1 {
+				t.Fatalf("normalized = %#v", normalized)
+			}
+			event := events[0]
+			if event["harness"] != tc.harness || event["event_family"] != tc.family || event["tool_bucket"] != tc.tool || event["endpoint_bucket"] != tc.endpoint || event["performance_event"] != tc.performance {
+				t.Fatalf("event = %#v", event)
+			}
+			encoded, err := json.Marshal(normalized)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, forbidden := range []string{"prompt_text", "response_text", "tool_input", "arguments", "full_command", "file_path", "<scrubbed>"} {
+				if strings.Contains(string(encoded), forbidden) {
+					t.Fatalf("%q escaped normalized output: %s", forbidden, encoded)
+				}
+			}
+		})
+	}
+}
+
+func TestActivityStatsFoldsCoverageAndLatencyBuckets(t *testing.T) {
+	stats, err := Load("activity-stats")
+	if err != nil {
+		t.Fatal(err)
+	}
+	normalized, err := stats.Evaluate("normalize_activity", observedCodexInputs(t)["api_request"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	event := normalized.Events["otel_event"][0]
+	for _, fold := range []string{"update_event_inventory", "update_session_activity", "update_request_performance"} {
+		result, err := stats.Evaluate(fold, profile.EvaluationInput{
+			Meta:  map[string]any{"position": 46, "event_id": "local:46", "event_type": "otel_event", "emission_ordinal": 0},
+			Event: event, Rows: map[string]any{"prior": nil},
+		})
+		if err != nil {
+			t.Fatalf("%s: %v", fold, err)
+		}
+		switch fold {
+		case "update_event_inventory":
+			row := result.Tables["event_inventory"].Upsert[0]
+			if fmt.Sprint(row["duration_observed_count"]) != "1" || fmt.Sprint(row["token_unknown_count"]) != "1" {
+				t.Fatalf("inventory row = %#v", row)
+			}
+		case "update_session_activity":
+			row := result.Tables["session_activity"].Upsert[0]
+			if fmt.Sprint(row["request_count"]) != "1" || fmt.Sprint(row["unknown_field_observations"]) == "0" {
+				t.Fatalf("session row = %#v", row)
+			}
+		case "update_request_performance":
+			row := result.Tables["request_performance"].Upsert[0]
+			if fmt.Sprint(row["duration_le_1000ms"]) != "1" || fmt.Sprint(row["duration_le_500ms"]) != "0" || fmt.Sprint(row["success_count"]) != "1" {
+				t.Fatalf("performance row = %#v", row)
+			}
+		}
+	}
+}
+
+func TestSessionCostRejectsCounterlessAPIRequest(t *testing.T) {
+	cost, err := Load("session-cost")
+	if err != nil {
+		t.Fatal(err)
+	}
+	normalized, err := cost.Evaluate("normalize_usage", observedCodexInputs(t)["api_request"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if normalized.Decision != "ineffective" || len(normalized.Events["otel_event"]) != 0 {
+		t.Fatalf("counterless api_request = %#v", normalized)
+	}
+}
+
 func observedCodexInputs(t *testing.T) map[string]profile.EvaluationInput {
 	t.Helper()
 	encoded, err := os.ReadFile(filepath.Join("testdata", "codex-cli-0.150.1.json"))
@@ -300,6 +404,19 @@ func observedCodexInputs(t *testing.T) map[string]profile.EvaluationInput {
 func observedClaudeInputs(t *testing.T) map[string]profile.EvaluationInput {
 	t.Helper()
 	encoded, err := os.ReadFile(filepath.Join("testdata", "claude-code-2.1.250.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var inputs map[string]profile.EvaluationInput
+	if err := json.Unmarshal(encoded, &inputs); err != nil {
+		t.Fatal(err)
+	}
+	return inputs
+}
+
+func observedOpenCodeInputs(t *testing.T) map[string]profile.EvaluationInput {
+	t.Helper()
+	encoded, err := os.ReadFile(filepath.Join("testdata", "opencode-adapter.json"))
 	if err != nil {
 		t.Fatal(err)
 	}

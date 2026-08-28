@@ -36,7 +36,7 @@ hooks. A compatible adapter sends OTLP/HTTP logs to
 `http://127.0.0.1:4318/v1/logs` using JSON or protobuf and sets
 `service.name = opencode`.
 
-The two examples shipped with this release recognize:
+The three examples shipped with this release recognize:
 
 - `opencode.tool.execute.after` for a completed tool call;
 - `opencode.tool.execute.before` for an attempted call with no result; and
@@ -49,8 +49,13 @@ emitting both before and after as independently counted actions for one
 completed call. Tailapp does not ship or install this plugin in the current
 release.
 
+`activity-stats` accepts the same adapter records, reduces tool and endpoint
+values to bounded categories, and retains only aggregates. Its optional
+prompt/response/TTFT/websocket names are adapter contracts, not claims that
+OpenCode emits those records without a plugin.
+
 Until an adapter is active, MCP queries and Tailapp management work, but the
-two shipped examples' tables receive no OpenCode rows. This is expected rather
+three shipped examples' tables receive no OpenCode rows. This is expected rather
 than a receiver failure. Those examples are not a closed catalog: users and
 agents are encouraged to install an OpenCode-native Tailapp, fork their
 normalizers or policies, or substitute entirely different analytics through

@@ -1,7 +1,7 @@
 # Claude Code
 
 Claude Code can send its native structured log events directly to Tailapp over
-OTLP/HTTP. The two examples shipped with this release recognize its
+OTLP/HTTP. The three examples shipped with this release recognize its
 tool-result, tool-decision, and API-request event names.
 
 ## Send telemetry
@@ -51,7 +51,7 @@ Inside Claude Code, `/mcp` shows connection status. A useful first prompt is:
 
 ## Current bundle fit
 
-`agent-guard` and `session-cost` are shipped examples, not the available set of
+`activity-stats`, `agent-guard`, and `session-cost` are shipped examples, not the available set of
 Tailapp applications. Users and agents are encouraged to fork, extend, replace,
 or supplement them with analytics and policy specific to their environment;
 the [authoring guide](../authoring.md) covers installation over CLI and MCP.
@@ -71,6 +71,11 @@ allowed roots and operation classes.
 It maps Claude Code's native `cache_read_tokens` and `cost_usd_micros` fields
 into the example's `cached_input_tokens` and `cost_microusd` columns. See the
 [`session-cost` input model](../../tailapps/session-cost/README.md#input-model).
+
+`activity-stats` consumes the same tool and API-request families plus
+`claude_code.assistant_response` length metadata. It retains the reported
+length only, never response content; see its
+[`input and privacy model`](../../tailapps/activity-stats/README.md#input-and-privacy-model).
 
 The checked-in compatibility fixture is a structurally representative,
 scrubbed capture from Claude Code 2.1.250. Vendor fields may change; after an

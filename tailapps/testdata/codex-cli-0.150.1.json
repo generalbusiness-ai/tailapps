@@ -77,5 +77,45 @@
       }
     },
     "rows": {}
+  },
+  "user_prompt": {
+    "meta": {"position": 44, "event_id": "local:44", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:44", "signal": "log", "name": "event <scrubbed-codex-callsite>",
+      "source": "codex_exec", "time_unix_nano": null, "observed_unix_nano": "1787933000000000044",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:scrubbed-user-prompt",
+      "record": {"attributes": {"event.name": "codex.user_prompt", "conversation.id": "session-scrubbed", "prompt_length": 120}, "resource": {"attributes": {"service.name": "codex_exec"}}}
+    },
+    "rows": {}
+  },
+  "turn_ttft": {
+    "meta": {"position": 45, "event_id": "local:45", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:45", "signal": "log", "name": "event <scrubbed-codex-callsite>",
+      "source": "codex_exec", "time_unix_nano": null, "observed_unix_nano": "1787933000000000045",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:scrubbed-turn-ttft",
+      "record": {"attributes": {"event.name": "codex.turn_ttft", "conversation.id": "session-scrubbed", "ttft_ms": 420}, "resource": {"attributes": {"service.name": "codex_exec"}}}
+    },
+    "rows": {}
+  },
+  "api_request": {
+    "meta": {"position": 46, "event_id": "local:46", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:46", "signal": "log", "name": "event <scrubbed-codex-callsite>",
+      "source": "codex_exec", "time_unix_nano": null, "observed_unix_nano": "1787933000000000046",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:scrubbed-api-request",
+      "record": {"attributes": {"event.name": "codex.api_request", "conversation.id": "session-scrubbed", "endpoint": "/v1/responses", "latency_ms": 850, "status_code": 200}, "resource": {"attributes": {"service.name": "codex_exec"}}}
+    },
+    "rows": {}
+  },
+  "websocket_request": {
+    "meta": {"position": 47, "event_id": "local:47", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:47", "signal": "log", "name": "event <scrubbed-codex-callsite>",
+      "source": "codex_exec", "time_unix_nano": null, "observed_unix_nano": "1787933000000000047",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:scrubbed-websocket-request",
+      "record": {"attributes": {"event.name": "codex.websocket_request", "conversation.id": "session-scrubbed", "duration_ms": 75, "success": true}, "resource": {"attributes": {"service.name": "codex_exec"}}}
+    },
+    "rows": {}
   }
 }
