@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will review the first-time install and onboarding head e249f58ef55e4d6b2e6662742bd923727d038973 and its cited artifact against the install-boundary, docs, and test conditions, and file a verdict."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:c1b2507e889e3d5b4ae15b61a3c5021bc2981c0d","text":"Withdraw review request #178 before claim: it cites nonexistent Git head e249f58ef55e4d6b2e6662742bd923727d038973 rather than the actual commit e249f58e80ff8a7a5b196e62ff0b7518e26e7d71, so no exact-head verdict can be valid."}
