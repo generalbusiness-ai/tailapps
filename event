@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Codex OTLP effectiveness implementation at c2758c5; go test, race, vet, demo, and diff checks pass","body":{"commit":"c2758c5d7da5539f6f0dd30c2dc237aff9ddebd0","path":"tailapps/session-cost/folds/normalize.jsonata"}}
+{"kind":"artifact","text":"Codex OTLP effectiveness implementation at c2758c5; go test, race, vet, demo, and diff checks pass","body":{"commit":"c2758c5d7da5539f6f0dd30c2dc237aff9ddebd0","path":"tailapps/testdata/codex-cli-0.150.1.json"}}
