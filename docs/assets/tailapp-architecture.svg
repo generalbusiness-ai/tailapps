@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 480" role="img" aria-labelledby="title desc">
+  <title id="title">Tailapp architecture</title>
+  <desc id="desc">OTLP over HTTP enters one local resident. A Tailapp normalizes each canonical record into a private event, then folds it into SQLite tables. DDL declares the structure, JSONata implements the two processing steps, and agents query the tables over MCP.</desc>
+  <defs>
+    <linearGradient id="canvas" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fbfcfe"/>
+      <stop offset="1" stop-color="#f3f8f7"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-25%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="9" flood-color="#1b2a3b" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0 0L9 4.5L0 9Z" fill="#5f7083"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0 0L9 4.5L0 9Z" fill="#3074d8"/>
+    </marker>
+    <style>
+      .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .mono { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+      .eyebrow { font-size: 12px; font-weight: 750; letter-spacing: 1.5px; }
+      .title { font-size: 21px; font-weight: 720; letter-spacing: -0.25px; }
+      .body { font-size: 14px; font-weight: 470; }
+      .code { font-size: 13px; font-weight: 540; }
+      .flow { fill: none; stroke: #5f7083; stroke-width: 2.4; marker-end: url(#arrow); }
+      .guide { fill: none; stroke: #91a4b8; stroke-width: 1.5; stroke-dasharray: 4 5; }
+    </style>
+  </defs>
+
+  <rect width="1400" height="480" rx="22" fill="url(#canvas)"/>
+
+  <!-- OTLP input -->
+  <g class="sans" filter="url(#shadow)">
+    <rect x="38" y="176" width="184" height="128" rx="18" fill="#ffffff" stroke="#d3dce7"/>
+    <text x="130" y="212" text-anchor="middle" class="eyebrow" fill="#2d6fca">INPUT</text>
+    <text x="130" y="246" text-anchor="middle" class="title" fill="#203248">OTLP/HTTP</text>
+    <text x="130" y="275" text-anchor="middle" class="body" fill="#607286">logs · spans · metrics</text>
+  </g>
+
+  <!-- One installed Tailapp -->
+  <rect x="300" y="82" width="800" height="316" rx="24" fill="#f7faff" stroke="#bfd0e3" stroke-width="1.4"/>
+  <path d="M222 240H322" class="flow"/>
+  <text x="272" y="223" text-anchor="middle" class="mono code" fill="#607286">otlp_record</text>
+  <g filter="url(#shadow)">
+    <rect x="330" y="190" width="160" height="104" rx="16" fill="#ffffff" stroke="#9fc4f4" stroke-width="1.4"/>
+    <rect x="330" y="190" width="6" height="104" rx="3" fill="#3478cf"/>
+    <text x="356" y="224" class="sans eyebrow" fill="#2d6fca">NORMALIZE</text>
+    <text x="356" y="258" class="sans title" fill="#203248">adapt input</text>
+    <text x="356" y="280" class="sans body" fill="#607286">filter · enrich</text>
+
+    <rect x="526" y="214" width="124" height="56" rx="28" fill="#e9f3ff" stroke="#9fc4f4" stroke-width="1.4"/>
+    <text x="588" y="248" text-anchor="middle" class="mono body" fill="#274d79">otel_event</text>
+
+    <rect x="686" y="190" width="150" height="104" rx="16" fill="#ffffff" stroke="#8fd0bb" stroke-width="1.4"/>
+    <rect x="686" y="190" width="6" height="104" rx="3" fill="#27a17a"/>
+    <text x="712" y="224" class="sans eyebrow" fill="#21866a">ANALYZE</text>
+    <text x="712" y="258" class="sans title" fill="#203248">fold state</text>
+    <text x="712" y="280" class="sans body" fill="#607286">count · detect</text>
+  </g>
+
+  <path d="M490 242H518" class="flow"/>
+  <path d="M650 242H678" class="flow"/>
+
+  <!-- DDL source -->
+  <g filter="url(#shadow)">
+    <rect x="463" y="98" width="250" height="60" rx="12" fill="#172b43"/>
+    <text x="483" y="120" class="mono code" fill="#9fb3c9">application.sql · event DDL</text>
+    <text x="483" y="145" class="mono code" fill="#dce8f4"><tspan fill="#75aaf0">CREATE EVENT</tspan> otel_event</text>
+    <rect x="839" y="98" width="254" height="60" rx="12" fill="#172b43"/>
+    <text x="859" y="120" class="mono code" fill="#9fb3c9">application.sql · table DDL</text>
+    <text x="859" y="145" class="mono code" fill="#dce8f4"><tspan fill="#69c5a5">CREATE TABLE</tspan> projection</text>
+  </g>
+  <path d="M588 158V206" class="guide"/>
+  <path d="M966 158V166" class="guide"/>
+
+  <!-- JSONata implementations -->
+  <g filter="url(#shadow)">
+    <rect x="330" y="328" width="160" height="42" rx="10" fill="#172b43"/>
+    <text x="410" y="354" text-anchor="middle" class="mono code" fill="#75aaf0">normalize.jsonata</text>
+    <rect x="686" y="328" width="150" height="42" rx="10" fill="#172b43"/>
+    <text x="761" y="354" text-anchor="middle" class="mono code" fill="#69c5a5">fold.jsonata</text>
+  </g>
+  <path d="M410 328V302" class="guide"/>
+  <path d="M761 328V302" class="guide"/>
+
+  <!-- Materialized projection -->
+  <path d="M836 240H867" class="flow"/>
+  <g filter="url(#shadow)">
+    <rect x="874" y="168" width="184" height="144" rx="18" fill="#ffffff" stroke="#8fd0bb" stroke-width="1.4"/>
+    <rect x="896" y="194" width="140" height="90" rx="9" fill="#eef9f5" stroke="#b8dfd2"/>
+    <path d="M896 224H1036M896 254H1036" stroke="#b8dfd2"/>
+    <text x="966" y="214" text-anchor="middle" class="sans eyebrow" fill="#21866a">SQLITE TABLES</text>
+    <text x="912" y="245" class="mono code" fill="#355a50">projection</text>
+    <text x="912" y="275" class="mono code" fill="#355a50">...</text>
+    <text x="966" y="299" text-anchor="middle" class="sans body" fill="#60756e">materialized locally</text>
+  </g>
+
+  <!-- Agent access -->
+  <path d="M1171 240H1066" fill="none" stroke="#3074d8" stroke-width="2.4" marker-end="url(#arrow-blue)"/>
+  <g filter="url(#shadow)">
+    <rect x="1178" y="176" width="184" height="128" rx="18" fill="#ffffff" stroke="#d3dce7"/>
+    <text x="1270" y="212" text-anchor="middle" class="sans eyebrow" fill="#2d6fca">CONSUMER</text>
+    <text x="1270" y="246" text-anchor="middle" class="sans title" fill="#203248">MCP</text>
+    <text x="1270" y="275" text-anchor="middle" class="sans body" fill="#607286">query · manage</text>
+  </g>
+
+  <text x="700" y="442" text-anchor="middle" class="sans body" fill="#607286">One resident hosts many isolated Tailapps; each follows this same fixed two-stage path.</text>
+</svg>

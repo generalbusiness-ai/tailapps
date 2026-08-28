@@ -9,6 +9,8 @@ is a small declarative source set—not another service—and has its own isolat
 continuously materialized SQLite projection. Agents manage and query Tailapps
 through MCP; people and scripts can do the same through the CLI.
 
+![Tailapp pipeline: OTLP/HTTP enters a local resident, DDL and JSONata define a two-stage Tailapp, and MCP queries its SQLite projection.](docs/assets/tailapp-architecture.svg)
+
 ## Try it
 
 Prerequisites are macOS or Linux, Go 1.26.7 or later, and Git. The demo builds
@@ -77,8 +79,8 @@ The included Tailapps are a starting kit, not a fixed catalog:
 
 | Tailapp | Materialized analytics |
 | --- | --- |
-| [`activity-stats`](tailapps/activity-stats/README.md) | Privacy-preserving event inventory, session activity, token/cache totals, tool frequency, and request latency |
-| [`agent-guard`](tailapps/agent-guard/README.md) | Policy evidence, telemetry coverage, repeated actions or failures, and bounded no-progress signals |
+| [`activity-stats`](tailapps/activity-stats/README.md) | Privacy-preserving event, activity, token/cache, tool-frequency, and latency analytics across Claude Code, Codex, and OpenCode |
+| [`agent-guard`](tailapps/agent-guard/README.md) | Observed out-of-bounds evidence, explicit unknown coverage, repetition/no-progress signals, and stalled-session queries |
 | [`session-cost`](tailapps/session-cost/README.md) | Cumulative token and reported-cost totals by harness and session |
 
 You can create, fork, extend, replace, install, update, query, and delete your
