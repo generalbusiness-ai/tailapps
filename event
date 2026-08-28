@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:04137b0021bbf6a46875688ac6c85e3c137859de","text":"Merge retired a covered predecessor; the successor is at internal/cli/cli.go."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:063bab44d03d7b2afe7353a1e78b481d1d565ad4","text":"Merge retired a covered predecessor; the successor is at examples/signal-counts/README.md."}
