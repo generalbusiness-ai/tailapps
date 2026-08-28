@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Agent-guard coverage-aware analytics at exact head ff05efa005d285e7987809068d8f82ed36cbb4e9","body":{"commit":"ff05efa005d285e7987809068d8f82ed36cbb4e9","path":"tailapps/agent-guard"}}
+{"kind":"artifact","text":"Agent-guard coverage regressions at exact head ff05efa005d285e7987809068d8f82ed36cbb4e9","body":{"commit":"ff05efa005d285e7987809068d8f82ed36cbb4e9","path":"tailapps/embed_test.go"}}
