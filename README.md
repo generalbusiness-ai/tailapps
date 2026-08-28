@@ -5,7 +5,7 @@ telemetry. It accepts standard OTLP/HTTP logs, spans, and metric points, then
 runs deterministic Tailapp definitions into isolated SQLite projections that
 agents can inspect through bounded read-only SQL over CLI or MCP.
 
-The bundled `agent-guard` provides:
+The shipped `agent-guard` example provides:
 
 - observed denied-tool, denied-operation, and target-boundary evidence;
 - explicit `unknown` findings when required telemetry is absent or redacted;
@@ -54,6 +54,30 @@ a completed key replays its original success or error. Reusing it for another
 request is refused. A key left pending by a crash is reported as in doubt
 instead of risking a duplicate destructive effect. Draft edits never change
 live behavior until activation.
+
+## Documentation
+
+- [Documentation map](docs/README.md)
+- [Harness setup](docs/harnesses/README.md):
+  [Claude Code](docs/harnesses/claude-code.md),
+  [Codex](docs/harnesses/codex.md),
+  [OpenCode](docs/harnesses/opencode.md), and [Pi](docs/harnesses/pi.md)
+- [Author and install a Tailapp](docs/authoring.md)
+- References: [CLI](docs/reference/cli.md), [MCP](docs/reference/mcp.md),
+  [DDL/JSONata](docs/reference/ddl-jsonata.md), and
+  [query SQL](docs/reference/query-sql.md)
+- Examples shipped with this release:
+  [`agent-guard`](tailapps/agent-guard/README.md) and
+  [`session-cost`](tailapps/session-cost/README.md)
+
+The built-in source sets are examples, not a closed catalog. Operators and
+agents are encouraged to create new Tailapps, fork or extend these examples,
+or substitute different analytics and policy. They can create a draft, upload
+its `application.sql` and `folds/*.jsonata` elements, validate the exact
+revision, and activate it using either CLI or MCP. Tailapp v1 has no
+directory-import command and `--bundle` names only a built-in source set;
+custom source sets use the ordinary element lifecycle described in the
+authoring guide.
 
 ## Boundaries
 

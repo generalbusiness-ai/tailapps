@@ -111,6 +111,23 @@ func TestSessionCostAccumulates(t *testing.T) {
 	}
 }
 
+func TestSessionCostMapsClaudeNativeCost(t *testing.T) {
+	cost, err := Load("session-cost")
+	if err != nil {
+		t.Fatal(err)
+	}
+	normalized, err := cost.Evaluate("normalize_usage", harnessInput(1, "claude-code", "claude_code.api_request", map[string]any{
+		"session.id": "session-1", "input_tokens": 100, "output_tokens": 25, "cost_usd_micros": 11,
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	events := normalized.Events["otel_event"]
+	if len(events) != 1 || events[0]["cost_microusd"].(interface{ String() string }).String() != "11" {
+		t.Fatalf("normalized = %#v", normalized)
+	}
+}
+
 func harnessInput(position int, source, name string, attributes map[string]any) profile.EvaluationInput {
 	return profile.EvaluationInput{
 		Meta: map[string]any{"position": position, "event_id": "local", "event_type": "otlp_record"},

@@ -14,7 +14,7 @@
           {"key": "success", "value": {"boolValue": true}}]},
         {"timeUnixNano": "1787900000000000400", "eventName": "claude_code.api_request", "attributes": [
           {"key": "session.id", "value": {"stringValue": "shared-claude"}}, {"key": "input_tokens", "value": {"intValue": "120"}},
-          {"key": "output_tokens", "value": {"intValue": "30"}}, {"key": "cost_microusd", "value": {"intValue": "9"}}]}
+          {"key": "output_tokens", "value": {"intValue": "30"}}, {"key": "cost_usd_micros", "value": {"intValue": "9"}}]}
       ]}]
     },
     {
