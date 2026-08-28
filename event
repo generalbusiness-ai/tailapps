@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Claude Code MCP and OTLP interoperability at exact tested head","body":{"commit":"a52ce2911a1dc4b31554ba59d7c75d10e6eae6d5","path":"tailapps/testdata/claude-code-2.1.250.json"}}
+{"kind":"report","text":"Implemented Claude Code 2.1.250 MCP-schema and native OTLP-envelope compatibility at a52ce29e47d93f3f14c510901e2b1795f0f96543; full test, race, vet, and demo gates pass; direct Claude MCP get reports Connected without resident restart.","body":{"branch":"request/claude-mcp-interop","head":"a52ce29e47d93f3f14c510901e2b1795f0f96543"}}
