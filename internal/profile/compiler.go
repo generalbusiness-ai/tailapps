@@ -36,8 +36,6 @@ var (
 	relationRE         = regexp.MustCompile(`(?i)\b(?:FROM|JOIN)\s+([A-Za-z_][A-Za-z0-9_]*)`)
 	ambientSQLRE       = regexp.MustCompile(`(?i)\b(?:random|randomblob|current_date|current_time|current_timestamp|load_extension)\b|\b(?:date|time|datetime|julianday|unixepoch|strftime)\s*\(`)
 	ambientJSONataRE   = regexp.MustCompile(`(?i)\$(?:now|millis|random|shuffle|eval)\b`)
-	jsonataCallRE      = regexp.MustCompile(`(?i)\$([A-Za-z][A-Za-z0-9_]*)\s*\(`)
-	jsonataLambdaRE    = regexp.MustCompile(`(?i)\bfunction\s*\(`)
 	commaJoinRE        = regexp.MustCompile(`(?is)\b(?:FROM|JOIN)\s+[A-Za-z_][A-Za-z0-9_]*(?:\s+(?:AS\s+)?[A-Za-z_][A-Za-z0-9_]*)?\s*,`)
 	forbiddenSQLRE     = regexp.MustCompile(`(?i)\b(?:ALTER|DROP|TRIGGER|VIRTUAL|PRAGMA|ATTACH|DETACH|VACUUM|REINDEX|ANALYZE|INSERT|UPDATE|DELETE|REPLACE)\b`)
 	forbiddenQueryRE   = regexp.MustCompile(`(?i);|\b(?:WITH|UNION|INTERSECT|EXCEPT|PRAGMA|ATTACH|DETACH|INSERT|UPDATE|DELETE|REPLACE|CREATE|ALTER|DROP)\b|\(\s*SELECT\b`)
@@ -370,12 +368,15 @@ func (c *compiler) compileProgram(name, event, body string, normalizer bool) (Pr
 	if ambientJSONataRE.Match(source) {
 		return Program{}, fmt.Errorf("program %q uses an ambient or dynamic JSONata function", name)
 	}
-	if err := validateJSONataSource(source); err != nil {
+	if err := validateJSONataLexicalSource(source); err != nil {
 		return Program{}, fmt.Errorf("program %q: %w", name, err)
 	}
 	expression, err := jsonata.Compile(string(source), false)
 	if err != nil {
 		return Program{}, fmt.Errorf("compile program %q: %w", name, err)
+	}
+	if err := validateJSONataAST(expression.AST()); err != nil {
+		return Program{}, fmt.Errorf("program %q: %w", name, err)
 	}
 	expression.SetMaxDepth(MaxDepth)
 	expression.SetMaxRange(MaxRange)
@@ -416,25 +417,117 @@ func (c *compiler) compileProgram(name, event, body string, normalizer bool) (Pr
 }
 
 func validateJSONataSource(source []byte) error {
-	if jsonataLambdaRE.Match(source) {
-		return errors.New("user-defined JSONata functions are outside the bounded profile")
+	if err := validateJSONataLexicalSource(source); err != nil {
+		return err
 	}
+	expression, err := jsonata.Compile(string(source), false)
+	if err != nil {
+		return err
+	}
+	return validateJSONataAST(expression.AST())
+}
+
+func validateJSONataLexicalSource(source []byte) error {
 	if hasUnquotedAsterisk(source) {
 		return errors.New("JSONata wildcard and multiplication syntax is outside the deterministic bounded profile")
 	}
 	if hasUnquotedRange(source) {
 		return errors.New("JSONata generated ranges are outside the deterministic bounded profile")
 	}
-	allowed := stringSet(
-		"abs", "boolean", "ceil", "contains", "count", "exists", "floor",
-		"length", "lookup", "lowercase", "max", "min", "not", "number",
-		"round", "string", "substring", "sum", "uppercase",
-	)
-	for _, match := range jsonataCallRE.FindAllSubmatch(source, -1) {
-		function := strings.ToLower(string(match[1]))
-		if !allowed[function] {
-			return fmt.Errorf("JSONata function $%s is outside the bounded profile", function)
+	return nil
+}
+
+var allowedJSONataFunctions = stringSet(
+	"abs", "boolean", "ceil", "contains", "count", "exists", "floor",
+	"length", "lookup", "lowercase", "max", "min", "not", "number",
+	"round", "string", "substring", "sum", "uppercase",
+)
+
+func validateJSONataAST(value any) error {
+	root, ok := value.(*jsonata.ASTNode)
+	if !ok || root == nil {
+		return errors.New("compiled JSONata expression has no inspectable AST")
+	}
+	seen := make(map[*jsonata.ASTNode]bool)
+	var walk func(*jsonata.ASTNode) error
+	walk = func(node *jsonata.ASTNode) error {
+		if node == nil || seen[node] {
+			return nil
 		}
+		seen[node] = true
+		switch node.Type {
+		case "lambda":
+			return errors.New("user-defined JSONata functions are outside the bounded profile")
+		case "function", "partial":
+			if err := validateJSONataCallable(node.Procedure); err != nil {
+				return err
+			}
+		case "apply":
+			if err := validateJSONataCallable(node.RHS); err != nil {
+				return err
+			}
+		}
+		children := []*jsonata.ASTNode{
+			node.LHS, node.RHS, node.Expression, node.Procedure, node.Pattern,
+			node.Update, node.Delete, node.Condition, node.Then, node.Else, node.Body,
+		}
+		children = append(children, node.Expressions...)
+		children = append(children, node.Arguments...)
+		children = append(children, node.Steps...)
+		for _, pair := range node.RHSPairs {
+			children = append(children, pair[0], pair[1])
+		}
+		for _, pair := range node.LHSPairs {
+			children = append(children, pair[0], pair[1])
+		}
+		for _, term := range node.RHSTerms {
+			if term != nil {
+				children = append(children, term.Expression)
+			}
+		}
+		for _, term := range node.Terms {
+			if term != nil {
+				children = append(children, term.Expression)
+			}
+		}
+		for _, stage := range node.Predicate {
+			if stage != nil {
+				children = append(children, stage.Expr)
+			}
+		}
+		for _, stage := range node.Stages {
+			if stage != nil {
+				children = append(children, stage.Expr)
+			}
+		}
+		if node.Group != nil {
+			for _, pair := range node.Group.LHS {
+				children = append(children, pair[0], pair[1])
+			}
+		}
+		for _, child := range children {
+			if err := walk(child); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	return walk(root)
+}
+
+func validateJSONataCallable(node *jsonata.ASTNode) error {
+	if node == nil {
+		return errors.New("dynamic JSONata function application is outside the bounded profile")
+	}
+	if node.Type == "function" || node.Type == "partial" {
+		return validateJSONataCallable(node.Procedure)
+	}
+	if node.Type != "variable" {
+		return errors.New("dynamic JSONata function application is outside the bounded profile")
+	}
+	name, ok := node.Value.(string)
+	if !ok || !allowedJSONataFunctions[strings.ToLower(name)] {
+		return fmt.Errorf("JSONata function $%v is outside the bounded profile", node.Value)
 	}
 	return nil
 }
