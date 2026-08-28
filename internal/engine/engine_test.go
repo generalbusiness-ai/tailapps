@@ -3,10 +3,14 @@ package engine
 import (
 	"bytes"
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/ncruces/go-sqlite3"
@@ -16,7 +20,10 @@ import (
 	resourcev1 "go.opentelemetry.io/proto/otlp/resource/v1"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/generalbusiness-ai/tailapp/internal/definition"
 	"github.com/generalbusiness-ai/tailapp/internal/inbox"
+	"github.com/generalbusiness-ai/tailapp/internal/profile"
+	"github.com/generalbusiness-ai/tailapp/internal/projection"
 	"github.com/generalbusiness-ai/tailapp/internal/query"
 )
 
@@ -206,6 +213,54 @@ func TestRecoverySettlesProjectionCommitWithoutDuplicateEvaluation(t *testing.T)
 	}
 }
 
+func TestCancelledDrainLeavesObligationPendingForRetry(t *testing.T) {
+	ctx := context.Background()
+	resident, err := Open(ctx, filepath.Join(t.TempDir(), "home"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resident.Close()
+	app, err := resident.Create(ctx, "agent-guard", "agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	compiled, err := resident.Validate(ctx, "agent-guard", app.DraftRevision)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resident.Activate(ctx, "agent-guard", app.DraftRevision, "reset", true); err != nil {
+		t.Fatal(err)
+	}
+	eventTime := "1787900000000000000"
+	record := []byte(`{"attributes":{"conversation.id":"retry","tool_name":"read","target":"/workspace","success":true},"resource":{"attributes":{"service.name":"codex"}}}`)
+	if _, err := resident.queue.Enqueue(ctx, []inbox.Record{{Signal: "log", Name: "codex.tool_result", Source: "codex", TimeUnixNano: &eventTime, ContentDigest: "sha256:retry", JSON: record}}, []inbox.Consumer{{Tailapp: "agent-guard", Revision: compiled.Revision}}); err != nil {
+		t.Fatal(err)
+	}
+	cancelled, cancel := context.WithCancel(ctx)
+	cancel()
+	if err := resident.Drain(cancelled); err == nil {
+		t.Fatal("cancelled drain succeeded")
+	}
+	status, err := resident.Status(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	frontier := status.Apps["agent-guard"]
+	if status.Inbox.Records != 1 || status.Inbox.PendingObligations != 1 || frontier.GapPosition != nil || !frontier.Complete {
+		t.Fatalf("cancelled drain lost retry state: %#v", status)
+	}
+	if err := resident.Drain(ctx); err != nil {
+		t.Fatal(err)
+	}
+	status, err = resident.Status(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status.Inbox.Records != 0 || status.Apps["agent-guard"].InterpretedPosition != 1 {
+		t.Fatalf("retry did not consume pending delivery: %#v", status)
+	}
+}
+
 func TestGapDetachesOnlyFailingTailapp(t *testing.T) {
 	ctx := context.Background()
 	resident, err := Open(ctx, filepath.Join(t.TempDir(), "home"))
@@ -276,6 +331,221 @@ CREATE EXPORT bad AS SELECT id, status FROM bad;`)
 	}
 	if len(nextConsumers) != 1 || nextConsumers[0].Tailapp != "session-cost" {
 		t.Fatalf("gapped consumer remained enrolled: %#v", nextConsumers)
+	}
+
+	// A storage-compatible continuation repairs the gap without discarding
+	// the projection. It explicitly skips the detached interval by advancing
+	// to the new activation boundary, then rejoins future delivery.
+	failing, _, err = resident.App(ctx, "failing")
+	if err != nil {
+		t.Fatal(err)
+	}
+	failing, err = resident.Put(ctx, "failing", "folds/normalize.jsonata", []byte(`{"decision":"effective","facts":[],"events":{"otel_event":[]},"tables":{"bad":{"upsert":[{"id":"x","status":"valid"}]}}}`), failing.DraftRevision)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resident.Validate(ctx, "failing", failing.DraftRevision); err != nil {
+		t.Fatal(err)
+	}
+	repaired, err := resident.Activate(ctx, "failing", failing.DraftRevision, "continue", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if repaired.GapPosition != nil || !repaired.Complete || repaired.InterpretedPosition != 1 {
+		t.Fatalf("repaired frontier=%#v", repaired)
+	}
+	consumers, err = resident.consumers(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(consumers) != 2 {
+		t.Fatalf("repaired consumer set=%#v", consumers)
+	}
+	if _, err := resident.queue.Enqueue(ctx, []inbox.Record{{Signal: "log", Name: "codex.api_request", Source: "codex", TimeUnixNano: &eventTime, ContentDigest: "sha256:gap-repair", JSON: record}}, consumers); err != nil {
+		t.Fatal(err)
+	}
+	if err := resident.Drain(ctx); err != nil {
+		t.Fatal(err)
+	}
+	status, err = resident.Status(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status.Apps["failing"].InterpretedPosition != 2 || status.Apps["failing"].GapPosition != nil {
+		t.Fatalf("repaired app did not resume=%#v", status.Apps["failing"])
+	}
+}
+
+func TestUnavailableProjectionDoesNotPreventResidentRecovery(t *testing.T) {
+	ctx := context.Background()
+	home := filepath.Join(t.TempDir(), "home")
+	first, err := Open(ctx, home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"agent-guard", "session-cost"} {
+		app, err := first.Create(ctx, name, name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := first.Validate(ctx, name, app.DraftRevision); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := first.Activate(ctx, name, app.DraftRevision, "reset", true); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := first.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Remove(filepath.Join(home, "projections", "agent-guard", "state.sqlite")); err != nil {
+		t.Fatal(err)
+	}
+
+	recovered, err := Open(ctx, home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer recovered.Close()
+	status, err := recovered.Status(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := status.Unavailable["agent-guard"]; !ok || !status.IngestionReady {
+		t.Fatalf("unavailable isolation=%#v", status)
+	}
+	if _, err := recovered.Query(ctx, "session-cost", query.Request{SQL: `SELECT COUNT(*) FROM session_cost`}, nil); err != nil {
+		t.Fatalf("healthy projection query: %v", err)
+	}
+	if _, err := recovered.Query(ctx, "agent-guard", query.Request{SQL: `SELECT 1`}, nil); !errors.Is(err, ErrProjectionUnavailable) {
+		t.Fatalf("unavailable query error=%v", err)
+	}
+	guard, _, err := recovered.App(ctx, "agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := recovered.Activate(ctx, "agent-guard", guard.DraftRevision, "reset", true); err != nil {
+		t.Fatalf("explicit reset repair: %v", err)
+	}
+	status, err = recovered.Status(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := status.Unavailable["agent-guard"]; ok {
+		t.Fatalf("reset did not repair unavailable projection: %#v", status)
+	}
+}
+
+func TestRecoveryFinishesResetJournalAfterFileSwitch(t *testing.T) {
+	ctx := context.Background()
+	home := filepath.Join(t.TempDir(), "home")
+	first, err := Open(ctx, home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	app, err := first.Create(ctx, "agent-guard", "agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := first.Validate(ctx, "agent-guard", app.DraftRevision); err != nil {
+		t.Fatal(err)
+	}
+	oldFrontier, err := first.Activate(ctx, "agent-guard", app.DraftRevision, "reset", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	app, sources, err := first.App(ctx, "agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	changed := bytes.Replace(sources["folds/guard.jsonata"], []byte("Observed a denied tool"), []byte("Observed denied tool use"), 1)
+	app, err = first.Put(ctx, "agent-guard", "folds/guard.jsonata", changed, app.DraftRevision)
+	if err != nil {
+		t.Fatal(err)
+	}
+	compiled, err := first.Validate(ctx, "agent-guard", app.DraftRevision)
+	if err != nil {
+		t.Fatal(err)
+	}
+	journal := definition.ActivationJournal{Name: "agent-guard", NewRevision: compiled.Revision, Runtime: profile.RuntimeID, Mode: "reset", Boundary: 0, ExpectedDraft: app.DraftRevision, OldRevision: &oldFrontier.Revision}
+	if err := first.registry.BeginActivation(ctx, journal); err != nil {
+		t.Fatal(err)
+	}
+	stable, candidate, previous := first.activationPaths("agent-guard")
+	next, err := projection.Create(ctx, candidate, compiled, 0, "reset")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := next.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := first.active["agent-guard"].Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Rename(stable, previous); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Rename(candidate, stable); err != nil {
+		t.Fatal(err)
+	}
+	if err := first.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	recovered, err := Open(ctx, home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer recovered.Close()
+	current, _, err := recovered.App(ctx, "agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if current.ActiveRevision == nil || *current.ActiveRevision != compiled.Revision {
+		t.Fatalf("journal did not finalize registry pointer: %#v", current)
+	}
+	if _, err := os.Stat(previous); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("activation backup retained: %v", err)
+	}
+}
+
+func TestExpectedRevisionRaceHasOneWinner(t *testing.T) {
+	ctx := context.Background()
+	resident, err := Open(ctx, filepath.Join(t.TempDir(), "home"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resident.Close()
+	app, err := resident.Create(ctx, "race", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var wait sync.WaitGroup
+	errorsSeen := make(chan error, 2)
+	for index := 0; index < 2; index++ {
+		index := index
+		wait.Add(1)
+		go func() {
+			defer wait.Done()
+			_, err := resident.Put(ctx, "race", fmt.Sprintf("folds/%d.jsonata", index), []byte(`{}`), app.DraftRevision)
+			errorsSeen <- err
+		}()
+	}
+	wait.Wait()
+	close(errorsSeen)
+	winners, conflicts := 0, 0
+	for err := range errorsSeen {
+		switch {
+		case err == nil:
+			winners++
+		case errors.Is(err, definition.ErrRevisionChanged):
+			conflicts++
+		default:
+			t.Fatalf("unexpected mutation error: %v", err)
+		}
+	}
+	if winners != 1 || conflicts != 1 {
+		t.Fatalf("race winners=%d conflicts=%d", winners, conflicts)
 	}
 }
 

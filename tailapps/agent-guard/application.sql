@@ -8,7 +8,9 @@ CREATE EVENT otel_event (
   argument_digest TEXT NOT NULL,
   success BOOLEAN,
   event_time_unix_nano TEXT NOT NULL,
+  action_fingerprint TEXT NOT NULL,
   progress_fingerprint TEXT NOT NULL,
+  progress_coverage TEXT NOT NULL,
   source_position INTEGER NOT NULL,
   tool_coverage TEXT NOT NULL,
   target_coverage TEXT NOT NULL,
@@ -31,6 +33,7 @@ CREATE TABLE session_progress (
   last_activity_unix_nano TEXT NOT NULL,
   last_distinct_progress_unix_nano TEXT NOT NULL,
   action_fingerprint TEXT NOT NULL,
+  progress_fingerprint TEXT NOT NULL,
   repeat_count INTEGER NOT NULL CHECK (repeat_count >= 1),
   no_progress_count INTEGER NOT NULL CHECK (no_progress_count >= 0),
   consecutive_failures INTEGER NOT NULL CHECK (consecutive_failures >= 0),
@@ -83,7 +86,7 @@ CREATE FOLD update_guard_analytics ON otel_event
 READ prior OPTIONAL ONE AS
   SELECT harness, session_id, first_activity_unix_nano,
          last_activity_unix_nano, last_distinct_progress_unix_nano,
-         action_fingerprint, repeat_count, no_progress_count,
+         action_fingerprint, progress_fingerprint, repeat_count, no_progress_count,
          consecutive_failures, total_actions, last_source_position
   FROM session_progress
   WHERE harness = :event.harness AND session_id = :event.session_id
@@ -97,7 +100,7 @@ CREATE EXPORT telemetry_coverage AS
 CREATE EXPORT session_progress AS
   SELECT harness, session_id, first_activity_unix_nano,
          last_activity_unix_nano, last_distinct_progress_unix_nano,
-         action_fingerprint, repeat_count, no_progress_count,
+         action_fingerprint, progress_fingerprint, repeat_count, no_progress_count,
          consecutive_failures, total_actions, last_source_position
   FROM session_progress;
 

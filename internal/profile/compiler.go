@@ -836,6 +836,11 @@ func (c *compiler) validateReads(database *sql.DB) error {
 func (c *compiler) compileExports(database *sql.DB, queries map[string]string) error {
 	for _, name := range sortedKeys(queries) {
 		query := queries[name]
+		for _, relation := range queryRelations(query) {
+			if c.isView(relation) {
+				return fmt.Errorf("export %q reads application view %q; export base tables directly in this profile", name, relation)
+			}
+		}
 		rows, err := database.Query("SELECT * FROM (" + query + ") LIMIT 0")
 		if err != nil {
 			return fmt.Errorf("export %q does not prepare: %w", name, err)
@@ -866,6 +871,15 @@ func (c *compiler) compileExports(database *sql.DB, queries map[string]string) e
 		return errors.New("application requires at least one query export")
 	}
 	return nil
+}
+
+func (c *compiler) isView(name string) bool {
+	for candidate := range c.profile.Views {
+		if strings.EqualFold(candidate, name) {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *compiler) computeDigests() error {

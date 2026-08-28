@@ -190,6 +190,8 @@ func errorCode(err error) string {
 		return "not_found"
 	case errors.Is(err, definition.ErrRevisionChanged):
 		return "revision_changed"
+	case errors.Is(err, engine.ErrProjectionUnavailable):
+		return "projection_unavailable"
 	case errors.Is(err, context.DeadlineExceeded):
 		return "deadline_exceeded"
 	case strings.Contains(err.Error(), "frontier_changed"):

@@ -40,6 +40,12 @@ type Result struct {
 	Frontier       Frontier
 }
 
+type Identity struct {
+	Name     string
+	Revision string
+	Runtime  string
+}
+
 type Projection struct {
 	name    string
 	path    string
@@ -88,6 +94,24 @@ func Open(ctx context.Context, path string, compiled *profile.Profile) (*Project
 // it until a current-profile continuation or reset succeeds.
 func OpenForUpgrade(ctx context.Context, path string, compiled *profile.Profile, expectedRevision string) (*Projection, error) {
 	return openExisting(ctx, path, compiled, expectedRevision, true)
+}
+
+func InspectIdentity(ctx context.Context, path string) (Identity, error) {
+	info, err := os.Lstat(path)
+	if err != nil {
+		return Identity{}, err
+	}
+	if info.Mode()&os.ModeSymlink != 0 {
+		return Identity{}, errors.New("projection database may not be a symlink")
+	}
+	database, err := openDatabase(path)
+	if err != nil {
+		return Identity{}, err
+	}
+	defer database.Close()
+	var result Identity
+	err = database.QueryRowContext(ctx, `SELECT tailapp,revision,runtime_profile FROM tailapp_projection_identity WHERE singleton=1`).Scan(&result.Name, &result.Revision, &result.Runtime)
+	return result, err
 }
 
 func openExisting(ctx context.Context, path string, compiled *profile.Profile, expectedRevision string, allowLegacyRuntime bool) (*Projection, error) {
@@ -198,7 +222,7 @@ func (p *Projection) Path() string              { return p.path }
 // Continue atomically preserves existing writable tables, adds new tables,
 // replaces derived schema objects and switches the runtime profile at the
 // already-drained activation boundary.
-func (p *Projection) Continue(ctx context.Context, next *profile.Profile) error {
+func (p *Projection) Continue(ctx context.Context, next *profile.Profile, boundary int64) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if err := profile.ContinueCompatible(p.profile, next); err != nil {
@@ -253,6 +277,9 @@ func (p *Projection) Continue(ctx context.Context, next *profile.Profile) error 
 	if _, err := tx.ExecContext(ctx, `UPDATE tailapp_projection_identity SET revision=?,runtime_profile=?,activation_mode='continue' WHERE singleton=1`, next.Revision, profile.RuntimeID); err != nil {
 		return err
 	}
+	if _, err := tx.ExecContext(ctx, `UPDATE tailapp_frontier SET activation_boundary=?,interpreted_position=?,last_event_id='',complete=1,gap_position=NULL,gap_reason=NULL WHERE singleton=1`, boundary, boundary); err != nil {
+		return err
+	}
 	if err := tx.Commit(); err != nil {
 		return err
 	}
@@ -285,7 +312,7 @@ func (p *Projection) Process(ctx context.Context, delivery inbox.Delivery) (resu
 	}
 	defer func() {
 		_ = tx.Rollback()
-		if processErr != nil {
+		if processErr != nil && !transientProcessError(ctx, processErr) {
 			_ = p.recordGap(context.Background(), delivery.Position, processErr.Error())
 		}
 	}()
@@ -559,6 +586,13 @@ func sqliteValue(value any, logical any) any {
 	if value == nil {
 		return nil
 	}
+	// JSON columns must always cross SQLite as JSON text. Handling json.Number
+	// before the logical type would give a top-level JSON number INTEGER/REAL
+	// affinity and make the next declared read reject otherwise valid state.
+	if profile.LogicalType(fmt.Sprint(logical)) == profile.TypeJSON {
+		encoded, _ := json.Marshal(value)
+		return string(encoded)
+	}
 	if number, ok := value.(json.Number); ok {
 		if integer, err := number.Int64(); err == nil {
 			return integer
@@ -576,9 +610,6 @@ func sqliteValue(value any, logical any) any {
 			}
 			return 0
 		}
-	case profile.TypeJSON:
-		encoded, _ := json.Marshal(value)
-		return string(encoded)
 	case profile.TypeBlob:
 		if typed, ok := value.(string); ok {
 			decoded, _ := base64.StdEncoding.DecodeString(typed)
@@ -586,6 +617,24 @@ func sqliteValue(value any, logical any) any {
 		}
 	}
 	return value
+}
+
+func transientProcessError(ctx context.Context, err error) bool {
+	if ctx.Err() != nil || errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+	var code sqlite3.ErrorCode
+	if !errors.As(err, &code) {
+		return false
+	}
+	switch code {
+	case sqlite3.BUSY, sqlite3.LOCKED, sqlite3.NOMEM, sqlite3.READONLY,
+		sqlite3.INTERRUPT, sqlite3.IOERR, sqlite3.FULL, sqlite3.CANTOPEN,
+		sqlite3.PROTOCOL, sqlite3.SCHEMA:
+		return true
+	default:
+		return false
+	}
 }
 
 func quote(identifier string) string { return `"` + strings.ReplaceAll(identifier, `"`, `""`) + `"` }

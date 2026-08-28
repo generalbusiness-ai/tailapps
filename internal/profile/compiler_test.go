@@ -257,6 +257,15 @@ CREATE INDEX sessions_failures`, 1)
 	}
 }
 
+func TestExportThroughApplicationViewIsRefused(t *testing.T) {
+	ddl := strings.Replace(validDDL,
+		"CREATE EXPORT sessions AS SELECT session_id, calls, failures FROM sessions;",
+		"CREATE EXPORT sessions AS SELECT session_id, failures FROM failing_sessions;", 1)
+	if _, err := Load(validFS(ddl), ".", "agent-guard"); err == nil || !strings.Contains(err.Error(), "export base tables directly") {
+		t.Fatalf("view-based export accepted: %v", err)
+	}
+}
+
 func TestStatementSplitterHandlesQuotesAndComments(t *testing.T) {
 	source := `-- lead ;
 CREATE TABLE example (id TEXT PRIMARY KEY, note TEXT CHECK(note <> ';'));

@@ -59,12 +59,12 @@ func TestAgentGuardMaterializesAllHarnessesUnknownLoopsAndStalledQuery(t *testin
 			t.Fatal(err)
 		}
 	}
-	// Different actions with no observable result must still accumulate a
-	// bounded no-progress signal rather than being reset by action diversity.
-	for count := 0; count < 3; count++ {
+	// Different actions with one explicitly observed, unchanged progress
+	// fingerprint accumulate no-progress without conflating missing telemetry.
+	for count := 0; count < 4; count++ {
 		position++
 		if _, err := projection.Process(context.Background(), guardDelivery(position, "opencode", "opencode.tool.execute.after", map[string]any{
-			"session_id": "no-progress", "tool_name": fmt.Sprintf("tool-%d", count), "target": "/workspace",
+			"session_id": "no-progress", "tool_name": fmt.Sprintf("tool-%d", count), "target": "/workspace", "success": true, "progress_fingerprint": "stable-state",
 		})); err != nil {
 			t.Fatal(err)
 		}
@@ -127,6 +127,47 @@ CREATE EXPORT state AS SELECT id, status FROM state;`)},
 		t.Fatalf("gap frontier = %#v", frontier)
 	}
 	assertCount(t, projection, `SELECT COUNT(*) FROM state`, 0)
+}
+
+func TestCancelledProcessingLeavesDeliveryPendingWithoutGap(t *testing.T) {
+	compiled, err := tailapps.Load("agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	item, err := Create(context.Background(), filepath.Join(t.TempDir(), "guard.sqlite"), compiled, 0, "reset")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer item.Close()
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if _, err := item.Process(ctx, guardDelivery(1, "codex", "codex.tool_result", map[string]any{
+		"conversation.id": "retry", "tool_name": "read", "target": "/workspace", "success": true,
+	})); err == nil {
+		t.Fatal("cancelled processing succeeded")
+	}
+	frontier, err := item.Frontier(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if frontier.GapPosition != nil || !frontier.Complete || frontier.InterpretedPosition != 0 {
+		t.Fatalf("cancelled processing changed frontier: %#v", frontier)
+	}
+}
+
+func TestJSONNumberRoundTripsThroughDeclaredRead(t *testing.T) {
+	value := json.Number("42")
+	stored := sqliteValue(value, profile.TypeJSON)
+	if stored != "42" {
+		t.Fatalf("stored JSON number = %#v", stored)
+	}
+	decoded, err := fromSQLite(stored, "JSON")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fmt.Sprint(decoded) != "42" {
+		t.Fatalf("decoded JSON number = %#v", decoded)
+	}
 }
 
 func guardDelivery(position int64, source, name string, attributes map[string]any) inbox.Delivery {

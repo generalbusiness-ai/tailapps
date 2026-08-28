@@ -1,6 +1,7 @@
 package tailapps
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/generalbusiness-ai/tailapp/internal/profile"
@@ -36,7 +37,7 @@ func TestAgentGuardProducesViolationUnknownAndLoopEvidence(t *testing.T) {
 	if len(events) != 1 || events[0]["tool"] != "dangerous_shell" {
 		t.Fatalf("normalized = %#v", normalized)
 	}
-	if got := len(normalized.Tables["telemetry_coverage"].Upsert); got != 2 {
+	if got := len(normalized.Tables["telemetry_coverage"].Upsert); got != 3 {
 		t.Fatalf("coverage rows = %d", got)
 	}
 
@@ -79,6 +80,10 @@ func TestAgentGuardProducesViolationUnknownAndLoopEvidence(t *testing.T) {
 	finding := unknownAnalytic.Tables["policy_findings"].Upsert
 	if len(finding) != 1 || finding[0]["coverage_state"] != "unknown" || finding[0]["rule_id"] != "insufficient-telemetry" {
 		t.Fatalf("unknown finding = %#v", finding)
+	}
+	progress := unknownAnalytic.Tables["session_progress"].Upsert[0]
+	if fmt.Sprint(progress["no_progress_count"]) != "0" {
+		t.Fatalf("missing progress telemetry counted as no progress: %#v", progress)
 	}
 }
 

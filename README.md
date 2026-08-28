@@ -72,6 +72,11 @@ a record only until every captured consumer commits or detaches. A projection
 gap is fail-stop and local to that Tailapp; without external replay, telemetry
 missed while detached is absent.
 
+Mounted exports use explicit `FROM alias.export` or `JOIN alias.export`
+relations; comma-listed mounted relations are outside the admitted query
+syntax. Give each mounted relation a SQL table alias and qualify its columns
+through that alias.
+
 ## Verification
 
 ```sh

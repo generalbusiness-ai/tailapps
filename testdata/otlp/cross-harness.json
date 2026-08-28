@@ -57,13 +57,20 @@
           {"key": "success", "value": {"boolValue": true}}]},
         {"timeUnixNano": "1787900000000001500", "eventName": "opencode.tool.execute.after", "attributes": [
           {"key": "session_id", "value": {"stringValue": "no-progress-opencode"}}, {"key": "tool_name", "value": {"stringValue": "search"}},
-          {"key": "target", "value": {"stringValue": "/workspace"}}]},
+		  {"key": "target", "value": {"stringValue": "/workspace"}}, {"key": "success", "value": {"boolValue": true}},
+		  {"key": "progress_fingerprint", "value": {"stringValue": "stable-state"}}]},
         {"timeUnixNano": "1787900000000001600", "eventName": "opencode.tool.execute.after", "attributes": [
           {"key": "session_id", "value": {"stringValue": "no-progress-opencode"}}, {"key": "tool_name", "value": {"stringValue": "read"}},
-          {"key": "target", "value": {"stringValue": "/workspace"}}]},
+		  {"key": "target", "value": {"stringValue": "/workspace"}}, {"key": "success", "value": {"boolValue": true}},
+		  {"key": "progress_fingerprint", "value": {"stringValue": "stable-state"}}]},
         {"timeUnixNano": "1787900000000001700", "eventName": "opencode.tool.execute.after", "attributes": [
           {"key": "session_id", "value": {"stringValue": "no-progress-opencode"}}, {"key": "tool_name", "value": {"stringValue": "inspect"}},
-          {"key": "target", "value": {"stringValue": "/workspace"}}]},
+		  {"key": "target", "value": {"stringValue": "/workspace"}}, {"key": "success", "value": {"boolValue": true}},
+		  {"key": "progress_fingerprint", "value": {"stringValue": "stable-state"}}]},
+		{"timeUnixNano": "1787900000000001750", "eventName": "opencode.tool.execute.after", "attributes": [
+		  {"key": "session_id", "value": {"stringValue": "no-progress-opencode"}}, {"key": "tool_name", "value": {"stringValue": "list"}},
+		  {"key": "target", "value": {"stringValue": "/workspace"}}, {"key": "success", "value": {"boolValue": true}},
+		  {"key": "progress_fingerprint", "value": {"stringValue": "stable-state"}}]},
         {"timeUnixNano": "1787900000000001800", "eventName": "opencode.api_request", "attributes": [
           {"key": "session_id", "value": {"stringValue": "shared-opencode"}}, {"key": "input_tokens", "value": {"intValue": "80"}},
           {"key": "output_tokens", "value": {"intValue": "20"}}, {"key": "cost_microusd", "value": {"intValue": "5"}}]}

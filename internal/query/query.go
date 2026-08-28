@@ -38,7 +38,7 @@ const (
 	// statement-boundary checks before returning a stable budget error. The
 	// value is part of the runtime profile; the deadline remains only a
 	// secondary safety net for work outside SQLite's virtual machine.
-	queryProgressChecks = 10_000
+	queryProgressChecks = 2_048
 )
 
 var errQueryBudgetExceeded = errors.New("query_budget_exceeded: SQLite opcode budget exhausted")
@@ -78,6 +78,9 @@ type Namespace struct {
 	Path     string
 	Profile  *profile.Profile
 	Frontier projection.Frontier
+	// DeliveryHead is the durable inbox head observed at the query barrier. It
+	// may be ahead of this projection's interpreted frontier while work waits.
+	DeliveryHead int64
 }
 
 type Column struct {
@@ -256,8 +259,12 @@ func (sandbox *Sandbox) Query(ctx context.Context, request Request) (Result, err
 			return Result{}, fmt.Errorf("parameter %d: %w", index+1, err)
 		}
 	}
+	deliveryHead := sandbox.primary.DeliveryHead
+	if deliveryHead < sandbox.primary.Frontier.InterpretedPosition {
+		deliveryHead = sandbox.primary.Frontier.InterpretedPosition
+	}
 	result := Result{Tailapp: sandbox.primary.Profile.Name, Revision: sandbox.primary.Frontier.Revision,
-		DeliveryHead: sandbox.primary.Frontier.InterpretedPosition, InterpretedPosition: sandbox.primary.Frontier.InterpretedPosition, Complete: true}
+		DeliveryHead: deliveryHead, InterpretedPosition: sandbox.primary.Frontier.InterpretedPosition, Complete: true}
 	for alias, namespace := range sandbox.mounts {
 		result.Schemas = append(result.Schemas, NamespaceResult{Alias: alias, Tailapp: namespace.Profile.Name, Revision: namespace.Frontier.Revision, Contract: namespace.Profile.ExportContractDigest, InterpretedPosition: namespace.Frontier.InterpretedPosition})
 	}

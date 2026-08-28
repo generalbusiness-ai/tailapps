@@ -24,12 +24,15 @@
   $argument_digest_raw := $lookup($attrs, "argument_digest");
   $argument_digest := $exists($argument_digest_raw) ? $string($argument_digest_raw) : event.content_digest;
   $operation := $lookup($attrs, "operation_kind") ? $string($lookup($attrs, "operation_kind")) : "tool";
+	$progress_raw := $lookup($attrs, "progress_fingerprint");
+	$progress_known := $exists($progress_raw) and $string($progress_raw) != "" and $string($progress_raw) != "<redacted>";
   $tool_coverage := $session_known and $tool_known ? "observed" : "unknown";
   $target_coverage := $target_known ? "observed" : "unknown";
   $reason := $not($session_known) ? "session identity absent" :
     ($not($tool_known) ? "tool identity absent" :
     ($not($target_known) ? "tool target absent, gated, or redacted" : "required fields observed"));
-  $fingerprint := $harness & "|" & $session & "|" & $operation & "|" & ($tool_known ? $tool : "unknown") & "|" & ($target_known ? $target : "unknown");
+	$action_fingerprint := $harness & "|" & $session & "|" & $operation & "|" & ($tool_known ? $tool : "unknown") & "|" & ($target_known ? $target : "unknown");
+	$progress_fingerprint := $progress_known ? $string($progress_raw) : "unknown";
   $recognized ? {
     "decision": "effective",
     "facts": [],
@@ -44,7 +47,9 @@
         "argument_digest": $argument_digest,
         "success": $success,
         "event_time_unix_nano": event.time_unix_nano,
-        "progress_fingerprint": $fingerprint,
+		"action_fingerprint": $action_fingerprint,
+		"progress_fingerprint": $progress_fingerprint,
+		"progress_coverage": $progress_known ? "observed" : "unknown",
         "source_position": meta.position,
         "tool_coverage": $tool_coverage,
         "target_coverage": $target_coverage,
@@ -66,6 +71,13 @@
           "state": $target_coverage,
           "reason": $reason,
           "last_source_position": meta.position
+		},
+		{
+		  "harness": $harness,
+		  "capability": "progress-detail",
+		  "state": $progress_known ? "observed" : "unknown",
+		  "reason": $progress_known ? "progress fingerprint observed" : "progress fingerprint absent, gated, or redacted",
+		  "last_source_position": meta.position
         }
       ]}
     }

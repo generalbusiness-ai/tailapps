@@ -1,15 +1,17 @@
 (
   $old := rows.prior;
-  $same := $old and $old.action_fingerprint = event.progress_fingerprint;
-  $repeat := $same ? $old.repeat_count + 1 : 1;
+	$action_same := $old and $old.action_fingerprint = event.action_fingerprint;
+	$repeat := $action_same ? $old.repeat_count + 1 : 1;
   $failed := event.success = false;
 
-  $made_progress := event.success = true;
-  $no_progress := $made_progress ? 0 : ($old ? $old.no_progress_count + 1 : 1);
-  $failures := $failed ? ($old ? $old.consecutive_failures + 1 : 1) : 0;
+  $success_observed := event.success = true or event.success = false;
+	$progress_observed := event.progress_coverage = "observed";
+	$progress_same := $progress_observed and $old and $old.progress_fingerprint = event.progress_fingerprint;
+	$no_progress := $not($progress_observed) ? ($old ? $old.no_progress_count : 0) : ($progress_same ? $old.no_progress_count + 1 : 0);
+	$failures := $not($success_observed) ? ($old ? $old.consecutive_failures : 0) : ($failed ? ($old ? $old.consecutive_failures + 1 : 1) : 0);
   $total := $old ? $old.total_actions + 1 : 1;
   $first := $old ? $old.first_activity_unix_nano : event.event_time_unix_nano;
-  $distinct := $same ? $old.last_distinct_progress_unix_nano : event.event_time_unix_nano;
+	$distinct := $not($progress_observed) ? ($old ? $old.last_distinct_progress_unix_nano : event.event_time_unix_nano) : ($progress_same ? $old.last_distinct_progress_unix_nano : event.event_time_unix_nano);
 
   $denied_tool := event.tool = "dangerous_shell" or event.tool = "external_network";
   $denied_operation := event.operation_kind = "destructive" or event.operation_kind = "network_external";
@@ -52,7 +54,8 @@
     "consecutive_failures": $failures,
     "no_progress_count": $no_progress,
     "evidence": {
-      "action_fingerprint": event.progress_fingerprint,
+	  "action_fingerprint": event.action_fingerprint,
+	  "progress_fingerprint": event.progress_fingerprint,
       "last_distinct_progress_unix_nano": $distinct
     }
   }] : [];
@@ -67,7 +70,8 @@
         "first_activity_unix_nano": $first,
         "last_activity_unix_nano": event.event_time_unix_nano,
         "last_distinct_progress_unix_nano": $distinct,
-        "action_fingerprint": event.progress_fingerprint,
+		"action_fingerprint": event.action_fingerprint,
+		"progress_fingerprint": event.progress_fingerprint,
         "repeat_count": $repeat,
         "no_progress_count": $no_progress,
         "consecutive_failures": $failures,

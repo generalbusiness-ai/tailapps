@@ -29,6 +29,16 @@ type App struct {
 	Boundary       *int64  `json:"boundary_position,omitempty"`
 }
 
+type ActivationJournal struct {
+	Name          string
+	NewRevision   string
+	Runtime       string
+	Mode          string
+	Boundary      int64
+	ExpectedDraft string
+	OldRevision   *string
+}
+
 type Registry struct{ db *sql.DB }
 
 func Open(path string) (*Registry, error) {
@@ -70,6 +80,7 @@ func (r *Registry) initialize(ctx context.Context) error {
 		`CREATE TABLE IF NOT EXISTS definition_tailapps (name TEXT PRIMARY KEY,draft_revision TEXT NOT NULL,active_revision TEXT,runtime_profile TEXT,activation_mode TEXT,boundary_position INTEGER,created_at INTEGER NOT NULL,updated_at INTEGER NOT NULL)`,
 		`CREATE TABLE IF NOT EXISTS definition_elements (tailapp TEXT NOT NULL REFERENCES definition_tailapps(name) ON DELETE CASCADE,path TEXT NOT NULL,content BLOB NOT NULL,digest TEXT NOT NULL,PRIMARY KEY(tailapp,path))`,
 		`CREATE TABLE IF NOT EXISTS definition_revisions (digest TEXT PRIMARY KEY,tailapp TEXT NOT NULL,runtime_profile TEXT NOT NULL,source_json BLOB NOT NULL,created_at INTEGER NOT NULL)`,
+		`CREATE TABLE IF NOT EXISTS definition_activation_journal (tailapp TEXT PRIMARY KEY,new_revision TEXT NOT NULL,runtime_profile TEXT NOT NULL,mode TEXT NOT NULL,boundary_position INTEGER NOT NULL,expected_draft TEXT NOT NULL,old_revision TEXT,created_at INTEGER NOT NULL)`,
 	}
 	for _, statement := range statements {
 		if _, err := r.db.ExecContext(ctx, statement); err != nil {
@@ -264,6 +275,63 @@ func (r *Registry) Activate(ctx context.Context, name, digest, runtime, mode str
 		return ErrRevisionChanged
 	}
 	return nil
+}
+
+func (r *Registry) BeginActivation(ctx context.Context, journal ActivationJournal) error {
+	var old any
+	if journal.OldRevision != nil {
+		old = *journal.OldRevision
+	}
+	_, err := r.db.ExecContext(ctx, `INSERT INTO definition_activation_journal(tailapp,new_revision,runtime_profile,mode,boundary_position,expected_draft,old_revision,created_at) VALUES(?,?,?,?,?,?,?,?)`,
+		journal.Name, journal.NewRevision, journal.Runtime, journal.Mode, journal.Boundary, journal.ExpectedDraft, old, time.Now().UnixNano())
+	return err
+}
+
+func (r *Registry) ActivationJournals(ctx context.Context) ([]ActivationJournal, error) {
+	rows, err := r.db.QueryContext(ctx, `SELECT tailapp,new_revision,runtime_profile,mode,boundary_position,expected_draft,old_revision FROM definition_activation_journal ORDER BY tailapp`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var result []ActivationJournal
+	for rows.Next() {
+		var item ActivationJournal
+		var old sql.NullString
+		if err := rows.Scan(&item.Name, &item.NewRevision, &item.Runtime, &item.Mode, &item.Boundary, &item.ExpectedDraft, &old); err != nil {
+			return nil, err
+		}
+		if old.Valid {
+			item.OldRevision = &old.String
+		}
+		result = append(result, item)
+	}
+	return result, rows.Err()
+}
+
+func (r *Registry) FinishActivation(ctx context.Context, journal ActivationJournal) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	result, err := tx.ExecContext(ctx, `UPDATE definition_tailapps SET active_revision=?,runtime_profile=?,activation_mode=?,boundary_position=?,updated_at=? WHERE name=? AND draft_revision=?`,
+		journal.NewRevision, journal.Runtime, journal.Mode, journal.Boundary, time.Now().UnixNano(), journal.Name, journal.ExpectedDraft)
+	if err != nil {
+		return err
+	}
+	changed, _ := result.RowsAffected()
+	if changed != 1 {
+		return ErrRevisionChanged
+	}
+	if _, err := tx.ExecContext(ctx, `DELETE FROM definition_activation_journal WHERE tailapp=? AND new_revision=?`, journal.Name, journal.NewRevision); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+func (r *Registry) AbortActivation(ctx context.Context, name, revision string) error {
+	_, err := r.db.ExecContext(ctx, `DELETE FROM definition_activation_journal WHERE tailapp=? AND new_revision=?`, name, revision)
+	return err
 }
 func (r *Registry) Delete(ctx context.Context, name string) error {
 	_, err := r.db.ExecContext(ctx, `DELETE FROM definition_tailapps WHERE name=?`, name)

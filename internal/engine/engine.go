@@ -13,7 +13,6 @@ import (
 	"sort"
 	"sync"
 	"testing/fstest"
-	"time"
 
 	"golang.org/x/sys/unix"
 
@@ -37,13 +36,17 @@ type Engine struct {
 	done           chan struct{}
 	lockFile       *os.File
 	upgradePending map[string]bool
+	unavailable    map[string]string
 }
+
+var ErrProjectionUnavailable = errors.New("projection_unavailable")
 
 type Status struct {
 	Profile        string                         `json:"profile"`
 	IngestionReady bool                           `json:"ingestion_ready"`
 	Inbox          inbox.Stats                    `json:"inbox"`
 	Apps           map[string]projection.Frontier `json:"apps"`
+	Unavailable    map[string]string              `json:"unavailable,omitempty"`
 }
 
 func InitHome(home string) error {
@@ -84,7 +87,11 @@ func Open(ctx context.Context, home string) (*Engine, error) {
 		lockFile.Close()
 		return nil, err
 	}
-	engine := &Engine{home: home, queue: queue, registry: registry, active: map[string]*projection.Projection{}, upgradePending: map[string]bool{}, notify: make(chan struct{}, 1), stop: make(chan struct{}), done: make(chan struct{}), lockFile: lockFile}
+	engine := &Engine{home: home, queue: queue, registry: registry, active: map[string]*projection.Projection{}, upgradePending: map[string]bool{}, unavailable: map[string]string{}, notify: make(chan struct{}, 1), stop: make(chan struct{}), done: make(chan struct{}), lockFile: lockFile}
+	if err := engine.recoverActivations(ctx); err != nil {
+		engine.closeResources()
+		return nil, err
+	}
 	if err := engine.recover(ctx); err != nil {
 		engine.closeResources()
 		return nil, err
@@ -100,16 +107,22 @@ func (e *Engine) recover(ctx context.Context) error {
 		return err
 	}
 	for _, app := range apps {
+		if _, blocked := e.unavailable[app.Name]; blocked {
+			continue
+		}
+		e.cleanupActivationFiles(app.Name)
 		if app.ActiveRevision == nil {
 			continue
 		}
 		sources, runtime, err := e.registry.RevisionSources(ctx, *app.ActiveRevision)
 		if err != nil {
-			return err
+			e.unavailable[app.Name] = err.Error()
+			continue
 		}
 		compiled, err := compile(app.Name, sources)
 		if err != nil {
-			return err
+			e.unavailable[app.Name] = err.Error()
+			continue
 		}
 		path := e.projectionPath(app.Name)
 		var opened *projection.Projection
@@ -120,9 +133,49 @@ func (e *Engine) recover(ctx context.Context) error {
 			opened, err = projection.Open(ctx, path, compiled)
 		}
 		if err != nil {
-			return fmt.Errorf("recover projection %q: %w", app.Name, err)
+			e.unavailable[app.Name] = fmt.Sprintf("recover projection: %v", err)
+			delete(e.upgradePending, app.Name)
+			continue
 		}
 		e.active[app.Name] = opened
+	}
+	return nil
+}
+
+func (e *Engine) recoverActivations(ctx context.Context) error {
+	journals, err := e.registry.ActivationJournals(ctx)
+	if err != nil {
+		return err
+	}
+	for _, journal := range journals {
+		stable, candidate, previous := e.activationPaths(journal.Name)
+		identity, identityErr := projection.InspectIdentity(ctx, stable)
+		if identityErr == nil && identity.Name == journal.Name && identity.Revision == journal.NewRevision && identity.Runtime == journal.Runtime {
+			if err := e.registry.FinishActivation(ctx, journal); err != nil {
+				e.unavailable[journal.Name] = fmt.Sprintf("finish activation journal: %v", err)
+				continue
+			}
+			removeProjectionFile(candidate)
+			removeProjectionFile(previous)
+			continue
+		}
+		// The projection pointer never reached the new complete identity. Roll
+		// back to the previous complete file when present; otherwise the old
+		// stable file remains authoritative.
+		if _, err := os.Lstat(previous); err == nil {
+			removeProjectionFile(stable)
+			if err := os.Rename(previous, stable); err != nil {
+				e.unavailable[journal.Name] = fmt.Sprintf("restore activation journal: %v", err)
+				continue
+			}
+		} else if err != nil && !errors.Is(err, os.ErrNotExist) {
+			e.unavailable[journal.Name] = fmt.Sprintf("inspect activation backup: %v", err)
+			continue
+		}
+		removeProjectionFile(candidate)
+		if err := e.registry.AbortActivation(ctx, journal.Name, journal.NewRevision); err != nil {
+			e.unavailable[journal.Name] = fmt.Sprintf("abort activation journal: %v", err)
+		}
 	}
 	return nil
 }
@@ -204,7 +257,12 @@ func (e *Engine) worker() {
 		case <-e.stop:
 			return
 		case <-e.notify:
-			_ = e.Drain(context.Background())
+			e.mu.Lock()
+			more, _ := e.drainPassLocked(context.Background(), 16)
+			e.mu.Unlock()
+			if more {
+				e.signal()
+			}
 		}
 	}
 }
@@ -216,9 +274,18 @@ func (e *Engine) Drain(ctx context.Context) error {
 }
 
 func (e *Engine) drainLocked(ctx context.Context) error {
+	_, err := e.drainPassLocked(ctx, 0)
+	return err
+}
+
+// drainPassLocked processes complete flat waves. A positive wave limit lets
+// the resident worker yield the engine lock between bounded passes so status,
+// query and shutdown can reach the barrier even under sustained backlog.
+func (e *Engine) drainPassLocked(ctx context.Context, waveLimit int) (bool, error) {
 	if len(e.upgradePending) != 0 {
-		return nil
+		return false, nil
 	}
+	waves := 0
 	for {
 		type pending struct {
 			name     string
@@ -229,7 +296,7 @@ func (e *Engine) drainLocked(ctx context.Context) error {
 		for _, name := range sortedProjectionKeys(e.active) {
 			items, err := e.queue.Pending(ctx, name, 1)
 			if err != nil {
-				return err
+				return false, err
 			}
 			if len(items) == 0 {
 				continue
@@ -243,7 +310,7 @@ func (e *Engine) drainLocked(ctx context.Context) error {
 			}
 		}
 		if len(wave) == 0 {
-			return nil
+			return false, nil
 		}
 		for _, item := range wave {
 			current := e.active[item.name]
@@ -252,12 +319,28 @@ func (e *Engine) drainLocked(ctx context.Context) error {
 			}
 			_, err := current.Process(ctx, item.delivery)
 			if err != nil {
-				_ = e.queue.DetachAll(ctx, item.name, "projection_gap")
+				// Process records only deterministic application failures as a
+				// gap. Cancellation and transient storage errors leave both the
+				// frontier and obligation untouched so a later pass can retry.
+				frontier, frontierErr := current.Frontier(context.Background())
+				if frontierErr != nil {
+					return false, errors.Join(err, frontierErr)
+				}
+				if frontier.GapPosition == nil {
+					return false, err
+				}
+				if err := e.queue.DetachAll(context.Background(), item.name, "projection_gap"); err != nil {
+					return false, err
+				}
 				continue
 			}
 			if err := e.queue.Complete(ctx, item.name, item.delivery.Position); err != nil {
-				return err
+				return false, err
 			}
+		}
+		waves++
+		if waveLimit > 0 && waves >= waveLimit {
+			return true, nil
 		}
 	}
 }
@@ -358,36 +441,59 @@ func (e *Engine) Activate(ctx context.Context, name, expected, mode string, ackR
 	}
 	boundary := stats.DeliveryHead
 	current := e.active[name]
-	if e.upgradePending[name] {
-		if err := e.queue.DetachAll(ctx, name, "runtime_upgrade"); err != nil {
-			return projection.Frontier{}, err
-		}
-	}
+	journal := definition.ActivationJournal{Name: name, NewRevision: compiled.Revision, Runtime: profile.RuntimeID, Mode: mode, Boundary: boundary, ExpectedDraft: expected, OldRevision: app.ActiveRevision}
 	switch mode {
 	case "continue":
 		if current == nil {
+			if _, blocked := e.unavailable[name]; blocked {
+				return projection.Frontier{}, fmt.Errorf("%w: reset is required", ErrProjectionUnavailable)
+			}
 			return projection.Frontier{}, errors.New("first activation requires reset")
 		}
-		if err := current.Continue(ctx, compiled); err != nil {
+		if err := profile.ContinueCompatible(current.Profile(), compiled); err != nil {
 			return projection.Frontier{}, err
 		}
 	case "reset":
 		if !ackReset {
 			return projection.Frontier{}, errors.New("reset acknowledgement required")
 		}
-		next, err := e.resetProjection(ctx, name, compiled, boundary)
-		if err != nil {
-			return projection.Frontier{}, err
-		}
-		current = next
 	default:
 		return projection.Frontier{}, errors.New("activation mode must be continue or reset")
 	}
-	if err := e.registry.Activate(ctx, name, compiled.Revision, profile.RuntimeID, mode, boundary, expected); err != nil {
+	if err := e.registry.BeginActivation(ctx, journal); err != nil {
 		return projection.Frontier{}, err
 	}
+	abort := func() { _ = e.registry.AbortActivation(context.Background(), name, compiled.Revision) }
+	if e.upgradePending[name] {
+		if err := e.queue.DetachAll(ctx, name, "runtime_upgrade"); err != nil {
+			abort()
+			return projection.Frontier{}, err
+		}
+	}
+	if mode == "continue" {
+		if err := current.Continue(ctx, compiled, boundary); err != nil {
+			abort()
+			return projection.Frontier{}, err
+		}
+	} else {
+		next, err := e.resetProjection(ctx, name, compiled, boundary)
+		if err != nil {
+			abort()
+			return projection.Frontier{}, err
+		}
+		current = next
+	}
+	if err := e.registry.FinishActivation(ctx, journal); err != nil {
+		_ = current.Close()
+		delete(e.active, name)
+		e.unavailable[name] = fmt.Sprintf("finish activation: %v", err)
+		return projection.Frontier{}, fmt.Errorf("%w: activation journal awaits recovery", ErrProjectionUnavailable)
+	}
+	_, _, previous := e.activationPaths(name)
+	removeProjectionFile(previous)
 	e.active[name] = current
 	delete(e.upgradePending, name)
+	delete(e.unavailable, name)
 	return current.Frontier(ctx)
 }
 
@@ -396,39 +502,85 @@ func (e *Engine) resetProjection(ctx context.Context, name string, compiled *pro
 	if err := os.MkdirAll(directory, 0o700); err != nil {
 		return nil, err
 	}
-	stable := filepath.Join(directory, "state.sqlite")
-	candidate := filepath.Join(directory, "state.candidate.sqlite")
-	if _, err := os.Lstat(candidate); err == nil {
-		return nil, errors.New("activation candidate already exists")
-	} else if !errors.Is(err, os.ErrNotExist) {
-		return nil, err
-	}
+	stable, candidate, backup := e.activationPaths(name)
+	removeProjectionFile(candidate)
+	removeProjectionFile(backup)
 	created, err := projection.Create(ctx, candidate, compiled, boundary, "reset")
 	if err != nil {
 		return nil, err
 	}
 	if err := created.Close(); err != nil {
+		removeProjectionFile(candidate)
 		return nil, err
 	}
-	var backup string
-	if current := e.active[name]; current != nil {
-		_ = current.Close()
-		backup = filepath.Join(directory, fmt.Sprintf("state.retired.%d.sqlite", time.Now().UnixNano()))
-		if err := os.Rename(stable, backup); err != nil {
+	current := e.active[name]
+	var currentProfile *profile.Profile
+	if current != nil {
+		currentProfile = current.Profile()
+		if err := current.Close(); err != nil {
+			removeProjectionFile(candidate)
 			return nil, err
 		}
 	}
+	stableMoved := false
+	if _, err := os.Lstat(stable); err == nil {
+		if err := os.Rename(stable, backup); err != nil {
+			e.reopenAfterResetFailure(ctx, name, stable, currentProfile)
+			removeProjectionFile(candidate)
+			return nil, err
+		}
+		stableMoved = true
+	} else if !errors.Is(err, os.ErrNotExist) {
+		e.reopenAfterResetFailure(ctx, name, stable, currentProfile)
+		removeProjectionFile(candidate)
+		return nil, err
+	}
 	if err := os.Rename(candidate, stable); err != nil {
-		if backup != "" {
+		if stableMoved {
 			_ = os.Rename(backup, stable)
 		}
+		e.reopenAfterResetFailure(ctx, name, stable, currentProfile)
+		removeProjectionFile(candidate)
 		return nil, err
 	}
 	opened, err := projection.Open(ctx, stable, compiled)
 	if err != nil {
+		removeProjectionFile(stable)
+		if stableMoved {
+			_ = os.Rename(backup, stable)
+		}
+		e.reopenAfterResetFailure(ctx, name, stable, currentProfile)
 		return nil, err
 	}
 	return opened, nil
+}
+
+func (e *Engine) reopenAfterResetFailure(ctx context.Context, name, stable string, compiled *profile.Profile) {
+	if compiled == nil {
+		return
+	}
+	if reopened, err := projection.Open(ctx, stable, compiled); err == nil {
+		e.active[name] = reopened
+	}
+}
+
+func (e *Engine) activationPaths(name string) (stable, candidate, previous string) {
+	directory := filepath.Join(e.home, "projections", name)
+	return filepath.Join(directory, "state.sqlite"), filepath.Join(directory, "state.candidate.sqlite"), filepath.Join(directory, "state.previous.sqlite")
+}
+
+func (e *Engine) cleanupActivationFiles(name string) {
+	_, candidate, previous := e.activationPaths(name)
+	removeProjectionFile(candidate)
+	removeProjectionFile(previous)
+}
+
+func removeProjectionFile(path string) {
+	for _, target := range []string{path, path + "-wal", path + "-shm"} {
+		if err := os.Remove(target); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return
+		}
+	}
 }
 
 func (e *Engine) Delete(ctx context.Context, name string) error {
@@ -439,6 +591,8 @@ func (e *Engine) Delete(ctx context.Context, name string) error {
 		_ = current.Close()
 		delete(e.active, name)
 	}
+	delete(e.unavailable, name)
+	delete(e.upgradePending, name)
 	return e.registry.Delete(ctx, name)
 }
 func (e *Engine) Status(ctx context.Context) (Status, error) {
@@ -448,13 +602,16 @@ func (e *Engine) Status(ctx context.Context) (Status, error) {
 	if err != nil {
 		return Status{}, err
 	}
-	result := Status{Profile: profile.RuntimeID, IngestionReady: len(e.upgradePending) == 0, Inbox: stats, Apps: map[string]projection.Frontier{}}
+	result := Status{Profile: profile.RuntimeID, IngestionReady: len(e.upgradePending) == 0, Inbox: stats, Apps: map[string]projection.Frontier{}, Unavailable: map[string]string{}}
 	for name, item := range e.active {
 		frontier, err := item.Frontier(ctx)
 		if err != nil {
 			return Status{}, err
 		}
 		result.Apps[name] = frontier
+	}
+	for name, reason := range e.unavailable {
+		result.Unavailable[name] = reason
 	}
 	return result, nil
 }
@@ -464,9 +621,16 @@ func (e *Engine) Query(ctx context.Context, app string, request query.Request, m
 	defer e.mu.Unlock()
 	primary := e.active[app]
 	if primary == nil {
+		if _, blocked := e.unavailable[app]; blocked {
+			return query.Result{}, fmt.Errorf("%w: %s", ErrProjectionUnavailable, app)
+		}
 		return query.Result{}, sql.ErrNoRows
 	}
 	frontier, err := primary.Frontier(ctx)
+	if err != nil {
+		return query.Result{}, err
+	}
+	stats, err := e.queue.Stats(ctx)
 	if err != nil {
 		return query.Result{}, err
 	}
@@ -474,6 +638,9 @@ func (e *Engine) Query(ctx context.Context, app string, request query.Request, m
 	for alias, name := range mountNames {
 		item := e.active[name]
 		if item == nil {
+			if _, blocked := e.unavailable[name]; blocked {
+				return query.Result{}, fmt.Errorf("%w: mount %s", ErrProjectionUnavailable, name)
+			}
 			return query.Result{}, fmt.Errorf("mount tailapp %q is absent", name)
 		}
 		mountedFrontier, err := item.Frontier(ctx)
@@ -482,7 +649,7 @@ func (e *Engine) Query(ctx context.Context, app string, request query.Request, m
 		}
 		mounts[alias] = query.Namespace{Path: item.Path(), Profile: item.Profile(), Frontier: mountedFrontier}
 	}
-	sandbox, err := query.Open(query.Namespace{Path: primary.Path(), Profile: primary.Profile(), Frontier: frontier}, mounts)
+	sandbox, err := query.Open(query.Namespace{Path: primary.Path(), Profile: primary.Profile(), Frontier: frontier, DeliveryHead: stats.DeliveryHead}, mounts)
 	if err != nil {
 		return query.Result{}, err
 	}
@@ -495,6 +662,9 @@ func (e *Engine) Schema(name string) (*profile.Profile, error) {
 	defer e.mu.Unlock()
 	item := e.active[name]
 	if item == nil {
+		if _, blocked := e.unavailable[name]; blocked {
+			return nil, fmt.Errorf("%w: %s", ErrProjectionUnavailable, name)
+		}
 		return nil, sql.ErrNoRows
 	}
 	return item.Profile(), nil
