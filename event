@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Covered engine intake, fanout, processing, durable progress, query, backlog, and tombstone metrics.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"internal/engine/engine_test.go"}}
+{"kind":"artifact","text":"Instrumented OTLP request outcomes, accepted records and bytes, and durable-accept latency.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"internal/ingest/receiver.go"}}
