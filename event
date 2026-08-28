@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Exposed oldest receipt time and exact detached-obligation counts for backlog and loss metrics.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"internal/inbox/inbox.go"}}
+{"kind":"artifact","text":"Verified detached obligation accounting.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"internal/inbox/inbox_test.go"}}
