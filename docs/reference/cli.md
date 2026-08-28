@@ -42,6 +42,15 @@ Returns the runtime profile, ingestion readiness, inbox statistics, projection
 frontiers, and unavailable projections. This is the same engine status model
 returned by `apps status` and `tailapp_status`.
 
+### `tailapp metrics [--json]`
+
+Returns the versioned operational metrics snapshot. JSON is the default and
+only format; `--json` makes that choice explicit for scripts. Process counters
+reset when the resident restarts, while each Tailapp's durable projection
+totals survive a restart. See the [runtime metrics reference](metrics.md) for
+field definitions, fixed histogram boundaries, privacy constraints, and reset
+semantics.
+
 ### `tailapp mcp`
 
 Runs the MCP JSON-RPC adapter over newline-delimited stdio. It does not start
@@ -172,8 +181,8 @@ tailapp query \
 ```
 
 The result reports the active revision, delivery head, interpreted position,
-mounted schemas, completeness, column metadata, rows, and whether output was
-truncated. See the [query SQL reference](query-sql.md).
+mounted schemas, completeness, column metadata, rows, encoded `result_bytes`,
+and whether output was truncated. See the [query SQL reference](query-sql.md).
 
 ## Idempotency and revisions
 

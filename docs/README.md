@@ -31,6 +31,7 @@ query, and delete every custom Tailapp through the public CLI or MCP lifecycle.
 
 - [CLI reference](reference/cli.md)
 - [MCP reference](reference/mcp.md)
+- [Runtime metrics](reference/metrics.md)
 
 The CLI and MCP server are clients of the same resident control service. Draft
 changes made through either interface are immediately visible through the

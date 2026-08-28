@@ -11,14 +11,17 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"sync"
 	"testing/fstest"
+	"time"
 
 	"golang.org/x/sys/unix"
 
 	"github.com/generalbusiness-ai/tailapp/internal/definition"
 	"github.com/generalbusiness-ai/tailapp/internal/inbox"
 	"github.com/generalbusiness-ai/tailapp/internal/ingest"
+	operationalmetrics "github.com/generalbusiness-ai/tailapp/internal/metrics"
 	"github.com/generalbusiness-ai/tailapp/internal/profile"
 	"github.com/generalbusiness-ai/tailapp/internal/projection"
 	"github.com/generalbusiness-ai/tailapp/internal/query"
@@ -37,6 +40,8 @@ type Engine struct {
 	lockFile       *os.File
 	upgradePending map[string]bool
 	unavailable    map[string]string
+	metrics        *operationalmetrics.Registry
+	processing     map[string]*operationalmetrics.Processing
 }
 
 var ErrProjectionUnavailable = errors.New("projection_unavailable")
@@ -53,6 +58,28 @@ type InstallResult struct {
 	App      definition.App      `json:"app"`
 	Profile  *profile.Profile    `json:"profile"`
 	Frontier projection.Frontier `json:"frontier"`
+}
+
+const MaxMetricTailapps = 256
+
+type TailappMetrics struct {
+	DeliveryHead        int64            `json:"delivery_head"`
+	InterpretedPosition int64            `json:"interpreted_position"`
+	LagPositions        int64            `json:"lag_positions"`
+	Complete            bool             `json:"complete"`
+	GapPosition         *int64           `json:"gap_position,omitempty"`
+	Durable             projection.Stats `json:"durable"`
+}
+
+type MetricsSnapshot struct {
+	operationalmetrics.Snapshot
+	Inbox                      inbox.Stats               `json:"inbox"`
+	OldestInboxAgeMilliseconds *float64                  `json:"oldest_inbox_age_milliseconds"`
+	Tailapps                   map[string]TailappMetrics `json:"tailapps"`
+	ActiveTailapps             int                       `json:"active_tailapps"`
+	UnavailableTailapps        int                       `json:"unavailable_tailapps"`
+	UpgradePendingTailapps     int                       `json:"upgrade_pending_tailapps"`
+	OmittedTailapps            int                       `json:"omitted_tailapps"`
 }
 
 func InitHome(home string) error {
@@ -93,7 +120,7 @@ func Open(ctx context.Context, home string) (*Engine, error) {
 		lockFile.Close()
 		return nil, err
 	}
-	engine := &Engine{home: home, queue: queue, registry: registry, active: map[string]*projection.Projection{}, upgradePending: map[string]bool{}, unavailable: map[string]string{}, notify: make(chan struct{}, 1), stop: make(chan struct{}), done: make(chan struct{}), lockFile: lockFile}
+	engine := &Engine{home: home, queue: queue, registry: registry, active: map[string]*projection.Projection{}, upgradePending: map[string]bool{}, unavailable: map[string]string{}, metrics: operationalmetrics.New(), processing: map[string]*operationalmetrics.Processing{}, notify: make(chan struct{}, 1), stop: make(chan struct{}), done: make(chan struct{}), lockFile: lockFile}
 	if err := engine.recoverActivations(ctx); err != nil {
 		engine.closeResources()
 		return nil, err
@@ -144,6 +171,7 @@ func (e *Engine) recover(ctx context.Context) error {
 			continue
 		}
 		e.active[app.Name] = opened
+		e.processing[app.Name] = operationalmetrics.NewProcessing()
 	}
 	return nil
 }
@@ -215,6 +243,7 @@ func (e *Engine) Receiver() *ingest.Receiver {
 	receiver := ingest.NewReceiver(e.queue, e.consumers, ingest.ReceiverLimits{})
 	receiver.SetAcceptor(e.accept)
 	receiver.SetAcceptedHook(e.signal)
+	receiver.SetMetrics(e.metrics)
 	return receiver
 }
 func (e *Engine) consumers(ctx context.Context) ([]inbox.Consumer, error) {
@@ -248,7 +277,15 @@ func (e *Engine) accept(ctx context.Context, records []inbox.Record) ([]int64, e
 	if err != nil {
 		return nil, err
 	}
-	return e.queue.Enqueue(ctx, records, consumers)
+	positions, err := e.queue.Enqueue(ctx, records, consumers)
+	if err == nil {
+		recordsBySignal := map[string]int{}
+		for _, record := range records {
+			recordsBySignal[record.Signal]++
+		}
+		e.metrics.ObserveRouting(recordsBySignal, len(records)*len(consumers))
+	}
+	return positions, err
 }
 func (e *Engine) signal() {
 	select {
@@ -323,26 +360,40 @@ func (e *Engine) drainPassLocked(ctx context.Context, waveLimit int) (bool, erro
 			if current == nil {
 				continue
 			}
-			_, err := current.Process(ctx, item.delivery)
+			started := time.Now()
+			queueDelay := time.Duration(0)
+			if !item.delivery.ReceivedAt.IsZero() {
+				queueDelay = e.wallElapsed(item.delivery.ReceivedAt)
+			}
+			processed, err := current.Process(ctx, item.delivery)
 			if err != nil {
 				// Process records only deterministic application failures as a
 				// gap. Cancellation and transient storage errors leave both the
 				// frontier and obligation untouched so a later pass can retry.
 				frontier, frontierErr := current.Frontier(context.Background())
 				if frontierErr != nil {
+					e.processing[item.name].Observe(0, false, "error", queueDelay, time.Since(started))
 					return false, errors.Join(err, frontierErr)
 				}
 				if frontier.GapPosition == nil {
+					e.processing[item.name].Observe(0, false, "retry", queueDelay, time.Since(started))
 					return false, err
 				}
-				if err := e.queue.DetachAll(context.Background(), item.name, "projection_gap"); err != nil {
-					return false, err
+				detached, detachErr := e.queue.DetachAll(context.Background(), item.name, "projection_gap")
+				if detachErr != nil {
+					e.processing[item.name].Observe(0, false, "error", queueDelay, time.Since(started))
+					return false, detachErr
 				}
+				e.metrics.ObserveDetachedObligations("projection_gap", detached)
+				e.processing[item.name].ObserveDetached("projection_gap", detached)
+				e.processing[item.name].Observe(0, false, "gap", queueDelay, time.Since(started))
 				continue
 			}
 			if err := e.queue.Complete(ctx, item.name, item.delivery.Position); err != nil {
+				e.processing[item.name].Observe(processed.EmittedEvents, processed.Ineffective, "retry", queueDelay, time.Since(started))
 				return false, err
 			}
+			e.processing[item.name].Observe(processed.EmittedEvents, processed.Ineffective, "ok", queueDelay, time.Since(started))
 		}
 		waves++
 		if waveLimit > 0 && waves >= waveLimit {
@@ -546,9 +597,14 @@ func (e *Engine) activateLocked(ctx context.Context, name, expected, mode string
 	}
 	abort := func() { _ = e.registry.AbortActivation(context.Background(), name, compiled.Revision) }
 	if e.upgradePending[name] {
-		if err := e.queue.DetachAll(ctx, name, "runtime_upgrade"); err != nil {
+		detached, err := e.queue.DetachAll(ctx, name, "runtime_upgrade")
+		if err != nil {
 			abort()
 			return projection.Frontier{}, err
+		}
+		e.metrics.ObserveDetachedObligations("runtime_upgrade", detached)
+		if handle := e.processing[name]; handle != nil {
+			handle.ObserveDetached("runtime_upgrade", detached)
 		}
 	}
 	if mode == "continue" {
@@ -567,12 +623,16 @@ func (e *Engine) activateLocked(ctx context.Context, name, expected, mode string
 	if err := e.registry.FinishActivation(ctx, journal); err != nil {
 		_ = current.Close()
 		delete(e.active, name)
+		delete(e.processing, name)
 		e.unavailable[name] = fmt.Sprintf("finish activation: %v", err)
 		return projection.Frontier{}, fmt.Errorf("%w: activation journal awaits recovery", ErrProjectionUnavailable)
 	}
 	_, _, previous := e.activationPaths(name)
 	removeProjectionFile(previous)
 	e.active[name] = current
+	if e.processing[name] == nil {
+		e.processing[name] = operationalmetrics.NewProcessing()
+	}
 	delete(e.upgradePending, name)
 	delete(e.unavailable, name)
 	return current.Frontier(ctx)
@@ -642,6 +702,9 @@ func (e *Engine) reopenAfterResetFailure(ctx context.Context, name, stable strin
 	}
 	if reopened, err := projection.Open(ctx, stable, compiled); err == nil {
 		e.active[name] = reopened
+		if e.processing[name] == nil {
+			e.processing[name] = operationalmetrics.NewProcessing()
+		}
 	}
 }
 
@@ -668,9 +731,14 @@ func (e *Engine) Delete(ctx context.Context, name string) error {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	if current := e.active[name]; current != nil {
-		_ = e.queue.DetachAll(ctx, name, "tailapp_deleted")
+		detached, _ := e.queue.DetachAll(ctx, name, "tailapp_deleted")
+		e.metrics.ObserveDetachedObligations("tailapp_deleted", detached)
+		if handle := e.processing[name]; handle != nil {
+			handle.ObserveDetached("tailapp_deleted", detached)
+		}
 		_ = current.Close()
 		delete(e.active, name)
+		delete(e.processing, name)
 	}
 	delete(e.unavailable, name)
 	delete(e.upgradePending, name)
@@ -697,9 +765,79 @@ func (e *Engine) Status(ctx context.Context) (Status, error) {
 	return result, nil
 }
 
-func (e *Engine) Query(ctx context.Context, app string, request query.Request, mountNames map[string]string) (query.Result, error) {
+func (e *Engine) Metrics(ctx context.Context) (MetricsSnapshot, error) {
+	started := time.Now()
 	e.mu.Lock()
-	defer e.mu.Unlock()
+	stats, err := e.queue.Stats(ctx)
+	if err != nil {
+		e.mu.Unlock()
+		return MetricsSnapshot{}, err
+	}
+	names := sortedProjectionKeys(e.active)
+	activeCount := len(names)
+	omitted := 0
+	if len(names) > MaxMetricTailapps {
+		omitted = len(names) - MaxMetricTailapps
+		names = names[:MaxMetricTailapps]
+	}
+	handles := make(map[string]*operationalmetrics.Processing, len(names))
+	tailappMetrics := make(map[string]TailappMetrics, len(names))
+	for _, name := range names {
+		item := e.active[name]
+		frontier, err := item.Frontier(ctx)
+		if err != nil {
+			e.mu.Unlock()
+			return MetricsSnapshot{}, err
+		}
+		durable, err := item.Stats(ctx)
+		if err != nil {
+			e.mu.Unlock()
+			return MetricsSnapshot{}, err
+		}
+		lag := stats.DeliveryHead - frontier.InterpretedPosition
+		if lag < 0 {
+			lag = 0
+		}
+		tailappMetrics[name] = TailappMetrics{DeliveryHead: stats.DeliveryHead, InterpretedPosition: frontier.InterpretedPosition, LagPositions: lag, Complete: frontier.Complete, GapPosition: frontier.GapPosition, Durable: durable}
+		if handle := e.processing[name]; handle != nil {
+			handles[name] = handle
+		}
+	}
+	unavailableCount := len(e.unavailable)
+	upgradeCount := len(e.upgradePending)
+	e.mu.Unlock()
+	result := MetricsSnapshot{Snapshot: e.metrics.Snapshot(handles), Inbox: stats, Tailapps: tailappMetrics, ActiveTailapps: activeCount, UnavailableTailapps: unavailableCount, UpgradePendingTailapps: upgradeCount, OmittedTailapps: omitted}
+	if stats.OldestReceivedAtUnixNano != nil {
+		elapsed := e.wallElapsed(time.Unix(0, *stats.OldestReceivedAtUnixNano))
+		age := float64(elapsed/time.Microsecond) / 1000
+		result.OldestInboxAgeMilliseconds = &age
+	}
+	result.SnapshotDurationMilliseconds = float64(time.Since(started)/time.Microsecond) / 1000
+	return result, nil
+}
+
+func (e *Engine) wallElapsed(since time.Time) time.Duration {
+	elapsed := time.Since(since)
+	if elapsed < 0 {
+		e.metrics.ObserveClockRegression()
+		return 0
+	}
+	return elapsed
+}
+
+func (e *Engine) ObserveControl(operation, outcome string, duration time.Duration) {
+	e.metrics.ObserveControl(operation, outcome, duration)
+}
+
+func (e *Engine) Query(ctx context.Context, app string, request query.Request, mountNames map[string]string) (result query.Result, resultErr error) {
+	started := time.Now()
+	lockStarted := time.Now()
+	e.mu.Lock()
+	lockWait := time.Since(lockStarted)
+	defer func() {
+		e.mu.Unlock()
+		e.metrics.ObserveQuery(len(result.Rows), result.ResultBytes, result.Truncated, queryMetricOutcome(resultErr), lockWait, time.Since(started))
+	}()
 	primary := e.active[app]
 	if primary == nil {
 		if _, blocked := e.unavailable[app]; blocked {
@@ -736,6 +874,27 @@ func (e *Engine) Query(ctx context.Context, app string, request query.Request, m
 	}
 	defer sandbox.Close()
 	return sandbox.Query(ctx, request)
+}
+
+func queryMetricOutcome(err error) string {
+	switch {
+	case err == nil:
+		return "ok"
+	case errors.Is(err, sql.ErrNoRows):
+		return "not_found"
+	case errors.Is(err, ErrProjectionUnavailable):
+		return "unavailable"
+	case errors.Is(err, context.DeadlineExceeded):
+		return "deadline"
+	case errors.Is(err, context.Canceled):
+		return "cancelled"
+	case strings.Contains(err.Error(), "query_budget_exceeded"):
+		return "budget"
+	case strings.Contains(err.Error(), "frontier_changed"):
+		return "frontier_changed"
+	default:
+		return "error"
+	}
 }
 
 func (e *Engine) Schema(name string) (*profile.Profile, error) {

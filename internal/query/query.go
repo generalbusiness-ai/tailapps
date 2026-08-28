@@ -103,6 +103,7 @@ type Result struct {
 	Complete            bool              `json:"complete"`
 	Columns             []Column          `json:"columns"`
 	Rows                [][]any           `json:"rows"`
+	ResultBytes         int               `json:"result_bytes"`
 	Truncated           bool              `json:"truncated"`
 }
 
@@ -301,6 +302,7 @@ func (sandbox *Sandbox) Query(ctx context.Context, request Request) (Result, err
 	if err := statement.Err(); err != nil {
 		return Result{}, queryError(queryContext, err)
 	}
+	result.ResultBytes = bytesUsed
 	return result, nil
 }
 

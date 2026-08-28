@@ -70,6 +70,7 @@ loops=$("$binary" query --sql "SELECT harness, session_id, finding_kind FROM loo
 stalled=$("$binary" query --sql "SELECT harness, session_id, last_distinct_progress_unix_nano FROM session_progress WHERE last_distinct_progress_unix_nano < ? ORDER BY harness, session_id" --param '"1787900000009999999"' agent-guard)
 joined=$("$binary" query --mount cost=session-cost --sql "SELECT progress.harness, progress.session_id, costrow.input_tokens, costrow.output_tokens FROM session_progress progress JOIN cost.session_cost costrow ON costrow.harness=progress.harness AND costrow.session_id=progress.session_id ORDER BY progress.harness" agent-guard)
 signals=$("$binary" query --sql "SELECT source, signal, event_name, event_count FROM signal_counts WHERE source='demo-agent' ORDER BY signal" signal-counts)
+runtime_metrics=$("$binary" metrics --json)
 
 printf '%s\n' "$violations" | grep -q 'violation-claude'
 printf '%s\n' "$violations" | grep -q 'violation-codex'
@@ -85,16 +86,21 @@ printf '%s\n' "$joined" | grep -q 'shared-codex'
 printf '%s\n' "$joined" | grep -q 'shared-opencode'
 printf '%s\n' "$signals" | grep -q 'agent.run'
 printf '%s\n' "$signals" | grep -q 'agent.tokens'
+printf '%s\n' "$runtime_metrics" | grep -q 'tailapp.metrics/v1'
+printf '%s\n' "$runtime_metrics" | grep -q 'unrouted_records_total'
+printf '%s\n' "$runtime_metrics" | grep -q 'agent-guard'
 
 mcp_output=$(printf '%s\n' \
   '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
   '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
   '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' \
   '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"tailapp_query","arguments":{"name":"agent-guard","mounts":{"cost":"session-cost"},"sql":"SELECT progress.harness, progress.session_id, costrow.input_tokens, costrow.output_tokens FROM session_progress progress JOIN cost.session_cost costrow ON costrow.harness=progress.harness AND costrow.session_id=progress.session_id ORDER BY progress.harness"}}}' \
+  '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"tailapp_metrics","arguments":{}}}' \
   | "$binary" mcp)
 printf '%s\n' "$mcp_output" | grep -q 'tailapp_query'
 printf '%s\n' "$mcp_output" | grep -q 'shared-opencode'
+printf '%s\n' "$mcp_output" | grep -q 'tailapp.metrics/v1'
 
 echo "Example projection: OTLP span and metric-point counts"
 printf '%s\n' "$signals"
-echo "Tailapp demo passed: three OTLP signals, one-shot installs, cross-harness guard and cost analytics, joined exports, CLI, and MCP."
+echo "Tailapp demo passed: three OTLP signals, one-shot installs, cross-harness guard and cost analytics, joined exports, runtime metrics, CLI, and MCP."

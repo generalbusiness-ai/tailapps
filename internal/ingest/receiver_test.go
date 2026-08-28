@@ -21,6 +21,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/generalbusiness-ai/tailapp/internal/inbox"
+	operationalmetrics "github.com/generalbusiness-ai/tailapp/internal/metrics"
 )
 
 func TestReceiverAcceptsJSONLogsAndProtobufTracesAndMetricsInOrder(t *testing.T) {
@@ -32,6 +33,8 @@ func TestReceiverAcceptsJSONLogsAndProtobufTracesAndMetricsInOrder(t *testing.T)
 	receiver := NewReceiver(queue, func(context.Context) ([]inbox.Consumer, error) {
 		return []inbox.Consumer{{Tailapp: "agent-guard", Revision: "r1"}}, nil
 	}, ReceiverLimits{})
+	metricRegistry := operationalmetrics.New()
+	receiver.SetMetrics(metricRegistry)
 
 	logs := logRequest("codex", "codex.tool_result", "session-1")
 	jsonBody, err := protojson.Marshal(logs)
@@ -78,6 +81,10 @@ func TestReceiverAcceptsJSONLogsAndProtobufTracesAndMetricsInOrder(t *testing.T)
 	metric := canonical["metric"].(map[string]any)
 	if metric["aggregation_temporality"] != "AGGREGATION_TEMPORALITY_DELTA" || metric["is_monotonic"] != true {
 		t.Fatalf("canonical metric identity = %#v", metric)
+	}
+	snapshot := metricRegistry.Snapshot(nil)
+	if snapshot.Intake.RequestsTotal != 3 || snapshot.Intake.RecordsTotal["log"] != 1 || snapshot.Intake.RecordsTotal["span"] != 1 || snapshot.Intake.RecordsTotal["metric"] != 1 || snapshot.Intake.DurableAcceptDuration.Count != 3 {
+		t.Fatalf("receiver metrics = %#v", snapshot.Intake)
 	}
 }
 

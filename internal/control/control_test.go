@@ -1,16 +1,43 @@
 package control
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"net/http"
+	"net/http/httptest"
 	"path/filepath"
 	"testing"
 
 	"github.com/generalbusiness-ai/tailapp/internal/definition"
 	"github.com/generalbusiness-ai/tailapp/internal/engine"
 )
+
+func TestControlRequestsAreMeasuredAfterCompletion(t *testing.T) {
+	ctx := context.Background()
+	resident, err := engine.Open(ctx, filepath.Join(t.TempDir(), "tailapp"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resident.Close()
+	server := &Server{Engine: resident}
+	body, _ := json.Marshal(Request{Operation: "health"})
+	request := httptest.NewRequest(http.MethodPost, "/v1/control", bytes.NewReader(body))
+	response := httptest.NewRecorder()
+	server.ServeHTTP(response, request)
+	if response.Code != http.StatusOK {
+		t.Fatalf("health response = %d %s", response.Code, response.Body.String())
+	}
+	snapshot, err := resident.Metrics(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if snapshot.Control["health"].RequestsTotal != 1 || snapshot.Control["health"].Outcomes["ok"] != 1 {
+		t.Fatalf("control metrics = %#v", snapshot.Control["health"])
+	}
+}
 
 func TestMutationIdempotencySurvivesRestartAndBindsRequest(t *testing.T) {
 	ctx := context.Background()

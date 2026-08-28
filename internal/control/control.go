@@ -98,6 +98,14 @@ type Server struct {
 }
 
 func (server *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	started := time.Now()
+	operation := "unknown"
+	outcome := "operation_failed"
+	defer func() {
+		if server.Engine != nil {
+			server.Engine.ObserveControl(operation, outcome, time.Since(started))
+		}
+	}()
 	if request.Method != http.MethodPost || request.URL.Path != "/v1/control" {
 		http.NotFound(writer, request)
 		return
@@ -112,7 +120,13 @@ func (server *Server) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 		write(writer, nil, err)
 		return
 	}
+	operation = envelope.Operation
 	result, err := server.dispatch(request.Context(), envelope)
+	if err == nil {
+		outcome = "ok"
+	} else {
+		outcome = errorCode(err)
+	}
 	write(writer, result, err)
 }
 
@@ -128,6 +142,8 @@ func (server *Server) dispatch(ctx context.Context, request Request) (any, error
 	switch request.Operation {
 	case "health", "status":
 		return server.Engine.Status(ctx)
+	case "metrics":
+		return server.Engine.Metrics(ctx)
 	case "apps_list":
 		return server.Engine.Apps(ctx)
 	case "app_create":

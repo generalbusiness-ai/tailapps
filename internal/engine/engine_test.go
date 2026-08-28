@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/ncruces/go-sqlite3"
 	collectorlogsv1 "go.opentelemetry.io/proto/otlp/collector/logs/v1"
@@ -89,6 +90,19 @@ func TestEngineLifecycleIngestionProjectionQueryAndIsolation(t *testing.T) {
 	if len(joined.Rows) != 1 || joined.Rows[0][0] != "s1" {
 		t.Fatalf("joined = %#v", joined)
 	}
+	performance, err := engine.Metrics(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if performance.Version != "tailapp.metrics/v1" || performance.Intake.RecordsTotal["log"] != 2 || performance.Intake.ObligationsTotal != 4 || performance.Intake.UnroutedRecordsTotal != 0 {
+		t.Fatalf("intake performance = %#v", performance.Intake)
+	}
+	if performance.Processing["agent-guard"].AttemptsTotal != 2 || performance.Tailapps["agent-guard"].Durable.ConsumedRecords != 2 || performance.Tailapps["agent-guard"].LagPositions != 0 {
+		t.Fatalf("guard performance = processing %#v gauges %#v", performance.Processing["agent-guard"], performance.Tailapps["agent-guard"])
+	}
+	if performance.Queries.RequestsTotal != 1 || performance.Queries.RowsTotal != 1 || performance.Queries.ResultBytesTotal == 0 || performance.OldestInboxAgeMilliseconds != nil {
+		t.Fatalf("query/backlog performance = %#v / %#v", performance.Queries, performance.Inbox)
+	}
 
 	// Program-only continue preserves rows while switching the exact revision.
 	app, sources, err := engine.App(ctx, "agent-guard")
@@ -148,11 +162,68 @@ func TestEngineLifecycleIngestionProjectionQueryAndIsolation(t *testing.T) {
 	if err := engine.Delete(ctx, "agent-guard"); err != nil {
 		t.Fatal(err)
 	}
+	performance, err = engine.Metrics(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, exists := performance.Processing["agent-guard"]; exists {
+		t.Fatal("deleted Tailapp left a metrics tombstone")
+	}
 	if _, err := engine.Query(ctx, "agent-guard", query.Request{SQL: `SELECT 1`}, nil); err == nil {
 		t.Fatal("deleted tailapp remained queryable")
 	}
 	if _, err := engine.Query(ctx, "session-cost", query.Request{SQL: `SELECT COUNT(*) FROM session_cost`}, nil); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestWallElapsedCountsClockRegression(t *testing.T) {
+	resident, err := Open(context.Background(), filepath.Join(t.TempDir(), "home"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resident.Close()
+	if elapsed := resident.wallElapsed(time.Now().Add(time.Hour)); elapsed != 0 {
+		t.Fatalf("regressed elapsed = %s", elapsed)
+	}
+	snapshot, err := resident.Metrics(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if snapshot.ClockRegressionsTotal != 1 {
+		t.Fatalf("clock regressions = %d", snapshot.ClockRegressionsTotal)
+	}
+}
+
+func TestUnroutedIntakeIsSplitBySignal(t *testing.T) {
+	resident, err := Open(context.Background(), filepath.Join(t.TempDir(), "home"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resident.Close()
+	body, err := proto.Marshal(otlpRequest())
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := httptest.NewRequest(http.MethodPost, "/v1/logs", bytes.NewReader(body))
+	request.Header.Set("Content-Type", "application/x-protobuf")
+	response := httptest.NewRecorder()
+	resident.Receiver().ServeHTTP(response, request)
+	if response.Code != http.StatusOK {
+		t.Fatalf("OTLP response %d: %s", response.Code, response.Body.String())
+	}
+	snapshot, err := resident.Metrics(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if snapshot.Intake.UnroutedRecordsTotal != 2 || snapshot.Intake.UnroutedRecordsBySignal["log"] != 2 {
+		t.Fatalf("unrouted intake = %#v", snapshot.Intake)
+	}
+}
+
+func TestQueryMetricOutcomeDistinguishesCancellation(t *testing.T) {
+	if outcome := queryMetricOutcome(context.Canceled); outcome != "cancelled" {
+		t.Fatalf("cancelled query outcome = %q", outcome)
 	}
 }
 
