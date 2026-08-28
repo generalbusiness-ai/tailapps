@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:7b35ed5fa5a48e41b9770aecc9f75551fd0330c3","text":"Merge retired a covered predecessor; the successor is at docs/harnesses/claude-code.md."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:7bd80cb287a8580619f3b1647ffa7c584ac5dcdd","text":"Merge retired a covered predecessor; the successor is at scripts/demo.sh."}
