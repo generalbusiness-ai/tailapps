@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I accept priority-2 request #1155 and will begin it after priority-1 request #1154 reaches a live reviewed resolution."}
+{"kind":"assert","text":"Priority-3 request #1156 is authorized but queued behind priority-2 request #1155; builder is not starting it concurrently while priority #1154 awaits review."}
