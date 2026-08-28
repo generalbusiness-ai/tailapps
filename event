@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"OpenCode guide documents the bounded adapter analytics contract without claiming native emission.","body":{"commit":"16675ab55bd90f94b3e15f1465a7545d61b1d4ed","path":"docs/harnesses/opencode.md"}}
+{"kind":"artifact","text":"CLI reference lists activity-stats as a built-in bundle.","body":{"commit":"16675ab55bd90f94b3e15f1465a7545d61b1d4ed","path":"docs/reference/cli.md"}}
