@@ -90,11 +90,11 @@ redacted before export, or outside this bundle's recognized vocabulary.
 
 ## Query recipes
 
-Daily token volume and cache efficiency (UTC date from the latest event):
+Token volume and cache efficiency by UTC Unix-day number:
 
 ```sql
 SELECT harness,
-       date(CAST(last_seen_unix_nano AS INTEGER) / 1000000000, 'unixepoch') AS day,
+       CAST(last_seen_unix_nano AS INTEGER) / 86400000000000 AS unix_day,
        SUM(input_tokens) AS input_tokens,
        SUM(cached_input_tokens) AS cached_input_tokens,
        CASE WHEN SUM(input_tokens + cached_input_tokens) = 0 THEN NULL
@@ -103,8 +103,8 @@ SELECT harness,
        SUM(output_tokens) AS output_tokens,
        SUM(cost_microusd) / 1000000.0 AS cost_usd
 FROM session_activity
-GROUP BY harness, day
-ORDER BY day, harness;
+GROUP BY harness, unix_day
+ORDER BY unix_day, harness;
 ```
 
 Tool frequency and observed outcome rate:

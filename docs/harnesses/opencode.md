@@ -107,4 +107,4 @@ substitute entirely different analytics through the
 [CLI or MCP lifecycle](../authoring.md).
 
 Official references: [OpenCode plugins](https://opencode.ai/docs/plugins/)
-and [OpenCode MCP servers](https://dev.opencode.ai/docs/mcp-servers/).
+and [OpenCode MCP servers](https://opencode.ai/docs/mcp-servers/).

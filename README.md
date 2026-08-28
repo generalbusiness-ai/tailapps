@@ -1,47 +1,28 @@
 # Tailapp
 
-Tailapps are simple, local micro-apps that turn OTLP/HTTP logs, spans, and
-metric points into SQLite projections you can inspect over CLI or MCP, making
-agent behavior easy to monitor.
+Simple micro-apps that read OTLP/HTTP logs, spans, and metric points and
+produce SQLite projections, inspectable over CLI or MCP, so you can easily
+monitor agent behavior.
 
-One resident engine hosts any number of installed Tailapps on your machine.
-Each Tailapp is a small declarative source set—not another service process—and
-has its own isolated, continuously materialized SQLite projection. Agents can
-author, install, query, and manage Tailapps through MCP; people and scripts can
-do the same through the CLI.
+One resident engine hosts any number of Tailapps on your machine. Each Tailapp
+is a small declarative source set—not another service—and has its own isolated,
+continuously materialized SQLite projection. Agents manage and query Tailapps
+through MCP; people and scripts can do the same through the CLI.
 
-The shipped `agent-guard` example provides:
+## Try it
 
-- observed denied-tool, denied-operation, and target-boundary evidence;
-- explicit `unknown` findings when required telemetry is absent or redacted;
-- repeated-action, repeated-failure, and bounded no-progress signals; and
-- session progress timestamps for a caller-supplied stalled cutoff.
-
-These are detective controls. OTLP observation occurs after or alongside
-harness activity. Tailapp does not block a tool call, terminate an agent, or
-prove that an unobserved operation did not happen. Inline prevention requires a
-harness control adapter, which is outside this release.
-
-The complementary `activity-stats` example materializes privacy-preserving
-event inventory, session activity, cache/token totals, bounded tool frequency,
-and request/TTFT distributions across Claude Code, Codex, and OpenCode adapter
-telemetry. It retains no prompt, response, command, tool-input, or path content
-and reports missing fields as unknown coverage rather than observed zeros.
-
-## Quick demo
+Prerequisites are macOS or Linux, Go 1.26.7 or later, and Git. The demo builds
+the binary, starts a temporary resident, installs the three shipped Tailapps
+and one custom Tailapp, sends all three OTLP signal types, and queries the
+result through CLI and MCP:
 
 ```sh
 ./scripts/demo.sh
 ```
 
-The demo builds the binary, starts an ephemeral resident, installs three shipped
-examples and one custom Tailapp in one request each, sends logs, a span, and a
-metric point, and prints a real projection before checking CLI and MCP access.
+## Run locally
 
-## Start locally
-
-Prerequisites are macOS or Linux, Go 1.26.7 or later, and Git. Build and start
-the resident in one terminal:
+Build, initialize one engine home, and keep the resident running:
 
 ```sh
 go build -o tailapp ./cmd/tailapp
@@ -50,12 +31,10 @@ export TAILAPP_HOME="$HOME/.local/share/tailapp"
 ./tailapp serve --otlp-http 127.0.0.1:4318
 ```
 
-Keep `serve` running. The bind uses an explicit loopback IP because names such
-as `localhost` and non-loopback interfaces are deliberately refused. The
-actual receiver URL is also written to `$TAILAPP_HOME/engine.json`.
+The receiver is deliberately loopback-only; use an explicit IP rather than
+`localhost`. Its actual URL is also written to `$TAILAPP_HOME/engine.json`.
 
-In another terminal, export the same `TAILAPP_HOME`, then install and
-first-activate the three examples shipped with this release:
+In another terminal, export the same `TAILAPP_HOME` and install the examples:
 
 ```sh
 export TAILAPP_HOME="$HOME/.local/share/tailapp"
@@ -67,30 +46,45 @@ export TAILAPP_HOME="$HOME/.local/share/tailapp"
   --idempotency-key install-session-cost-v1 session-cost
 ```
 
-Connect a harness using the [harness setup guide](docs/harnesses/README.md),
-perform a tool call, then inspect what arrived:
+Next, configure [Claude Code](docs/harnesses/claude-code.md),
+[Codex](docs/harnesses/codex.md), [OpenCode](docs/harnesses/opencode.md), or
+[Pi](docs/harnesses/pi.md). Telemetry and MCP are separate connections: the
+harness sends OTLP/HTTP to the resident, while its MCP client starts
+`tailapp mcp` and connects through the same engine home.
+
+After a model request and tool call, verify transport and interpretation:
 
 ```sh
 ./tailapp health
 ./tailapp metrics --json
-./tailapp ineffective agent-guard
+./tailapp query \
+  --sql 'SELECT harness, event_family, SUM(event_count) AS events FROM event_inventory GROUP BY harness, event_family ORDER BY harness, event_family' \
+  activity-stats
 ./tailapp query \
   --sql 'SELECT harness, capability, state, reason FROM telemetry_coverage ORDER BY harness, capability' \
   agent-guard
 ```
 
-The metrics intake counters prove OTLP transport. `tailapp ineffective` shows a
-memory-only sample of rejected canonical records, while every query result's
-`ineffective_records` field gives the durable rejection count for that
-projection. An empty SQL result means the installed Tailapp has not received a
-recognized event yet. The harness guides explain exporter batching, expected
-event names, and coverage limits.
+An increase in `intake.records_total` proves that OTLP reached the resident.
+Rows prove that a Tailapp recognized the records. If intake rises but a query
+is empty, `./tailapp ineffective APP` shows up to 16 recent rejected records
+for adapter-shape diagnosis; every query result also includes the projection's
+durable `ineffective_records` count.
 
-## Build and install your own
+## What you can install
 
-The [`signal-counts`](examples/signal-counts/README.md) example is a complete
-custom Tailapp. Install its entire directory in one validated, first-activated
-request:
+The included Tailapps are a starting kit, not a fixed catalog:
+
+| Tailapp | Materialized analytics |
+| --- | --- |
+| [`activity-stats`](tailapps/activity-stats/README.md) | Privacy-preserving event inventory, session activity, token/cache totals, tool frequency, and request latency |
+| [`agent-guard`](tailapps/agent-guard/README.md) | Policy evidence, telemetry coverage, repeated actions or failures, and bounded no-progress signals |
+| [`session-cost`](tailapps/session-cost/README.md) | Cumulative token and reported-cost totals by harness and session |
+
+You can create, fork, extend, replace, install, update, query, and delete your
+own Tailapps through the same CLI or MCP lifecycle. The
+[`signal-counts`](examples/signal-counts/README.md) example is a complete small
+source set. Install it in one request:
 
 ```sh
 ./tailapp apps install \
@@ -98,64 +92,44 @@ request:
   signal-counts examples/signal-counts
 ```
 
-An MCP agent does the same with one `tailapp_install` call containing the
-complete source map. Installation is create-only and never replaces an
-existing Tailapp. Incremental updates deliberately retain the lower-level
-draft, exact-revision validation, and explicit activation lifecycle described
-in the [authoring guide](docs/authoring.md).
+An MCP agent can do the same with one `tailapp_install` call. See the
+[authoring guide](docs/authoring.md) for the source format and safe update
+lifecycle.
+
+## Know the boundaries
+
+- Tailapp is local and single-user. The OTLP receiver has no authentication or
+  TLS, and any process with access to the owner-only control socket can use the
+  mutation-capable MCP interface.
+- The shipped guard is detective, not preventive. It cannot block a tool call,
+  stop an agent, or prove that an unobserved operation did not happen. Keep
+  harness-native permission and sandbox controls in place.
+- Source OTLP records are not retained as an event log. The bounded inbox keeps
+  a record only until every captured projection commits or detaches. A failed
+  projection has no built-in replay source.
+- Projections and ineffective-record samples can contain sensitive telemetry.
+  Review exporter content settings and each Tailapp's retention model.
+- Tailapps do not form a processing graph. A normalizer emits one private event
+  type to its own analytic folds; cross-Tailapp composition happens only in
+  bounded read-only queries over explicit exports.
+
+DDL, JSONata, SQL, resource, timing, and representation limits are part of the
+pinned runtime profile. See the [DDL/JSONata](docs/reference/ddl-jsonata.md) and
+[query SQL](docs/reference/query-sql.md) references for the exact admitted
+subsets.
 
 ## Documentation
 
 - [Documentation map](docs/README.md)
-- [Harness setup](docs/harnesses/README.md):
-  [Claude Code](docs/harnesses/claude-code.md),
-  [Codex](docs/harnesses/codex.md),
-  [OpenCode](docs/harnesses/opencode.md), and [Pi](docs/harnesses/pi.md)
+- [Harness setup and verification](docs/harnesses/README.md)
 - [Author and install a Tailapp](docs/authoring.md)
-- [Five-minute signal-counts example](examples/signal-counts/README.md)
-- References: [CLI](docs/reference/cli.md), [MCP](docs/reference/mcp.md),
-  [DDL/JSONata](docs/reference/ddl-jsonata.md), and
-  [query SQL](docs/reference/query-sql.md), plus
+- [CLI](docs/reference/cli.md) and [MCP](docs/reference/mcp.md) references
+- [Canonical OTLP records](docs/reference/otel-records.md) and
   [runtime metrics](docs/reference/metrics.md)
-- Examples shipped with this release:
-  [`activity-stats`](tailapps/activity-stats/README.md),
-  [`agent-guard`](tailapps/agent-guard/README.md), and
-  [`session-cost`](tailapps/session-cost/README.md)
+- [Architecture](notes/2026-08-28-tailapp-architecture.md) and
+  [initial implementation specification](notes/2026-08-28-tailapp-initial-implementation.md)
 
-The built-in source sets are examples, not a closed catalog. Operators and
-agents are encouraged to create new Tailapps, fork or extend these examples,
-or substitute different analytics and policy. Custom source sets and the three
-shipped examples use the same compiler, install boundary, and runtime.
-
-## Boundaries
-
-The first trust boundary is the local OS user. OTLP is loopback-only and
-control uses an owner-only Unix socket, but other processes running as that
-user are not authenticated. Telemetry and projection files can contain
-sensitive prompts, commands, paths, and identifiers.
-
-Tailapp source cannot use filesystem, network, clock, randomness, extensions,
-dynamic evaluation, wildcards, multiplication, or generated ranges. Since
-unquoted `*` is excluded, JSONata block comments are unavailable too.
-The JSONata wall deadline is an outer safety net, not a claim of deterministic
-semantics; the admitted JSONata subset excludes its known unbounded extension
-points. SQL additionally has a runtime-profile-fixed SQLite VM progress budget,
-with its wall deadline retained as secondary safety. The runtime profile pins
-OTLP canonicalization, JSONata, SQLite, numeric rules, and admitted limits.
-
-Consumed OTLP content is not retained as an event log. The bounded inbox keeps
-a record only until every captured consumer commits or detaches. For local
-diagnosis, the resident keeps only the 16 newest ineffective records per
-Tailapp in memory; `tailapp ineffective APP` exposes them, and restart or
-activation clears them. A projection gap is fail-stop and local to that
-Tailapp; without external replay, telemetry missed while detached is absent.
-
-Mounted exports use explicit `FROM alias.export` or `JOIN alias.export`
-relations; comma-listed mounted relations are outside the admitted query
-syntax. Give each mounted relation a SQL table alias and qualify its columns
-through that alias.
-
-## Verification
+## Develop
 
 ```sh
 go test ./...
@@ -164,6 +138,6 @@ go vet ./...
 ./scripts/demo.sh
 ```
 
-GitHub Actions runs the same four gates on pushes and pull requests to `main`
-with the exact Go version declared in `go.mod`. The demo's root `tailapp`
-binary is ignored so local verification leaves the checkout clean.
+GitHub Actions runs the same gates with the Go version declared in `go.mod`.
+Tailapp is licensed under [Apache 2.0](LICENSE); attribution is in
+[NOTICE](NOTICE).

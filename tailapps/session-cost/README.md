@@ -52,9 +52,10 @@ parameters.
 
 Codex documents token counts on `response.completed` SSE events. Other
 `codex.sse_event` and API-request records remain ineffective unless a supported
-counter is present, avoiding a stream of meaningless zero-valued rows. The checked-in
-fixture is a structurally representative, scrubbed Codex CLI 0.150.1 capture;
-vendor fields remain a tested compatibility profile, not an engine contract.
+counter is present, avoiding a stream of meaningless zero-valued rows. The
+checked-in fixture is a structurally representative, scrubbed Codex CLI
+0.150.1 capture; vendor fields remain a tested compatibility profile, not an
+engine contract.
 
 ## Table and export
 

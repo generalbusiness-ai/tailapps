@@ -1,53 +1,43 @@
 # Tailapp documentation
 
-New here? Run the [quick demo](../README.md#quick-demo), then follow
-[Start locally](../README.md#start-locally). The
-[`signal-counts`](../examples/signal-counts/README.md) example shows a complete
-custom Tailapp installed in one request and fed all three OTLP signal types.
+Start with the root [README](../README.md#run-locally). It is the canonical
+build, startup, install, and first-query path. The pages below add detail
+without changing that sequence.
 
-## Run and connect
+## Use Tailapp
 
-- [Harness setup overview](harnesses/README.md)
-- [Claude Code](harnesses/claude-code.md)
-- [Codex](harnesses/codex.md)
-- [OpenCode](harnesses/opencode.md)
-- [Pi](harnesses/pi.md)
+- [Harness overview and verification](harnesses/README.md)
+- Harness setup: [Claude Code](harnesses/claude-code.md),
+  [Codex](harnesses/codex.md), [OpenCode](harnesses/opencode.md), and
+  [Pi](harnesses/pi.md)
+- Shipped analytics: [activity stats](../tailapps/activity-stats/README.md),
+  [agent guard](../tailapps/agent-guard/README.md), and
+  [session cost](../tailapps/session-cost/README.md)
 
-## Extend
+## Build Tailapps
 
-- [Author and install a Tailapp](authoring.md)
+- [Author, install, and update a Tailapp](authoring.md)
+- [Five-minute `signal-counts` example](../examples/signal-counts/README.md)
 - [Canonical OTLP record shapes](reference/otel-records.md)
-- [DDL and JSONata reference](reference/ddl-jsonata.md)
-- [Query SQL reference](reference/query-sql.md)
+- [DDL and JSONata](reference/ddl-jsonata.md)
+- [Query SQL](reference/query-sql.md)
 
-Tailapp is not limited to the three examples compiled into this release. A
-custom Tailapp is an ordinary source set containing `application.sql` and one
-or more `folds/*.jsonata` programs. Users and agents are encouraged to create
-new applications, fork or extend the examples, substitute different policies,
-and install ongoing revisions. They can create, edit, validate, activate,
-query, and delete every custom Tailapp through the public CLI or MCP lifecycle.
+The shipped analytics are examples, not a catalog. Custom Tailapps use the
+same compiler, lifecycle, and runtime. Users and agents can create, validate,
+activate, query, update, and delete them through either public interface.
 
-## Interfaces
+## Operate and integrate
 
 - [CLI reference](reference/cli.md)
 - [MCP reference](reference/mcp.md)
 - [Runtime metrics](reference/metrics.md)
 
-The CLI and MCP server are clients of the same resident control service. Draft
-changes made through either interface are immediately visible through the
-other, but never alter live projections until activation.
-
-## Examples shipped with this release
-
-- [`activity-stats`](../tailapps/activity-stats/README.md)
-- [`agent-guard`](../tailapps/agent-guard/README.md)
-- [`session-cost`](../tailapps/session-cost/README.md)
-
-These are useful initial analytics and complete authoring examples, not a
-catalog or preferred limit. Their source files use the same DDL/JSONata and
-lifecycle as custom Tailapps; they have no privileged execution path.
+The CLI and MCP adapter are clients of the same resident control service.
+Draft changes made through either interface are immediately visible through
+the other, but do not affect a live projection until activation.
 
 ## Design
 
 - [Architecture](../notes/2026-08-28-tailapp-architecture.md)
-- [Initial implementation](../notes/2026-08-28-tailapp-initial-implementation.md)
+- [Initial implementation specification](../notes/2026-08-28-tailapp-initial-implementation.md)
+- [Proposed disk session ingestion](../notes/2026-08-28-disk-session-ingestion.md)

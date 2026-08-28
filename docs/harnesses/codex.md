@@ -41,10 +41,9 @@ A useful first prompt is:
 
 ## Current bundle fit
 
-`activity-stats`, `agent-guard`, and `session-cost` are shipped examples, not the available set of
-Tailapp applications. Users and agents are encouraged to fork, extend, replace,
-or supplement them with analytics and policy specific to their environment;
-the [authoring guide](../authoring.md) covers installation over CLI and MCP.
+The three shipped Tailapps are examples, not a catalog. Users and agents can
+fork, extend, replace, or supplement them; the
+[authoring guide](../authoring.md) covers installation over CLI and MCP.
 
 `agent-guard` recognizes `codex.tool_call`, `codex.tool_decision`, and
 `codex.tool_result`. Its reference policy consumes only the canonical fields
@@ -53,9 +52,9 @@ Codex CLI can export a Rust tracing callsite as the OTLP log-record name while
 putting the semantic `codex.*` name in the `event.name` attribute. The shipped
 normalizer prefers that semantic attribute and maps the native
 `service.name = codex_cli_rs` and `service.name = codex_exec` sources to the
-stable `codex` harness name.
-Query `telemetry_coverage` after a real call to learn whether the current Codex
-version exported enough target and progress detail for a rule. If the query's
+stable `codex` harness name. Query `telemetry_coverage` after a real call to
+learn whether the current Codex version exported enough target and progress
+detail for a rule. If the query's
 `ineffective_records` count rises without coverage rows, inspect the current
 memory-only sample with `tailapp ineffective agent-guard` or the MCP tool
 `tailapp_ineffective` before changing the normalizer.
@@ -67,9 +66,9 @@ memory-only sample with `tailapp ineffective agent-guard` or the MCP tool
 these counts on `response.completed`; current native records identify that
 completion as `event.kind = response.completed`. Unrelated SSE records remain
 ineffective rather than creating zero-valued usage rows. The bundle also
-retains its generic `codex.api_request` mapping for adapters. Native Codex events do not currently
-provide a cost attribute, so `cost_microusd` remains zero unless an adapter
-adds one.
+retains its generic `codex.api_request` mapping for adapters. Native Codex
+events do not currently provide a cost attribute, so `cost_microusd` remains
+zero unless an adapter adds one.
 
 `activity-stats` additionally recognizes Codex prompt-length, TTFT,
 latency/status-only API request, and websocket event families. Counterless

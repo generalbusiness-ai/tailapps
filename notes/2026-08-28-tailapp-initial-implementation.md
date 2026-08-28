@@ -8,6 +8,10 @@ rests_on:
 
 # Tailapp initial implementation specification
 
+> **Status:** Implemented baseline. This is the original build specification,
+> not the current command reference. See the [documentation
+> map](../docs/README.md) for the shipped interfaces and Tailapps.
+
 This specification turns the companion architecture into the first buildable
 local product. It defines observable contracts and acceptance tests; package
 names and private Go APIs may change without changing the design.
