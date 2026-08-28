@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:3898bcab9e023d771174388d07dfc8c90b00fc75","text":"Merge retired a covered predecessor; the successor is at notes."}
+{"kind":"promise","text":"I will implement the approved initial Tailapp specification, including the bundled cross-harness agent-guard, required tests and scripted demo, and checker review at material milestones and the exact final head.","body":{"branch":"request/initial-tailapp-product","head":"5d18fa8dbc483dc6004a1ddd8d3f704f6c1796f3"}}
