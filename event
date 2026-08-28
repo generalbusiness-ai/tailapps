@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Documentation map includes activity-stats as a shipped example.","body":{"commit":"16675ab55bd90f94b3e15f1465a7545d61b1d4ed","path":"docs/README.md"}}
+{"kind":"artifact","text":"Harness setup installs and verifies activity-stats with explicit per-projection coverage semantics.","body":{"commit":"16675ab55bd90f94b3e15f1465a7545d61b1d4ed","path":"docs/harnesses/README.md"}}
