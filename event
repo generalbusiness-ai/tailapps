@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:8292e034934cadfcbfdff06dbf725e63aa19aa14","text":"Merge retired a covered predecessor; the successor is at internal/profile/compiler_test.go."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:aa2c72ac80846dc4e19f9a901427f1e228491ad7","text":"Merge retired a covered predecessor; the successor is at internal/profile/types.go."}
