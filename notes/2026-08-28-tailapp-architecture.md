@@ -1,0 +1,429 @@
+---
+date: 2026-08-28
+status: initial architecture design
+companion: notes/2026-08-28-tailapp-initial-implementation.md
+rests_on:
+  - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:a02e8da110b93948746edf9adf13e6dd00633271
+---
+
+# Tailapp architecture
+
+Tailapp is a local analytics engine for agent-harness telemetry. It accepts
+OpenTelemetry (OTel) streams and continuously materializes user-defined
+relational projections. It does not retain the telemetry stream as an event
+log.
+Agents manage those projections as **tailapps**: small packages of event DDL,
+table DDL, fold bindings, and deterministic JSONata programs. They inspect the
+results with bounded, read-only SQL, primarily through MCP and equivalently
+through a CLI.
+
+This design applies the JSONata-with-DDL model developed in Gitseq without
+making Gitseq itself a runtime dependency. The important contract is retained:
+typed events, declared reads from materialized state, deterministic JSONata
+transitions, validated typed row changes out, and SQL over materialized state.
+Unlike Gitseq, Tailapp does not initially retain an authoritative event
+history, so its materialized tables are durable state rather than disposable
+replay caches.
+
+## Architectural decisions
+
+1. **One local engine owns ingestion and all writes.** CLI and MCP are clients
+   of that engine; neither opens writable databases directly.
+2. **Standard OTLP is the ingestion boundary.** Harness-specific configuration
+   points exporters at Tailapp. The core does not parse Claude Code, Codex, or
+   OpenCode transcript files.
+3. **The event stream is not stored.** A bounded durable inbox exists only to
+   carry unconsumed records across backpressure and process crashes. A record
+   is deleted after the active consumers have handled or skipped it.
+4. **Each active tailapp has an isolated durable SQLite projection.** Its
+   materialized tables are the tailapp's memory and locally authoritative
+   analytic state. Ordinary SQL names need no global prefix, and a broken fold
+   cannot stop other tailapps.
+5. **Editing and activation are separate.** Agents manipulate draft elements
+   with optimistic revision checks. A schema-compatible revision can continue
+   over existing tables; an incompatible revision requires an explicit reset
+   and begins with future events.
+6. **MCP is the primary product interface; the CLI has parity.** Both adapt one
+   internal application service and therefore share validation, bounds, and
+   error semantics.
+7. **The first trust boundary is the local user account.** The engine binds to
+   loopback and a user-owned local control socket. Remote collectors, shared
+   tenancy, and network authentication are deferred.
+8. **Tailapps are isolated fold namespaces.** Tables are private by default.
+   Explicit read-only exports are visible only to multi-namespace SQL queries,
+   never to another fold.
+9. **Every tailapp has one fixed two-stage pipeline.** Its normalizer consumes
+   the engine's canonical `otlp_record` and may update normalizer-owned tables
+   while producing zero or more typed, app-private `otel_event` values.
+   Analytics folds consume only those values and produce only table changes.
+   Analytics cannot emit events, no stage can import another tailapp, and no
+   stream join or arbitrary fold graph exists.
+
+## System shape
+
+```text
+Claude Code ─┐
+Codex ───────┼─ OTLP/HTTP ─> receiver ─> bounded durable inbox
+OpenCode ────┘                                  │ consume then delete
+                                                v
+tailapp sources ─> registry ─> compiler ─> projection supervisor
+      ^               │                         │
+      │ draft CRUD    │ active revision         ├─> app A SQLite
+      │               v                         ├─> app B SQLite
+CLI ──┼──────────> local application service <──└─> app N SQLite
+MCP ──┘                    │
+                          └─ bounded read-only SQL + schema/frontiers
+```
+
+The diagram has three distinct planes:
+
+- the **data plane** receives and orders OTel records;
+- the **definition plane** compiles and activates tailapp revisions; and
+- the **query plane** exposes projections and their exact frontiers.
+
+They share one engine process so there is one owner for ordering, activation,
+and SQLite writers.
+
+## Core concepts
+
+### Delivery record
+
+One OTel log record, span, or metric data point becomes one `otlp_record` at
+a monotonically increasing local position. Its canonical form records the OTel
+signal, source timestamps and identifiers, resource and instrumentation scope,
+attributes, body or value, and the original signal-specific structure.
+
+Receiver order, not source timestamp, is fold order. OTLP does not provide a
+universal delivery identifier, so the engine does not silently deduplicate
+equal records. It preserves at-least-once delivery and exposes content digests
+and native trace, span, session, and request IDs so tailapps can define
+domain-appropriate deduplication. `otlp_record` is a fixed engine input, not
+the tailapp's event DDL.
+
+The canonical record remains in the inbox only while an active tailapp still
+owes consumption. Once all obligations are complete, the engine deletes it.
+It is not queryable through MCP or SQL and is not a source for historical
+replay.
+
+### Application memory
+
+JSONata itself is stateless. Useful behavior comes from declared reads of the
+tailapp's materialized tables at the previous event boundary. A tailapp can
+store counters, sessions, correlation keys, outstanding tool calls, bounded
+event-time windows, or selected history, then update those rows in the fold.
+It stores only the information its analysis needs rather than forcing the
+engine to retain every input record.
+
+Time-based expiry can happen when a later event supplies a newer event time.
+Actions that must fire during a completely idle stream would require explicit
+platform tick events or another later scheduling design; folds never read the
+wall clock.
+
+A tailapp processes one delivery record in a single transaction. First, one
+normalizer evaluates `otlp_record`. It may update its own lookup or
+normalization tables and produce a bounded ordered list of values conforming
+to that tailapp's `CREATE EVENT otel_event` declaration. Then analytic folds
+consume those `otel_event` values and update their own tables. The values live
+only for that transaction; they are neither an outbox nor a queryable or
+replayable stream.
+
+Each table has one declared writer. The normalizer reads only its own tables.
+Analytic folds may read normalizer-owned tables and their own tables, but not
+tables owned by another analytic fold. This permits parsing, enrichment,
+rollups, counters, tear-off into normalized child tables, denormalized query
+shapes, and sessionization without creating forward, backward, or implicit
+fold chains. All changes for the root event commit or roll back together.
+
+### Namespace and query visibility
+
+Every tailapp is a logical database schema. Its tables and views are private by
+default. It may expose a named read-only relation with an explicit export
+declaration. An export fixes the relation's columns, logical types,
+nullability, and defining query into an export-contract digest.
+
+An MCP or CLI query may explicitly mount several active tailapps under local
+SQL aliases and read only their exported relations as `alias.relation`. This is
+query-time composition, not a durable dependency between tailapp definitions.
+No fold, fold read, or application view may reference another namespace.
+Tailapps can therefore be installed, updated, reset, and deleted independently.
+
+The engine runs queries between flat delivery waves and returns a frontier
+vector for every mounted namespace. There is no writable cross-namespace
+surface and no implicit global catalog.
+
+### Tailapp element
+
+An element is a named source file belonging to one tailapp. The first format
+has only:
+
+- exactly one `application.sql`; and
+- one or more `folds/*.jsonata` programs named by `CREATE FOLD` statements.
+
+The `application.sql` names one normalizer and one or more analytic folds. The
+tailapp name comes from the registry. A content digest supplies immutable
+revision identity, so a manifest is not necessary initially. Documentation
+may accompany a package, but it is not interpreted and does not enter the
+runtime profile unless a later design says so.
+
+### Draft and active revision
+
+Every tailapp has at most one mutable draft and one active immutable revision.
+Element changes advance the draft revision. Validation compiles a snapshot of
+that draft. Activation changes behavior at a precise delivery boundary. If the
+relational schema digest is unchanged, the new fold profile continues over the
+existing materialized state. If the schema changes, activation is refused
+unless the caller explicitly chooses `reset`; reset creates empty materialized
+tables and begins at the next event. Failed editing or compilation leaves the
+old active revision queryable.
+
+Deletion follows the same rule. Deleting an element changes only the draft.
+Deleting a tailapp retires its active projection from the query surface. It
+does not affect the inbox obligations or materialized state of other tailapps.
+
+### Projection frontier and gap
+
+A projection result always names:
+
+- the active revision digest;
+- the current engine delivery position known when the result was read;
+- the last interpreted position; and
+- whether interpretation is complete.
+
+Invalid input, evaluator failure, an exceeded deterministic limit, invalid
+fold output, or a DDL constraint failure rolls back that event transaction and
+opens a **gap** at its position. The affected tailapp is detached from live
+delivery and reports the reason so the bounded inbox can continue draining.
+Other tailapps and ingestion continue. Repair requires a schema-compatible
+reactivation that resumes with future events, an explicit reset, or a future
+external replay facility. A business-level fold decision of `ineffective` is
+not a gap.
+
+## Components
+
+### 1. OTLP receiver
+
+The receiver accepts OTLP/HTTP on loopback and translates logs, traces, and
+metrics into the canonical delivery envelope. It supports protobuf and JSON
+encodings, validates request and record limits before committing, flattens a
+batch in wire order, and acknowledges only after its inbox transaction is
+durable.
+
+The receiver is deliberately vendor-neutral. Current Claude Code can export
+metrics, log events, and optional traces through OTLP; current Codex exposes
+separate OTLP log, trace, and metric exporter settings. OpenCode can use its
+OTel path where available or a small plugin that subscribes to its public event
+stream and emits OTLP. Those are configuration or edge adapters, not fold
+semantics.
+
+### 2. Durable inbox
+
+The inbox is a bounded queue in the engine's control SQLite database. It
+assigns delivery positions, holds canonical JSON, and records which active
+tailapps owed consumption when the event arrived. Projection workers consume
+ordered pages. A consumer transaction and its completion marker are committed
+before the inbox can delete the record.
+
+The inbox is operational state, not analytic storage. Installing a tailapp
+does not enroll it in records already accepted. Deleting or detaching a
+tailapp settles its outstanding obligations. Capacity is finite; when a slow
+consumer fills it, the receiver returns OTLP backpressure rather than growing
+an accidental event store.
+
+### 3. Tailapp registry and compiler
+
+The registry stores drafts, immutable compiled revisions, active pointers,
+read-only query exports, and diagnostics. The compiler:
+
+1. separates SQL statements safely;
+2. recognizes `CREATE EVENT`, `CREATE NORMALIZER`, and `CREATE FOLD`
+   extensions;
+3. asks SQLite to prepare the allowed relational DDL in a scratch database;
+4. prepares declared fold reads as read-only statements;
+5. compiles each referenced JSONata program under a pinned language profile;
+6. derives read-only export contracts;
+7. verifies the fixed `otlp_record` -> private `otel_event` -> tables topology,
+   single-writer table ownership, and private event schema;
+8. rejects cross-namespace and analytic-fold-to-fold references;
+9. verifies declared read/write authority and resource limits; and
+10. hashes the canonical source set and complete runtime profile.
+
+Unsupported or unsafe syntax is refused rather than guessed.
+
+### 4. Projection supervisor and workers
+
+The supervisor observes new inbox positions and active-revision changes. Each
+tailapp has one logical worker and one SQLite writer. For delivery *n*, every
+active tailapp runs its normalizer and the resulting analytic folds in one
+transaction, beginning from its own committed state at *n - 1* and committing
+its complete state at *n*. Transaction-local `otel_event` values disappear at
+commit.
+
+The first engine treats that fan-out as one flat wave and does not begin
+delivery *n + 1* until every active consumer has committed, skipped, or
+detached. Independent tailapps may run concurrently because there are no
+fold-time edges between them. This gives aligned query frontiers without a
+dataflow scheduler.
+
+### 5. Query service
+
+The query service opens read-only connections to active projection databases.
+It permits only bounded `SELECT` statements over application tables, views,
+and public platform relations. Every result includes typed columns, bounded
+rows, truncation state, and the exact revision/frontier. Callers can provide an
+expected revision and frontier to prevent pagination across changing state.
+
+A query names a primary tailapp and may explicitly mount exports from other
+tailapps under request-local aliases. Arbitrary private access is refused. The
+engine takes query snapshots between flat delivery waves, so every mounted
+namespace names the same completed delivery position or is reported as
+detached/unavailable.
+
+### 6. Local application service
+
+This service is the sole control API. It covers tailapp CRUD, element CRUD,
+validation, activation, reset, status, schema discovery, and SQL query. The
+resident engine exposes it over a user-owned local socket. The Go API, local
+wire protocol, CLI, and MCP adapter are separate layers even if they initially
+ship in one repository and binary.
+
+### 7. MCP and CLI adapters
+
+The MCP server runs over stdio for an agent and forwards calls to the local
+engine. It offers focused tools for manipulating definitions and querying
+results; it never exposes a generic filesystem or writable SQL tool.
+
+The CLI maps the same operations into scripts and human diagnostics. JSON
+output is available for every read and mutation. The CLI also owns engine
+lifecycle commands and a fixture-ingestion command useful for tests.
+
+## Interfaces
+
+### Ingestion
+
+- OTLP/HTTP endpoints: `/v1/logs`, `/v1/traces`, `/v1/metrics`.
+- Loopback only by default.
+- Protobuf and JSON request bodies.
+- Success means every accepted record is durably queued for the active
+  consumers; it may already have been consumed by the response.
+- Malformed or over-limit requests change nothing and return an OTLP error.
+- Valid records are never rejected because no active tailapp understands them.
+
+### Definition management
+
+- Names identify tailapps; revision digests identify immutable source sets.
+- Every draft mutation takes `expected_revision` and returns a new revision.
+- Validation returns structured diagnostics without activation.
+- Export contracts cover read-only relations for explicit query-time mounting.
+- Continuing activation takes an expected draft revision, requires an
+  unchanged relational schema digest, and changes folds at one delivery
+  boundary.
+- Reset activation is explicit, discards that tailapp's old materialized state,
+  and begins with future events.
+- The active source and compiled metadata are inspectable through MCP/CLI.
+
+### Query
+
+- A query names one active tailapp, SQL, positional parameters, and optional
+  expected revision/frontier.
+- The response names schema, rows, truncation, active revision, delivery head,
+  interpreted position, completeness, and any gap.
+- SQL is read-only and resource-bounded. It is never an ingestion or tailapp
+  mutation interface.
+
+### Engine control
+
+- Start, stop, health, configuration, and reset are CLI operations.
+- MCP exposes health and tailapp status but does not stop the engine hosting
+  the calling agent's analytics.
+- Engine configuration is machine-local, not part of a tailapp revision.
+
+## Capabilities
+
+The architecture supports:
+
+- local OTLP collection from multiple concurrent harness sessions;
+- schema-checked, deterministic normalization and analytics defined without
+  recompiling Tailapp;
+- materialized tables, indexes, views, joins, aggregates, rollups, normalized
+  tear-offs, denormalized query shapes, and application-defined lineage;
+- explicit query-time joins across exported read-only namespace relations;
+- continuous agent-authored install, inspection, compatible update, reset, and
+  delete;
+- atomic fold-profile activation at a delivery boundary;
+- bounded SQL and schema discovery through MCP;
+- exact frontier reporting and deterministic table transitions; and
+- isolation of one tailapp's schema and runtime failure from others.
+
+It intentionally does not make arbitrary code, network calls, filesystem
+access, clocks, randomness, dynamic evaluation, SQLite extensions, or ambient
+process state available to JSONata folds.
+
+## Trust, privacy, and failure boundaries
+
+Agent telemetry can contain prompts, responses, commands, paths, tool inputs,
+account identifiers, and model metadata. Tailapp therefore treats inbox and
+projection files as private to the local user, creates state directories
+with restrictive permissions, binds listeners to loopback, disables SQLite
+extension loading, and avoids logging record bodies in its own operational
+logs.
+
+The first release trusts processes running as the same operating-system user.
+It does not claim protection from a malicious local peer with access to the
+socket or data directory. Tailapp source is untrusted declarative input:
+compilation, the JSONata profile, SQLite authorizers, deterministic limits,
+transaction boundaries, and result bounds confine it.
+
+Failure is localized:
+
+- an invalid OTLP request does not enter the inbox;
+- an invalid draft does not affect an active revision;
+- a projection gap stops only that tailapp and leaves all others running;
+- a failed activation does not displace the old revision; and
+- a cancelled or over-budget SQL query does not stop ingestion or folding.
+
+## Initial scope
+
+The first product is one local Go binary, one loopback OTLP/HTTP receiver, one
+user-owned local control socket, one bounded durable SQLite inbox/registry, and
+one durable SQLite projection per tailapp. It implements the minimal
+JSONata-with-DDL profile, private fold namespaces, explicit query exports, MCP
+over stdio, a parity CLI, bounded read-only SQL, draft/validate/continue-or-reset
+activation, and independent sample analytics that can be joined at query time.
+
+The initial release targets macOS and Linux. It accepts OTel logs, spans, and
+metric points but does not promise a stable semantic mapping for every vendor
+attribute. Tailapps operate on the canonical envelope and preserved record.
+
+## Deferred scope
+
+The following require later designs:
+
+- non-loopback OTLP, authentication, authorization, TLS termination, and
+  multi-user tenancy;
+- collectors for Bedrock, LiteLLM, hosted gateways, or other server streams;
+- OTLP/gRPC if real harness compatibility cannot be achieved through HTTP;
+- distributed ordering, replication, remote database services, and horizontal
+  projection workers;
+- retained event history, archival, upstream replay, and privacy redaction;
+- arbitrary fold-to-fold event emission, pipelines deeper than the fixed
+  normalizer-to-analytics boundary, tailapp imports, dataflow graphs, stream
+  joins, and fold-time cross-namespace reads;
+- persistent federated catalogs, dashboards, alerts, and SQL subscriptions;
+- native fold helpers or other extension capabilities;
+- in-place projection schema migration; and
+- arbitrary package dependencies or executable plugins in the core engine.
+
+Remote scaling must preserve the semantic boundaries here: ordered delivery,
+content-addressed tailapp revisions, deterministic folds, one logical writer
+per projection, exact frontiers, and read-only bounded queries. A future
+retained source may add replay, but the fold contract cannot depend on its
+existence.
+
+## Design basis
+
+- Gitseq's [JSONata-with-DDL application interface](https://github.com/generalbusiness-ai/gitseq/blob/3a5d952c8e1d94ff4d07ce666ca35085571ef857/notes/2026-08-26-jsonata-ddl-application-interface.md)
+- Gitseq's [first implementation design](https://github.com/generalbusiness-ai/gitseq/blob/3a5d952c8e1d94ff4d07ce666ca35085571ef857/notes/2026-08-26-jsonata-ddl-application-implementation.md)
+- Gitseq's [working JSONata/DDL spike](https://github.com/generalbusiness-ai/gitseq/tree/3a5d952c8e1d94ff4d07ce666ca35085571ef857/spike/jsonataddl)
+- [Claude Code OTel monitoring](https://code.claude.com/docs/en/monitoring-usage)
+- [Codex configuration reference](https://developers.openai.com/codex/config-reference)
+- [OpenCode plugin event interface](https://opencode.ai/docs/plugins/)
