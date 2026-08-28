@@ -1,0 +1,73 @@
+{
+  "resourceLogs": [
+    {
+      "resource": {"attributes": [{"key": "service.name", "value": {"stringValue": "claude-code"}}]},
+      "scopeLogs": [{"scope": {"name": "tailapp-demo", "version": "1"}, "logRecords": [
+        {"timeUnixNano": "1787900000000000100", "eventName": "claude_code.tool_result", "attributes": [
+          {"key": "session.id", "value": {"stringValue": "violation-claude"}}, {"key": "tool_name", "value": {"stringValue": "dangerous_shell"}},
+          {"key": "target", "value": {"stringValue": "/outside/project"}}, {"key": "success", "value": {"boolValue": false}}]},
+        {"timeUnixNano": "1787900000000000200", "eventName": "claude_code.tool_result", "attributes": [
+          {"key": "session.id", "value": {"stringValue": "shared-claude"}}, {"key": "tool_name", "value": {"stringValue": "read"}},
+          {"key": "target", "value": {"stringValue": "/workspace/file"}}, {"key": "success", "value": {"boolValue": true}}]},
+        {"timeUnixNano": "1787900000000000300", "eventName": "claude_code.tool_result", "attributes": [
+          {"key": "session.id", "value": {"stringValue": "unknown-claude"}}, {"key": "tool_name", "value": {"stringValue": "read"}},
+          {"key": "success", "value": {"boolValue": true}}]},
+        {"timeUnixNano": "1787900000000000400", "eventName": "claude_code.api_request", "attributes": [
+          {"key": "session.id", "value": {"stringValue": "shared-claude"}}, {"key": "input_tokens", "value": {"intValue": "120"}},
+          {"key": "output_tokens", "value": {"intValue": "30"}}, {"key": "cost_microusd", "value": {"intValue": "9"}}]}
+      ]}]
+    },
+    {
+      "resource": {"attributes": [{"key": "service.name", "value": {"stringValue": "codex"}}]},
+      "scopeLogs": [{"scope": {"name": "tailapp-demo", "version": "1"}, "logRecords": [
+        {"timeUnixNano": "1787900000000000500", "eventName": "codex.tool_result", "attributes": [
+          {"key": "conversation.id", "value": {"stringValue": "violation-codex"}}, {"key": "tool_name", "value": {"stringValue": "dangerous_shell"}},
+          {"key": "target", "value": {"stringValue": "/outside/project"}}, {"key": "success", "value": {"boolValue": false}}]},
+        {"timeUnixNano": "1787900000000000600", "eventName": "codex.tool_result", "attributes": [
+          {"key": "conversation.id", "value": {"stringValue": "shared-codex"}}, {"key": "tool_name", "value": {"stringValue": "read"}},
+          {"key": "target", "value": {"stringValue": "/workspace/file"}}, {"key": "success", "value": {"boolValue": true}}]},
+        {"timeUnixNano": "1787900000000000700", "eventName": "codex.tool_result", "attributes": [
+          {"key": "conversation.id", "value": {"stringValue": "unknown-codex"}}, {"key": "tool_name", "value": {"stringValue": "read"}},
+          {"key": "success", "value": {"boolValue": true}}]},
+        {"timeUnixNano": "1787900000000000800", "eventName": "codex.tool_result", "attributes": [
+          {"key": "conversation.id", "value": {"stringValue": "loop-codex"}}, {"key": "tool_name", "value": {"stringValue": "shell"}},
+          {"key": "target", "value": {"stringValue": "/workspace"}}, {"key": "success", "value": {"boolValue": false}}]},
+        {"timeUnixNano": "1787900000000000900", "eventName": "codex.tool_result", "attributes": [
+          {"key": "conversation.id", "value": {"stringValue": "loop-codex"}}, {"key": "tool_name", "value": {"stringValue": "shell"}},
+          {"key": "target", "value": {"stringValue": "/workspace"}}, {"key": "success", "value": {"boolValue": false}}]},
+        {"timeUnixNano": "1787900000000001000", "eventName": "codex.tool_result", "attributes": [
+          {"key": "conversation.id", "value": {"stringValue": "loop-codex"}}, {"key": "tool_name", "value": {"stringValue": "shell"}},
+          {"key": "target", "value": {"stringValue": "/workspace"}}, {"key": "success", "value": {"boolValue": false}}]},
+        {"timeUnixNano": "1787900000000001100", "eventName": "codex.api_request", "attributes": [
+          {"key": "conversation.id", "value": {"stringValue": "shared-codex"}}, {"key": "input_tokens", "value": {"intValue": "100"}},
+          {"key": "output_tokens", "value": {"intValue": "25"}}, {"key": "cost_microusd", "value": {"intValue": "7"}}]}
+      ]}]
+    },
+    {
+      "resource": {"attributes": [{"key": "service.name", "value": {"stringValue": "opencode"}}]},
+      "scopeLogs": [{"scope": {"name": "tailapp-demo", "version": "1"}, "logRecords": [
+        {"timeUnixNano": "1787900000000001200", "eventName": "opencode.tool.execute.after", "attributes": [
+          {"key": "session_id", "value": {"stringValue": "violation-opencode"}}, {"key": "tool_name", "value": {"stringValue": "dangerous_shell"}},
+          {"key": "target", "value": {"stringValue": "/outside/project"}}, {"key": "success", "value": {"boolValue": false}}]},
+        {"timeUnixNano": "1787900000000001300", "eventName": "opencode.tool.execute.after", "attributes": [
+          {"key": "session_id", "value": {"stringValue": "shared-opencode"}}, {"key": "tool_name", "value": {"stringValue": "read"}},
+          {"key": "target", "value": {"stringValue": "/workspace/file"}}, {"key": "success", "value": {"boolValue": true}}]},
+        {"timeUnixNano": "1787900000000001400", "eventName": "opencode.tool.execute.after", "attributes": [
+          {"key": "session_id", "value": {"stringValue": "unknown-opencode"}}, {"key": "tool_name", "value": {"stringValue": "read"}},
+          {"key": "success", "value": {"boolValue": true}}]},
+        {"timeUnixNano": "1787900000000001500", "eventName": "opencode.tool.execute.after", "attributes": [
+          {"key": "session_id", "value": {"stringValue": "no-progress-opencode"}}, {"key": "tool_name", "value": {"stringValue": "search"}},
+          {"key": "target", "value": {"stringValue": "/workspace"}}]},
+        {"timeUnixNano": "1787900000000001600", "eventName": "opencode.tool.execute.after", "attributes": [
+          {"key": "session_id", "value": {"stringValue": "no-progress-opencode"}}, {"key": "tool_name", "value": {"stringValue": "read"}},
+          {"key": "target", "value": {"stringValue": "/workspace"}}]},
+        {"timeUnixNano": "1787900000000001700", "eventName": "opencode.tool.execute.after", "attributes": [
+          {"key": "session_id", "value": {"stringValue": "no-progress-opencode"}}, {"key": "tool_name", "value": {"stringValue": "inspect"}},
+          {"key": "target", "value": {"stringValue": "/workspace"}}]},
+        {"timeUnixNano": "1787900000000001800", "eventName": "opencode.api_request", "attributes": [
+          {"key": "session_id", "value": {"stringValue": "shared-opencode"}}, {"key": "input_tokens", "value": {"intValue": "80"}},
+          {"key": "output_tokens", "value": {"intValue": "20"}}, {"key": "cost_microusd", "value": {"intValue": "5"}}]}
+      ]}]
+    }
+  ]
+}

@@ -3,7 +3,8 @@
   $resource := event.record.resource.attributes ? event.record.resource.attributes : {};
   $usage := event.name = "claude_code.api_request" or event.name = "codex.api_request" or event.name = "opencode.api_request";
   $session_raw := $lookup($attrs, "session.id") ? $lookup($attrs, "session.id") :
-    ($lookup($attrs, "conversation.id") ? $lookup($attrs, "conversation.id") : $lookup($resource, "service.instance.id"));
+    ($lookup($attrs, "conversation.id") ? $lookup($attrs, "conversation.id") :
+    ($lookup($attrs, "session_id") ? $lookup($attrs, "session_id") : $lookup($resource, "service.instance.id")));
   $session := $exists($session_raw) ? $string($session_raw) : "unknown:" & event.source;
   $input := $lookup($attrs, "input_tokens") ? $number($lookup($attrs, "input_tokens")) : 0;
   $output := $lookup($attrs, "output_tokens") ? $number($lookup($attrs, "output_tokens")) : 0;
@@ -27,4 +28,3 @@
     "tables": {}
   }
 )
-

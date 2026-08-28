@@ -80,6 +80,17 @@ func Create(ctx context.Context, path string, compiled *profile.Profile, activat
 }
 
 func Open(ctx context.Context, path string, compiled *profile.Profile) (*Projection, error) {
+	return openExisting(ctx, path, compiled, compiled.Revision, false)
+}
+
+// OpenForUpgrade opens an identity-matching legacy projection for query and
+// explicit lifecycle repair only. The engine must not deliver events through
+// it until a current-profile continuation or reset succeeds.
+func OpenForUpgrade(ctx context.Context, path string, compiled *profile.Profile, expectedRevision string) (*Projection, error) {
+	return openExisting(ctx, path, compiled, expectedRevision, true)
+}
+
+func openExisting(ctx context.Context, path string, compiled *profile.Profile, expectedRevision string, allowLegacyRuntime bool) (*Projection, error) {
 	if compiled == nil {
 		return nil, errors.New("compiled profile is required")
 	}
@@ -100,7 +111,7 @@ func Open(ctx context.Context, path string, compiled *profile.Profile) (*Project
 		database.Close()
 		return nil, fmt.Errorf("read projection identity: %w", err)
 	}
-	if name != compiled.Name || revision != compiled.Revision || runtime != profile.RuntimeID {
+	if name != compiled.Name || revision != expectedRevision || (!allowLegacyRuntime && runtime != profile.RuntimeID) {
 		database.Close()
 		return nil, errors.New("projection identity does not match compiled profile")
 	}
@@ -182,6 +193,72 @@ func (p *Projection) initialize(ctx context.Context, boundary int64, mode string
 func (p *Projection) Close() error              { return p.db.Close() }
 func (p *Projection) Database() *sql.DB         { return p.db }
 func (p *Projection) Profile() *profile.Profile { return p.profile }
+func (p *Projection) Path() string              { return p.path }
+
+// Continue atomically preserves existing writable tables, adds new tables,
+// replaces derived schema objects and switches the runtime profile at the
+// already-drained activation boundary.
+func (p *Projection) Continue(ctx context.Context, next *profile.Profile) error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if err := profile.ContinueCompatible(p.profile, next); err != nil {
+		return err
+	}
+	tx, err := p.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	for name := range next.Tables {
+		if _, exists := p.profile.Tables[name]; exists {
+			continue
+		}
+		if _, err := tx.ExecContext(ctx, next.Tables[name].SQL); err != nil {
+			return fmt.Errorf("create additive table %q: %w", name, err)
+		}
+	}
+	rows, err := tx.QueryContext(ctx, `SELECT type,name FROM sqlite_master WHERE (type='view' OR type='index') AND name NOT LIKE 'sqlite_%'`)
+	if err != nil {
+		return err
+	}
+	var objects [][2]string
+	for rows.Next() {
+		var kind, name string
+		if err := rows.Scan(&kind, &name); err != nil {
+			rows.Close()
+			return err
+		}
+		objects = append(objects, [2]string{kind, name})
+	}
+	rows.Close()
+	for _, object := range objects {
+		keyword := "VIEW"
+		if object[0] == "index" {
+			keyword = "INDEX"
+		}
+		if _, err := tx.ExecContext(ctx, `DROP `+keyword+` `+quote(object[1])); err != nil {
+			return err
+		}
+	}
+	for _, statement := range next.ReplaceableSQL {
+		if _, err := tx.ExecContext(ctx, statement); err != nil {
+			return fmt.Errorf("replace projection schema: %w", err)
+		}
+	}
+	for _, name := range sortedKeys(next.Exports) {
+		if _, err := tx.ExecContext(ctx, `CREATE VIEW `+quote("__tailapp_export_"+name)+` AS `+next.Exports[name].SQL); err != nil {
+			return fmt.Errorf("replace query export %q: %w", name, err)
+		}
+	}
+	if _, err := tx.ExecContext(ctx, `UPDATE tailapp_projection_identity SET revision=?,runtime_profile=?,activation_mode='continue' WHERE singleton=1`, next.Revision, profile.RuntimeID); err != nil {
+		return err
+	}
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	p.profile = next
+	return nil
+}
 
 func (p *Projection) Process(ctx context.Context, delivery inbox.Delivery) (result Result, processErr error) {
 	p.mu.Lock()

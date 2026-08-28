@@ -95,7 +95,7 @@ func TestMountRewriteDoesNotTouchQuotedText(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(rewritten, `'cost.session_cost'`) || strings.Count(rewritten, "__tailapp_export_session_cost") != 2 {
+	if !strings.Contains(rewritten, `'cost.session_cost'`) || strings.Count(rewritten, "__tailapp_export_session_cost") != 1 {
 		t.Fatalf("rewrite = %s", rewritten)
 	}
 }

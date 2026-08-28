@@ -18,9 +18,32 @@ var (
 	identifierRE  = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 )
 
-func Load(files fs.FS, root, name string) (*Profile, error) {
+func ValidateName(name string) error {
 	if !tailappNameRE.MatchString(name) {
-		return nil, fmt.Errorf("invalid tailapp name %q", name)
+		return fmt.Errorf("invalid tailapp name %q", name)
+	}
+	return nil
+}
+
+func ValidateSourceElement(name string, content []byte) error {
+	if err := validateSourcePath(name); err != nil {
+		return err
+	}
+	if name != "application.sql" && !(strings.HasPrefix(name, "folds/") && strings.HasSuffix(name, ".jsonata")) {
+		return fmt.Errorf("source path %q is outside the tailapp source profile", name)
+	}
+	if len(content) == 0 || len(content) > MaxElementBytes {
+		return fmt.Errorf("source element %q is empty or exceeds %d bytes", name, MaxElementBytes)
+	}
+	if !utf8.Valid(content) {
+		return fmt.Errorf("source element %q is not UTF-8", name)
+	}
+	return nil
+}
+
+func Load(files fs.FS, root, name string) (*Profile, error) {
+	if err := ValidateName(name); err != nil {
+		return nil, err
 	}
 	root = path.Clean(root)
 	if root == "." {

@@ -422,6 +422,9 @@ func validateJSONataSource(source []byte) error {
 	if hasUnquotedAsterisk(source) {
 		return errors.New("JSONata wildcard and multiplication syntax is outside the deterministic bounded profile")
 	}
+	if hasUnquotedRange(source) {
+		return errors.New("JSONata generated ranges are outside the deterministic bounded profile")
+	}
 	allowed := stringSet(
 		"abs", "boolean", "ceil", "contains", "count", "exists", "floor",
 		"length", "lookup", "lowercase", "max", "min", "not", "number",
@@ -434,6 +437,36 @@ func validateJSONataSource(source []byte) error {
 		}
 	}
 	return nil
+}
+
+func hasUnquotedRange(source []byte) bool {
+	var quote byte
+	escaped := false
+	for index, current := range source {
+		if quote != 0 {
+			if escaped {
+				escaped = false
+				continue
+			}
+			if current == '\\' && quote != '`' {
+				escaped = true
+				continue
+			}
+			if current == quote {
+				quote = 0
+			}
+			continue
+		}
+		switch current {
+		case '\'', '"', '`':
+			quote = current
+		case '.':
+			if index+1 < len(source) && source[index+1] == '.' {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // hasUnquotedAsterisk rejects the evaluator's observable object wildcards.

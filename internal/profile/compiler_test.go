@@ -330,6 +330,7 @@ func TestJSONataSubsetRejectsUnboundedExtensionPoints(t *testing.T) {
 		"object wildcard":     `event.record.*`,
 		"descendant wildcard": `event.record.**`,
 		"generative multiply": `[1..4096].[1..4096].($ * 2)`,
+		"generated range":     `[1..4096]`,
 	} {
 		t.Run(name, func(t *testing.T) {
 			files := validFS(validDDL)

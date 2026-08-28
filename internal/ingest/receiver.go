@@ -54,10 +54,11 @@ func (limits ReceiverLimits) normalized() ReceiverLimits {
 }
 
 type Receiver struct {
-	queue     *inbox.Queue
-	consumers ConsumerSource
-	limits    ReceiverLimits
-	requests  chan struct{}
+	queue      *inbox.Queue
+	consumers  ConsumerSource
+	limits     ReceiverLimits
+	requests   chan struct{}
+	onAccepted func()
 }
 
 func NewReceiver(queue *inbox.Queue, consumers ConsumerSource, limits ReceiverLimits) *Receiver {
@@ -67,6 +68,8 @@ func NewReceiver(queue *inbox.Queue, consumers ConsumerSource, limits ReceiverLi
 	}
 	return &Receiver{queue: queue, consumers: consumers, limits: limits, requests: make(chan struct{}, limits.Concurrent)}
 }
+
+func (receiver *Receiver) SetAcceptedHook(hook func()) { receiver.onAccepted = hook }
 
 func ValidateLoopbackAddress(address string) error {
 	host, _, err := net.SplitHostPort(address)
@@ -156,6 +159,9 @@ func (receiver *Receiver) ServeHTTP(writer http.ResponseWriter, request *http.Re
 	if err != nil {
 		writeError(writer, http.StatusInternalServerError, "persist_failed", "durable acceptance failed")
 		return
+	}
+	if receiver.onAccepted != nil {
+		receiver.onAccepted()
 	}
 	writer.Header().Set("X-Tailapp-Records", fmt.Sprint(len(positions)))
 	if len(positions) > 0 {

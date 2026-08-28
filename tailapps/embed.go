@@ -23,3 +23,18 @@ func Load(name string) (*profile.Profile, error) {
 }
 
 func Names() []string { return []string{"agent-guard", "session-cost"} }
+
+// Source returns a private copy of a bundled Tailapp's ordinary source set.
+// Bundles still travel through the public registry/compiler/activation path;
+// this function is distribution, not a privileged runtime.
+func Source(name string) (map[string][]byte, error) {
+	compiled, err := Load(name)
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[string][]byte, len(compiled.Sources))
+	for path, content := range compiled.Sources {
+		result[path] = append([]byte(nil), content...)
+	}
+	return result, nil
+}

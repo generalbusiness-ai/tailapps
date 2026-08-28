@@ -68,12 +68,12 @@ type Delivery struct {
 }
 
 type Stats struct {
-	Records            int64
-	CanonicalBytes     int64
-	DeliveryHead       int64
-	OldestPosition     *int64
-	NewestPosition     *int64
-	PendingObligations int64
+	Records            int64  `json:"records"`
+	CanonicalBytes     int64  `json:"canonical_bytes"`
+	DeliveryHead       int64  `json:"delivery_head"`
+	OldestPosition     *int64 `json:"oldest_position"`
+	NewestPosition     *int64 `json:"newest_position"`
+	PendingObligations int64  `json:"pending_obligations"`
 }
 
 type Queue struct {

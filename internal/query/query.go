@@ -267,7 +267,7 @@ func authorizer(primary Namespace, mounts map[string]Namespace) func(sqlite3.Aut
 				if strings.HasPrefix(relation, "tailapp_") || strings.HasPrefix(relation, "sqlite_") || strings.HasPrefix(relation, "__tailapp_export_") {
 					return sqlite3.AUTH_DENY
 				}
-				if columns, ok := primaryRelations[strings.ToLower(relation)]; ok && (columns == nil || columns[strings.ToLower(column)]) {
+				if columns, ok := primaryRelations[strings.ToLower(relation)]; ok && (column == "" || columns == nil || columns[strings.ToLower(column)]) {
 					return sqlite3.AUTH_OK
 				}
 				return sqlite3.AUTH_DENY
@@ -330,6 +330,7 @@ func allColumns() map[string]bool { return nil }
 
 func rewriteMountExports(sql string, mounts map[string]Namespace) (string, error) {
 	var output strings.Builder
+	expectRelation := false
 	for index := 0; index < len(sql); {
 		if sql[index] == '\'' || sql[index] == '"' || sql[index] == '`' || sql[index] == '[' {
 			end, err := copyQuoted(&output, sql, index)
@@ -346,7 +347,7 @@ func rewriteMountExports(sql string, mounts map[string]Namespace) (string, error
 				index++
 			}
 			first := sql[start:index]
-			if index < len(sql) && sql[index] == '.' {
+			if expectRelation && index < len(sql) && sql[index] == '.' {
 				secondStart := index + 1
 				secondEnd := secondStart
 				for secondEnd < len(sql) && identifierContinue(rune(sql[secondEnd])) {
@@ -359,10 +360,12 @@ func rewriteMountExports(sql string, mounts map[string]Namespace) (string, error
 					}
 					output.WriteString(first + ".__tailapp_export_" + name)
 					index = secondEnd
+					expectRelation = false
 					continue
 				}
 			}
 			output.WriteString(first)
+			expectRelation = strings.EqualFold(first, "FROM") || strings.EqualFold(first, "JOIN")
 			continue
 		}
 		output.WriteByte(sql[index])
