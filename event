@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Native Claude micro-dollar mapping at the reviewed documentation head","body":{"commit":"373fe18","path":"tailapps/session-cost/folds/normalize.jsonata"}}
+{"kind":"artifact","text":"Bundled Tailapp native-cost regression coverage at the reviewed documentation head","body":{"commit":"373fe18","path":"tailapps/embed_test.go"}}
