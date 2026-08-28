@@ -140,7 +140,10 @@ The engine never uses `received_at` as a fold input.
 The inbox has hard byte and record caps. A deletion transaction runs after
 consumer completion; ordinary successful operation therefore keeps only a
 small working set. Consumed event content is not retained in any control table
-or operational log.
+or operational log. A per-tailapp diagnostic ring may keep the 16 most recent
+ineffective canonical records in process memory, with a 32 KiB payload ceiling
+per record. It clears on resident restart or activation and is never an
+evaluation input.
 
 ### Definition relations
 
@@ -496,6 +499,9 @@ OpenCode records into one private `otel_event` vocabulary containing, where
 observable: harness, session/agent identity, operation kind, tool, target,
 argument digest, result, event time, progress fingerprint, and source position.
 Vendor mappings are tailapp logic and compatibility fixtures, not engine code.
+Mappings may prefer a vendor's semantic `event.name` attribute over an
+instrumentation-callsite log name and normalize vendor service names, while
+leaving the fixed `otlp_record` contract unchanged.
 
 It owns at least these logical tables and read-only exports:
 
@@ -543,9 +549,10 @@ The database contains:
   source event ID, completeness, and gap; and
 - `tailapp_stats` with bounded aggregate operational counters.
 
-The engine does not persist a platform event, decision, fact, or derivation
-row per input. A tailapp that needs history declares and maintains an
-application table for it.
+The engine does not persist a platform event, decision, fact, derivation, or
+ineffective-sample row per input. A tailapp that needs history declares and
+maintains an application table for it. The bounded memory-only ineffective
+ring is diagnostic state, not projection state or replay input.
 
 For each `otlp_record` in delivery wave *n*, one tailapp transaction:
 

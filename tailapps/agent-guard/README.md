@@ -36,7 +36,17 @@ It reads session identity from `session.id`, `conversation.id`, `session_id`,
 or `service.instance.id`; tool identity from `tool_name` or `tool`; target from
 `target`, `file_path`, or `full_command`; and optional `success`,
 `operation_kind`, `argument_digest`, and `progress_fingerprint` attributes.
-The canonical `harness` comes from the OTLP source, normally `service.name`.
+The normalizer prefers a nonempty semantic `event.name` attribute over the
+OTLP log-record name, which accommodates Codex's tracing-callsite envelope.
+The canonical `harness` comes from the OTLP source, normally `service.name`;
+the native `codex_cli_rs` value is normalized to `codex`. Event time uses the
+source timestamp when present and otherwise the observed timestamp. A
+recognized event with neither timestamp remains ineffective.
+
+Raw `arguments` are deliberately not interpreted or copied into normalized
+events. When Codex provides tool identity but target detail exists only inside
+that raw field, the action is still recorded with `target_coverage = unknown`,
+and only the canonical record digest is retained as `argument_digest`.
 
 Do not emit both an OpenCode `before` and `after` record for one completed call
 unless two counted actions are intended. Prefer `after` for completed calls and

@@ -1,24 +1,45 @@
 (
   $attrs := event.record.attributes ? event.record.attributes : {};
   $resource := event.record.resource.attributes ? event.record.resource.attributes : {};
-  $usage := event.name = "claude_code.api_request" or event.name = "codex.api_request" or event.name = "opencode.api_request";
+  $semantic_name_raw := $lookup($attrs, "event.name");
+  $event_name := $exists($semantic_name_raw) and $string($semantic_name_raw) != "" ? $string($semantic_name_raw) : event.name;
+  $harness := event.source = "codex_cli_rs" ? "codex" : event.source;
+  $event_time := event.time_unix_nano ? event.time_unix_nano :
+    (event.observed_unix_nano ? event.observed_unix_nano : null);
+  $codex_stream := $event_name = "codex.sse_event" and (
+    $exists($lookup($attrs, "input_token_count")) or
+    $exists($lookup($attrs, "output_token_count")) or
+    $exists($lookup($attrs, "cached_input_token_count")) or
+    $exists($lookup($attrs, "reasoning_output_token_count"))
+  );
+  $usage := ($event_name = "claude_code.api_request" or $event_name = "codex.api_request" or
+    $event_name = "opencode.api_request" or $codex_stream) and $event_time;
   $session_raw := $lookup($attrs, "session.id") ? $lookup($attrs, "session.id") :
     ($lookup($attrs, "conversation.id") ? $lookup($attrs, "conversation.id") :
     ($lookup($attrs, "session_id") ? $lookup($attrs, "session_id") : $lookup($resource, "service.instance.id")));
-  $session := $exists($session_raw) ? $string($session_raw) : "unknown:" & event.source;
-  $input := $lookup($attrs, "input_tokens") ? $number($lookup($attrs, "input_tokens")) : 0;
-  $output := $lookup($attrs, "output_tokens") ? $number($lookup($attrs, "output_tokens")) : 0;
+  $session := $exists($session_raw) ? $string($session_raw) : "unknown:" & $harness;
+  $input_raw := $exists($lookup($attrs, "input_tokens")) ? $lookup($attrs, "input_tokens") : $lookup($attrs, "input_token_count");
+  $output_raw := $exists($lookup($attrs, "output_tokens")) ? $lookup($attrs, "output_tokens") : $lookup($attrs, "output_token_count");
+  $cached_raw := $exists($lookup($attrs, "cached_input_tokens")) ? $lookup($attrs, "cached_input_tokens") : $lookup($attrs, "cached_input_token_count");
+  $reasoning_raw := $exists($lookup($attrs, "reasoning_output_tokens")) ? $lookup($attrs, "reasoning_output_tokens") : $lookup($attrs, "reasoning_output_token_count");
+  $input := $exists($input_raw) ? $number($input_raw) : 0;
+  $output := $exists($output_raw) ? $number($output_raw) : 0;
+  $cached := $exists($cached_raw) ? $number($cached_raw) : 0;
+  $reasoning := $exists($reasoning_raw) ? $number($reasoning_raw) : 0;
   $cost_raw := $exists($lookup($attrs, "cost_microusd")) ? $lookup($attrs, "cost_microusd") : $lookup($attrs, "cost_usd_micros");
   $cost := $exists($cost_raw) ? $number($cost_raw) : 0;
   $usage ? {
     "decision": "effective",
     "facts": [],
     "events": {"otel_event": [{
-      "harness": event.source,
+      "harness": $harness,
       "session_id": $session,
       "input_tokens": $input,
       "output_tokens": $output,
+      "cached_input_tokens": $cached,
+      "reasoning_output_tokens": $reasoning,
       "cost_microusd": $cost,
+      "event_time_unix_nano": $string($event_time),
       "source_position": meta.position
     }]},
     "tables": {}

@@ -34,7 +34,10 @@ replay caches.
    OpenCode transcript files.
 3. **The event stream is not stored.** A bounded durable inbox exists only to
    carry unconsumed records across backpressure and process crashes. A record
-   is deleted after every captured consumer has committed or detached.
+   is deleted after every captured consumer has committed or detached. Each
+   tailapp may retain a tiny, fixed-size memory-only diagnostic sample of its
+   most recent ineffective inputs; samples disappear on restart or activation
+   and are not replayable history.
 4. **Each active tailapp has an isolated durable SQLite projection.** Its
    materialized tables are the tailapp's memory and locally authoritative
    analytic state. Ordinary SQL names need no global prefix, and a broken fold
@@ -245,6 +248,13 @@ does not enroll it in records already accepted. Deleting or detaching a
 tailapp settles its outstanding obligations. Capacity is finite; when a slow
 consumer fills it, the receiver returns OTLP backpressure rather than growing
 an accidental event store.
+
+After an ineffective normalizer decision, the engine may copy that tailapp's
+record into a fixed-size, memory-only diagnostic ring exposed over owner-only
+CLI and MCP. The ring has both record-count and per-record byte bounds, clears
+on resident restart or activation, and never participates in evaluation or
+replay. Its payload exposure is explicit because ineffective-shape diagnosis
+otherwise requires an external OTLP tap.
 
 ### 3. Tailapp registry and compiler
 

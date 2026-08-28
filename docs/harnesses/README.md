@@ -60,17 +60,23 @@ that the resident is healthy and its inbox has drained:
 
 ```sh
 "$TAILAPP_BIN" health
+"$TAILAPP_BIN" metrics --json
+"$TAILAPP_BIN" ineffective agent-guard
 "$TAILAPP_BIN" query \
   --sql 'SELECT harness, capability, state, reason FROM telemetry_coverage ORDER BY harness, capability' \
   agent-guard
 "$TAILAPP_BIN" query \
-  --sql 'SELECT harness, session_id, input_tokens, output_tokens, cost_microusd FROM session_cost ORDER BY harness, session_id' \
+  --sql 'SELECT harness, session_id, input_tokens, cached_input_tokens, output_tokens, reasoning_output_tokens, cost_microusd FROM session_cost ORDER BY harness, session_id' \
   session-cost
 ```
 
-An empty table means no recognized event reached that bundle. An `unknown`
-coverage row means the event was recognized but lacked a field needed by the
-guard. See the [`agent-guard`](../../tailapps/agent-guard/README.md) and
+An increase in `intake.records_total` proves OTLP delivery independently of
+MCP. Query results include the projection's durable `ineffective_records`
+count, and `ineffective` exposes up to 16 recent rejected records from resident
+memory for shape diagnosis. An empty table means no recognized event reached
+that bundle. An `unknown` coverage row means the event was recognized but
+lacked a field needed by the guard. See the
+[`agent-guard`](../../tailapps/agent-guard/README.md) and
 [`session-cost`](../../tailapps/session-cost/README.md) models before treating
 results as policy or billing evidence.
 
