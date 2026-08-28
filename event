@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Ineffective-diagnostics candidate at exact head a242296 for docs/reference/mcp.md.","body":{"commit":"a24229663c518d72adfe856106d798b615a8a9ef","path":"docs/reference/mcp.md"}}
+{"kind":"artifact","text":"Ineffective-diagnostics candidate at exact head a242296 for internal/cli/cli.go.","body":{"commit":"a24229663c518d72adfe856106d798b615a8a9ef","path":"internal/cli/cli.go"}}
