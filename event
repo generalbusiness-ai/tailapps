@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Session-cost normalizer maps DEVtheOPS unprefixed API logs, aliases, and dollar units.","body":{"commit":"6addc40309be622de85c4a1862f4749a8712e104","path":"tailapps/session-cost/folds/normalize.jsonata"}}
+{"kind":"artifact","text":"Session-cost input model documents DEVtheOPS mapping and duplicate-span privacy behavior.","body":{"commit":"6addc40309be622de85c4a1862f4749a8712e104","path":"tailapps/session-cost/README.md"}}
