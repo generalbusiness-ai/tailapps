@@ -1,6 +1,72 @@
 package mcp
 
-import "testing"
+import (
+	"context"
+	"encoding/json"
+	"net"
+	"net/http"
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/generalbusiness-ai/tailapp/internal/control"
+)
+
+func TestArrayToolResultOmitsStructuredContent(t *testing.T) {
+	tempDir, err := os.MkdirTemp("/tmp", "tailapp-mcp-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.RemoveAll(tempDir) })
+	listener, err := net.Listen("unix", filepath.Join(tempDir, "control.sock"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	controlServer := &http.Server{Handler: http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		defer request.Body.Close()
+		var envelope control.Request
+		if err := json.NewDecoder(request.Body).Decode(&envelope); err != nil {
+			t.Errorf("decode control request: %v", err)
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if envelope.Operation != "apps_list" {
+			t.Errorf("operation = %q, want apps_list", envelope.Operation)
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		_, _ = writer.Write([]byte(`{"ok":true,"result":[{"name":"example"}]}`))
+	})}
+	t.Cleanup(func() {
+		_ = controlServer.Close()
+	})
+	go func() {
+		if err := controlServer.Serve(listener); err != nil && err != http.ErrServerClosed {
+			t.Errorf("serve control socket: %v", err)
+		}
+	}()
+
+	server := Server{Client: control.NewClient(listener.Addr().String())}
+	reply := server.handle(context.Background(), message{
+		JSONRPC: "2.0",
+		ID:      1,
+		Method:  "tools/call",
+		Params:  json.RawMessage(`{"name":"tailapps_list","arguments":{}}`),
+	})
+	if reply.Error != nil {
+		t.Fatalf("tools/call error: %+v", reply.Error)
+	}
+	result, ok := reply.Result.(map[string]any)
+	if !ok {
+		t.Fatalf("result = %#v, want object", reply.Result)
+	}
+	if _, exists := result["structuredContent"]; exists {
+		t.Fatalf("array result must omit structuredContent: %#v", result)
+	}
+	content, ok := result["content"].([]map[string]string)
+	if !ok || len(content) != 1 || content[0]["text"] != `[{"name":"example"}]` {
+		t.Fatalf("content = %#v, want complete array JSON", result["content"])
+	}
+}
 
 func TestMutationToolsRequireIdempotencyKeys(t *testing.T) {
 	mutations := map[string]bool{
