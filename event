@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Regression coverage for apply-operator bypasses, dynamic call targets, Unicode lambda, and allowlisted apply at the exact tested head.","body":{"commit":"014296c5035768d57bcac47faa1cf4a72f29735d","path":"internal/profile/compiler_test.go"}}
+{"kind":"artifact","text":"RuntimeID bump for the narrowed bounded-JSONata language at the exact tested head.","body":{"commit":"014296c5035768d57bcac47faa1cf4a72f29735d","path":"internal/profile/types.go"}}
