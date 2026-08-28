@@ -23,9 +23,11 @@ Build one `tailapp` binary that can:
 5. compile, validate, and atomically activate or reset a tailapp revision;
 6. keep active projections caught up as new telemetry arrives;
 7. expose private schemas plus explicit read-only relation exports for bounded
-   multi-namespace SQL queries; and
+   multi-namespace SQL queries;
 8. recover unconsumed inbox records and durable materialized state after a
-   restart without retaining consumed telemetry.
+   restart without retaining consumed telemetry; and
+9. ship a directly usable cross-harness `agent-guard` tailapp for detective
+   policy, telemetry-coverage, loop, and session-progress analytics.
 
 The implementation is complete when the end-to-end acceptance tests in
 section 15 pass. It is not required to connect to Bedrock, LiteLLM, or a
@@ -64,7 +66,7 @@ internal/query/              authorizer-limited read-only SQL
 internal/mcp/                MCP stdio adapter
 internal/cli/                CLI commands and JSON rendering
 internal/profile/            pinned DDL/JSONata language profile
-tailapps/tool-activity/      sample rollup and normalized tool-use tables
+tailapps/agent-guard/        bundled policy analytics and query recipes
 tailapps/session-cost/       independent sample with a query export
 testdata/otlp/               deterministic OTLP request fixtures
 notes/                       architecture and implementation notes
@@ -125,7 +127,10 @@ schema behavior, and disabled extension loading. Its logical relations are:
 The queue also has `inbox_obligations(position, tailapp, revision, state,
 error_code)`. The active consumer set is captured in the same transaction that
 inserts an event. A record is deleted when every captured obligation is
-`consumed`, `skipped`, or `detached`. Installing a tailapp does not add an
+`consumed` or `detached`. `consumed` means the complete tailapp transaction
+committed, including an ineffective or zero-emission decision. `detached`
+means the engine deliberately relinquished delivery because the tailapp was
+gapped, reset, deactivated, or deleted. Installing a tailapp does not add an
 obligation to already accepted records.
 
 Indexes cover outstanding obligations and delivery order. Correlation fields
@@ -143,7 +148,8 @@ or operational log.
 - `draft_elements(tailapp, path, content, digest)`
 - `revisions(digest, tailapp, runtime_profile, source_json, diagnostics_json)`
 - `exports(revision, name, query_sql, contract_json, contract_digest)`
-- `activations(tailapp, revision, schema_digest, mode, boundary_position,
+- `activations(tailapp, revision, storage_schema_digest, mode,
+  boundary_position,
   activated_at, retired_at)`
 - `projection_status(tailapp, revision, interpreted_position, complete,
   gap_position, gap_reason)`
@@ -181,6 +187,12 @@ has durably accepted responsibility for delivery, not that it will retain the
 event. A slow consumer uses bounded inbox capacity. A gapped consumer is
 detached so it cannot turn the temporary queue into a history store. When the
 inbox is full, return a retryable backpressure response.
+
+The flat-wave barrier intentionally accepts head-of-line blocking. One slow
+but not yet failed tailapp can fill the inbox, backpressure every harness, and
+eventually cause an upstream exporter with bounded retries to drop telemetry.
+Operational status exposes per-tailapp latency and oldest outstanding position
+so the operator can repair or detach it before the queue fills.
 
 OTLP can deliver at least once. Tailapp does not infer equality as identity and
 does not deduplicate records. `content_digest` and native correlation IDs are
@@ -333,10 +345,14 @@ tailapp, including one of its exports.
 
 It rejects `ALTER`, `DROP`, triggers, virtual tables, generated or
 database-default values, PRAGMAs, `ATTACH`, `DETACH`, extension loading, and
-DDL containing ambient date/time/random functions. A revision whose relational
-DDL digest is unchanged may continue over the current database. Changed
-relational DDL requires explicit reset activation; this version does not
-migrate a live database in place.
+DDL containing ambient date/time/random functions. The compiler separately
+digests stored writable-table shape and replaceable schema objects. Continue
+activation requires every existing writable table to retain identical columns,
+types, constraints, and primary key; it may add new empty tables. Event,
+normalizer, fold, index, view, and export changes are continue-safe, with
+indexes and views rebuilt at the activation boundary. Changing or removing an
+existing writable table requires explicit reset; this version performs no
+in-place table migration.
 
 Logical column types are `TEXT`, `INTEGER`, `REAL`, `BLOB`, `BOOLEAN`, and
 `JSON`. Integers crossing JSONata are restricted to the exactly representable
@@ -378,7 +394,8 @@ topology a fixed root and independent analytic leaves rather than a general
 graph.
 
 Read cardinalities are `ONE`, `OPTIONAL ONE`, and `MANY LIMIT <positive-int>`.
-Every `MANY` query must have a deterministic `ORDER BY`. Reads are parameterized
+Every `MANY` query must have an `ORDER BY` whose final terms include a declared
+unique key, making the order total. Reads are parameterized
 `SELECT` statements prepared against the completed scratch schema. Parameters
 come only from declared event scalar fields. The compiler records selected
 columns and refuses `SELECT *`, duplicate output names, writes, PRAGMAs,
@@ -470,6 +487,45 @@ Machine configuration may lower but not raise limits for an existing runtime
 profile. The normalized-event limit is per tailapp and source record; there is
 no recursive emission or wave-wide event expansion.
 
+### Bundled `agent-guard` tailapp
+
+Ship one maintained first-party tailapp that yields useful results immediately
+after the three supported harnesses are pointed at the receiver. Its normalizer
+branches on `otlp_record.source` and maps tested Claude Code, Codex, and
+OpenCode records into one private `otel_event` vocabulary containing, where
+observable: harness, session/agent identity, operation kind, tool, target,
+argument digest, result, event time, progress fingerprint, and source position.
+Vendor mappings are tailapp logic and compatibility fixtures, not engine code.
+
+It owns at least these logical tables and read-only exports:
+
+- `telemetry_coverage`: per harness/capability `observed`, `missing`, or
+  `unknown`, with reason and last source position;
+- `session_progress`: first/last activity, last distinct progress, current
+  action fingerprint, repeat count, consecutive failures, and totals;
+- `policy_findings`: stable finding ID, rule, severity, session, source
+  position, summary, evidence JSON, and coverage state; and
+- `loop_findings`: repeated-action, repeated-failure, or bounded no-progress
+  evidence and the counters that triggered it.
+
+The initial policy program demonstrates denied tools, operation kinds, and
+target boundaries. Policy values live in normalizer/fold source in version one
+and can be changed through ordinary draft/validate/continue activation. A rule
+whose required tool arguments or target fields are absent or redacted records
+coverage as `unknown`; it must not report the operation compliant. Fixtures
+cover a known violation, known allowed operation, and unknown-coverage case for
+each harness.
+
+Loop signals are event-driven: repeated identical actions, repeated failures,
+or too many events without a changed progress fingerprint. A truly idle or
+hung process emits nothing, so the bundled query recipe accepts a
+caller-computed `cutoff_time_unix_nano` and selects stale `session_progress`
+rows. Agents or operators run that query periodically through MCP or CLI.
+
+These findings are detective evidence, not inline enforcement. Version one
+does not block a tool call, terminate a harness, or send alerts, and cannot
+claim coverage for activity a harness did not export.
+
 ## 10. Projection database and folding
 
 Create one durable SQLite database per tailapp. Enable WAL, foreign keys,
@@ -531,6 +587,9 @@ Any execution failure rolls back, records gap metadata in a separate small
 transaction, detaches only that tailapp from live delivery, and settles its
 current and queued obligations as detached. Other tailapps continue. The
 durable materialized state remains at its last successful source record.
+Because settled records are deleted, the detached tailapp permanently misses
+records between the gap and repair. Version one chooses exact fail-stop state
+over silently partial analytics. A declared skip-and-count policy is deferred.
 
 ### Activation
 
@@ -538,30 +597,39 @@ Activation compiles the expected draft revision and chooses one of two explicit
 modes. It has no cross-tailapp validation or coordination because definitions
 are independent.
 
-**Continue** is permitted only when the relational DDL digest exactly matches
-the active revision. The scheduler stops assigning new obligations at boundary
-*b*, drains that tailapp through *b*, updates the active normalization/fold
-profile and projection identity under a recoverable activation journal, then
-resumes with records after *b*. Existing materialized tables remain intact. A
-failure before the pointer switch leaves the old revision active.
+**Continue** is permitted when every existing writable table has the same
+stored shape. The scheduler stops assigning new obligations at boundary *b*,
+drains that tailapp through *b*, creates any additive tables, replaces indexes
+and views, updates the active event/normalization/fold/export profile and
+projection identity under a recoverable activation journal, then resumes with
+records after *b*. Existing materialized rows remain intact. A failure before
+the pointer switch restores the old replaceable schema objects and leaves the
+old revision active.
 
-**Reset** is required for first activation or changed relational DDL. Build an
-empty candidate database from the compiled DDL, stop assigning obligations at
-boundary *b*, detach any old outstanding obligations, atomically switch queries
-and future delivery to the candidate, and retire the old database. The new
-revision observes only events accepted after *b*. The API requires
-`mode=reset` and an acknowledgement that prior materialized state will be
-discarded.
+**Reset** is required for first activation or a changed/removed existing
+writable table. Build an empty candidate database from the compiled DDL, stop
+assigning obligations at boundary *b*, detach any old outstanding obligations,
+atomically switch queries and future delivery to the candidate, and retire the
+old database. The new revision observes only events accepted after *b*. The API
+requires `mode=reset` and an acknowledgement that prior materialized state will
+be discarded.
 
-Activating an earlier revision is allowed under the same rules: continue when
-its relational digest matches, otherwise reset. It does not replay events that
-arrived while another revision was active.
+Activating an earlier revision is allowed under the same stored-table rules.
+It does not replay events that arrived while another revision was active.
 
 On engine restart, validate projection identity and frontier, finish or roll
 back an activation journal, and resume pending inbox obligations. A missing,
 corrupt, or profile-incompatible projection is `unavailable`; Tailapp cannot
 rebuild it without retained input and requires explicit reset or a later
 external replay operation.
+
+An engine binary whose current runtime profile differs from an active revision
+starts control and query service but holds OTLP readiness closed. The operator
+or agent revalidates each source set under the new profile and
+continue-activates it when stored tables are compatible, or explicitly resets
+or deactivates it. Ingestion opens only when every active tailapp is runnable,
+so an upgrade cannot silently reinterpret folds or discard upgrade-window
+telemetry.
 
 ## 11. Query contract
 
@@ -599,7 +667,7 @@ The result is:
 
 ```json
 {
-  "tailapp": "tool-activity",
+  "tailapp": "agent-guard",
   "revision": "sha256:...",
   "delivery_head": 1280,
   "interpreted_position": 1280,
@@ -608,8 +676,8 @@ The result is:
   ],
   "complete": true,
   "gap": null,
-  "columns": [{"name": "tool", "type": "TEXT"}],
-  "rows": [["shell"]],
+  "columns": [{"name": "rule_id", "type": "TEXT"}],
+  "rows": [["denied-tool"]],
   "truncated": false
 }
 ```
@@ -716,6 +784,8 @@ version one. The documentation must state this plainly.
   `otlp_record` -> `otel_event` -> tables topology.
 - Reject cross-tailapp references, multiple normalizers, analytic emission,
   multiple table writers, and reads from another analytic fold's tables.
+- Reject a bounded `MANY` read whose `ORDER BY` lacks a declared unique-key
+  suffix.
 - Pin compatibility fixtures for the admitted JSONata subset.
 
 ### Milestone B: inbox and OTLP receiver
@@ -729,9 +799,9 @@ version one. The documentation must state this plainly.
 
 ### Milestone C: projection, normalization, and query
 
-- Feed canonical records through a normalizer and its analytic folds; check
-  exact private events, normalizer-owned lookup changes, rollups, tear-offs,
-  denormalized rows, and the aligned frontier.
+- Feed all three harness fixture families through `agent-guard`; check exact
+  private events, coverage states, policy findings, session progress,
+  repetition/loop findings, and aligned frontiers.
 - Run two independent tailapps over the same source records and join their
   explicit exports using request-local query aliases.
 - Prove event transactions roll back and report gaps.
@@ -751,6 +821,8 @@ version one. The documentation must state this plainly.
 - Race expected-revision mutations and prove only one wins.
 - Prove compatible activation preserves materialized rows and changes behavior
   only after its boundary.
+- Prove event, fold, export, index, and view changes plus an additive table are
+  continue-safe, while a changed existing table requires reset.
 - Prove reset discards only the named tailapp's old materialized state and
   begins with future events.
 - Prove one tailapp can be activated, reset, or deleted without coordinating
@@ -762,9 +834,10 @@ version one. The documentation must state this plainly.
 
 - Run every service operation through CLI and MCP conformance tests.
 - Configure current Codex to export OTLP logs to the loopback receiver and
-  observe at least one queryable session/tool event.
+  observe at least one queryable `agent-guard` session/tool event.
 - Configure current Claude Code to export OTLP log events and observe at least
-  one queryable prompt/tool event with content gates left at their defaults.
+  one queryable prompt/tool event with content gates left at their defaults;
+  missing gated fields must appear as unknown coverage.
 - For OpenCode, use native OTLP when its tested release supports it; otherwise
   provide a thin example adapter from the documented plugin event stream to
   OTLP. The engine contract must not vary between those paths.
@@ -777,11 +850,11 @@ The initial implementation is accepted when an automated test or scripted
 demo proves all of the following:
 
 1. A fresh `TAILAPP_HOME` initializes and one resident owns it.
-2. Independent `tool-activity` and `session-cost` tailapps are created through
-   the public service.
+2. Bundled `agent-guard` and independent `session-cost` tailapps are created
+   through the public service.
 3. Each declares one normalizer from built-in `otlp_record` to its own private
-   `otel_event`, one or more analytic folds, owned tables, and a read-only
-   query export.
+   `otel_event`, one or more analytic folds, owned tables, and read-only query
+   exports.
 4. Reset activation publishes each tailapp independently at a precise delivery
    boundary.
 5. Protobuf and JSON OTLP fixtures containing logs and spans are accepted at
@@ -789,33 +862,41 @@ demo proves all of the following:
 6. For each tailapp, the normalizer optionally updates its lookup tables,
    emits schema-valid private events, and its analytics folds materialize
    expected rollup and tear-off rows in one transaction.
-7. Inbox content is deleted after obligations settle. The same bounded SQL
+7. `agent-guard` fixtures for Claude Code, Codex, and OpenCode each produce a
+   known policy violation, an allowed operation, and an explicit unknown when
+   required telemetry is absent; repeated/no-progress fixtures produce a loop
+   finding, and a caller-supplied cutoff query identifies a stale session.
+8. Inbox content is deleted after obligations settle. The same bounded SQL
    query joins both tailapps' explicit exports under request-local aliases and
    returns identical typed rows and aligned namespace frontiers through CLI
    and MCP.
-8. An irrelevant OTel event is consumed as ineffective or unhandled without
+9. An irrelevant OTel event is consumed as ineffective or unhandled without
    changing application tables or leaving a platform event-history row.
-9. A second normalizer, wrong internal event schema, analytic event emission,
+10. A second normalizer, wrong internal event schema, analytic event emission,
    duplicate table writer, cross-tailapp fold read, and analytic-to-analytic
    table read are each refused before activation.
-10. A schema-compatible fold update activates at one boundary, preserves prior
-   materialized rows, and affects only later events.
-11. A changed table schema is refused in continue mode and succeeds only with
-    explicit reset acknowledgement; the reset tailapp then sees future events
-    only.
-12. A deliberately failing fold opens a gap and detaches only its tailapp while
+11. A storage-compatible event/fold/view/index/export update activates at one
+    boundary, preserves prior materialized rows, and affects only later events;
+    adding a new empty table also continues safely.
+12. A changed or removed existing writable table is refused in continue mode
+    and succeeds only with explicit reset acknowledgement; the reset tailapp
+    then sees future events only.
+13. A deliberately failing fold opens a gap and detaches only its tailapp while
     another tailapp and the inbox continue progressing.
-13. A write, PRAGMA, attachment, unsafe function, undeclared private read,
+14. A write, PRAGMA, attachment, unsafe function, undeclared private read,
     over-budget query, stale
     expected frontier, and oversized result are each refused with the expected
     stable error code.
-14. Either tailapp can be reset or deleted without changing the other's active
+15. Either tailapp can be reset or deleted without changing the other's active
     revision or materialized state; a later query naming the absent export is
     refused as a query-resolution error.
-15. Restarting the engine recovers inbox delivery, active revisions, and
+16. Restarting the engine recovers inbox delivery, active revisions, and
     materialized state without duplicate interpretation, including a crash
     between projection and obligation commits.
-16. `go test ./...`, static analysis, and the scripted demo pass on clean macOS
+17. A runtime-profile upgrade keeps query/control available but holds OTLP
+    readiness closed until active tailapps are revalidated and continued,
+    reset, or deactivated.
+18. `go test ./...`, static analysis, and the scripted demo pass on clean macOS
     and Linux environments.
 
 ## 16. Explicit non-goals
@@ -826,9 +907,12 @@ Do not add these to the first implementation to make a demo look complete:
 - Bedrock, LiteLLM, hosted gateway, or cloud database connectors;
 - OTLP/gRPC unless a named harness cannot be exercised over HTTP;
 - dashboards, alerting, or a browser UI;
+- inline tool-call blocking, agent termination, or harness control;
 - native fold helpers, WASM, SQLite extensions, or arbitrary plugins;
 - a persistent event log, historical replay, archival, or automatic redaction;
 - historical-position fold reads;
+- more than one private normalized event type in one tailapp;
+- declared skip-and-count execution-error policies;
 - normalizer chains, analytics-to-analytics event or table dependencies,
   fold-time cross-tailapp access, stream joins, or shared writable tables;
 - online schema migration; or

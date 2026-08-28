@@ -34,15 +34,15 @@ replay caches.
    OpenCode transcript files.
 3. **The event stream is not stored.** A bounded durable inbox exists only to
    carry unconsumed records across backpressure and process crashes. A record
-   is deleted after the active consumers have handled or skipped it.
+   is deleted after every captured consumer has committed or detached.
 4. **Each active tailapp has an isolated durable SQLite projection.** Its
    materialized tables are the tailapp's memory and locally authoritative
    analytic state. Ordinary SQL names need no global prefix, and a broken fold
    cannot stop other tailapps.
 5. **Editing and activation are separate.** Agents manipulate draft elements
-   with optimistic revision checks. A schema-compatible revision can continue
-   over existing tables; an incompatible revision requires an explicit reset
-   and begins with future events.
+   with optimistic revision checks. A storage-compatible revision can continue
+   over existing tables; an incompatible writable-table change requires an
+   explicit reset and begins with future events.
 6. **MCP is the primary product interface; the CLI has parity.** Both adapt one
    internal application service and therefore share validation, bounds, and
    error semantics.
@@ -108,11 +108,13 @@ replay.
 ### Application memory
 
 JSONata itself is stateless. Useful behavior comes from declared reads of the
-tailapp's materialized tables at the previous event boundary. A tailapp can
-store counters, sessions, correlation keys, outstanding tool calls, bounded
-event-time windows, or selected history, then update those rows in the fold.
-It stores only the information its analysis needs rather than forcing the
-engine to retain every input record.
+tailapp's materialized tables. The normalizer begins from committed state at
+the previous source-record boundary. Its changes then become visible to the
+analytic stage within the same transaction. Each analytic fold sees its own
+earlier changes while consuming repeated `otel_event` values from that source
+record. A tailapp can therefore store counters, sessions, correlation keys,
+outstanding tool calls, bounded event-time windows, or selected history
+without forcing the engine to retain every input record.
 
 Time-based expiry can happen when a later event supplies a newer event time.
 Actions that must fire during a completely idle stream would require explicit
@@ -169,16 +171,26 @@ runtime profile unless a later design says so.
 
 Every tailapp has at most one mutable draft and one active immutable revision.
 Element changes advance the draft revision. Validation compiles a snapshot of
-that draft. Activation changes behavior at a precise delivery boundary. If the
-relational schema digest is unchanged, the new fold profile continues over the
-existing materialized state. If the schema changes, activation is refused
-unless the caller explicitly chooses `reset`; reset creates empty materialized
+that draft. Activation changes behavior at a precise delivery boundary.
+Continue compatibility is based on stored writable-table shape, not the whole
+DDL text: every existing writable table must retain its columns, types,
+constraints, and primary key, while new empty tables may be added. Event,
+normalizer, fold, index, view, and export changes are continue-safe; indexes
+and views are rebuilt at the boundary. Changing or removing an existing
+writable table requires explicit `reset`, which creates empty materialized
 tables and begins at the next event. Failed editing or compilation leaves the
 old active revision queryable.
 
 Deletion follows the same rule. Deleting an element changes only the draft.
 Deleting a tailapp retires its active projection from the query surface. It
 does not affect the inbox obligations or materialized state of other tailapps.
+
+An engine upgrade never silently reinterprets an active revision under a new
+runtime profile. If the binary no longer supplies the active profile, control
+and query remain available but OTLP readiness is held closed. The operator or
+agent revalidates each source set under the new profile and continue-activates
+it when its writable tables are compatible, or explicitly resets/deactivates
+it. Ingestion resumes only after every active projection is runnable.
 
 ### Projection frontier and gap
 
@@ -197,6 +209,11 @@ Other tailapps and ingestion continue. Repair requires a schema-compatible
 reactivation that resumes with future events, an explicit reset, or a future
 external replay facility. A business-level fold decision of `ineffective` is
 not a gap.
+
+Because the inbox is not a history store, records accepted after detachment and
+before repair are permanently absent from that tailapp. This fail-stop policy
+is deliberate in version one. A declared skip-and-count error policy may be
+designed later for analytics where continuity is preferable to exactness.
 
 ## Components
 
@@ -259,10 +276,11 @@ its complete state at *n*. Transaction-local `otel_event` values disappear at
 commit.
 
 The first engine treats that fan-out as one flat wave and does not begin
-delivery *n + 1* until every active consumer has committed, skipped, or
-detached. Independent tailapps may run concurrently because there are no
-fold-time edges between them. This gives aligned query frontiers without a
-dataflow scheduler.
+delivery *n + 1* until every active consumer has committed or detached.
+Independent tailapps may run concurrently because there are no fold-time edges
+between them. This gives aligned query frontiers without a dataflow scheduler,
+but accepts head-of-line blocking: one slow tailapp can fill the bounded inbox,
+backpressure all harnesses, and eventually expose them to exporter-side drops.
 
 ### 5. Query service
 
@@ -314,9 +332,8 @@ lifecycle commands and a fixture-ingestion command useful for tests.
 - Every draft mutation takes `expected_revision` and returns a new revision.
 - Validation returns structured diagnostics without activation.
 - Export contracts cover read-only relations for explicit query-time mounting.
-- Continuing activation takes an expected draft revision, requires an
-  unchanged relational schema digest, and changes folds at one delivery
-  boundary.
+- Continuing activation takes an expected draft revision, requires compatible
+  stored writable tables, and changes behavior at one delivery boundary.
 - Reset activation is explicit, discards that tailapp's old materialized state,
   and begins with future events.
 - The active source and compiled metadata are inspectable through MCP/CLI.
@@ -354,6 +371,23 @@ The architecture supports:
 - exact frontier reporting and deterministic table transitions; and
 - isolation of one tailapp's schema and runtime failure from others.
 
+Immediate value comes from a bundled `agent-guard` tailapp, not from the engine
+alone. Its normalizer maps current Claude Code, Codex, and OpenCode telemetry
+into one private event vocabulary. Its tables and exports cover telemetry
+coverage, session progress, tool and operation policy findings, repeated
+failures, repeated-action fingerprints, and bounded no-progress/loop signals.
+Missing or redacted fields produce an explicit `unknown` coverage result,
+never a claim of compliance. A periodic MCP or CLI query with a
+caller-supplied event-time cutoff identifies sessions whose last observed
+progress is stale; folds do not invent an idle-time event or read the clock.
+
+These are detective controls. OTLP observation happens after or alongside
+harness activity and cannot prevent a tool call, terminate an agent, or prove
+that an unobserved operation did not happen. Inline enforcement requires a
+later harness control adapter. Version one nevertheless gives agents and
+operators immediately queryable, cross-harness evidence for policy and
+behavior review.
+
 It intentionally does not make arbitrary code, network calls, filesystem
 access, clocks, randomness, dynamic evaluation, SQLite extensions, or ambient
 process state available to JSONata folds.
@@ -388,7 +422,8 @@ user-owned local control socket, one bounded durable SQLite inbox/registry, and
 one durable SQLite projection per tailapp. It implements the minimal
 JSONata-with-DDL profile, private fold namespaces, explicit query exports, MCP
 over stdio, a parity CLI, bounded read-only SQL, draft/validate/continue-or-reset
-activation, and independent sample analytics that can be joined at query time.
+activation, a bundled cross-harness `agent-guard` tailapp, and an independent
+sample analytic that can be joined with it at query time.
 
 The initial release targets macOS and Linux. It accepts OTel logs, spans, and
 metric points but does not promise a stable semantic mapping for every vendor
@@ -405,9 +440,14 @@ The following require later designs:
 - distributed ordering, replication, remote database services, and horizontal
   projection workers;
 - retained event history, archival, upstream replay, and privacy redaction;
+- inline policy enforcement, agent termination, alerts, and subscriptions;
 - arbitrary fold-to-fold event emission, pipelines deeper than the fixed
   normalizer-to-analytics boundary, tailapp imports, dataflow graphs, stream
   joins, and fold-time cross-namespace reads;
+- more than one private normalized event type per tailapp; the single
+  `otel_event` constraint is an intentional version-one simplification, not a
+  requirement of the two-stage architecture;
+- declared skip-and-count execution-error policies;
 - persistent federated catalogs, dashboards, alerts, and SQL subscriptions;
 - native fold helpers or other extension capabilities;
 - in-place projection schema migration; and
