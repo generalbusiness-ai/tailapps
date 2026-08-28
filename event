@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:15ffba44c751885e49a222621a4759efb294ef2e","text":"Withdrawn because its whole-repository path artifact was ineffective; a replacement exact-head request will cite valid per-path artifacts."}
+{"kind":"artifact","text":"Current pre-effectiveness branch candidate at exact head 3b08654 for README.md.","body":{"commit":"3b086547b200a330ea3af2f764dc548856df4ffe","path":"README.md"}}
