@@ -5,7 +5,7 @@
       "id": "local:41",
       "signal": "log",
       "name": "event <scrubbed-codex-callsite>",
-      "source": "codex_cli_rs",
+      "source": "codex_exec",
       "time_unix_nano": null,
       "observed_unix_nano": "1787933000000000041",
       "trace_id": null,
@@ -19,7 +19,7 @@
           "decision": "approved",
           "arguments": "<scrubbed>"
         },
-        "resource": {"attributes": {"service.name": "codex_cli_rs"}}
+        "resource": {"attributes": {"service.name": "codex_exec"}}
       }
     },
     "rows": {}
@@ -55,7 +55,7 @@
       "id": "local:43",
       "signal": "log",
       "name": "event <scrubbed-codex-callsite>",
-      "source": "codex_cli_rs",
+      "source": "codex_exec",
       "time_unix_nano": null,
       "observed_unix_nano": "1787933000000000043",
       "trace_id": null,
@@ -64,14 +64,16 @@
       "record": {
         "attributes": {
           "event.name": "codex.sse_event",
-          "kind": "response.completed",
+          "event.kind": "response.completed",
           "conversation.id": "session-scrubbed",
           "input_token_count": 120,
           "output_token_count": 30,
-          "cached_input_token_count": 40,
-          "reasoning_output_token_count": 9
+          "cached_token_count": 40,
+          "reasoning_token_count": 9,
+          "cache_write_token_count": 3,
+          "tool_token_count": 1
         },
-        "resource": {"attributes": {"service.name": "codex_cli_rs"}}
+        "resource": {"attributes": {"service.name": "codex_exec"}}
       }
     },
     "rows": {}

@@ -3,7 +3,7 @@
   $resource := event.record.resource.attributes ? event.record.resource.attributes : {};
   $semantic_name_raw := $lookup($attrs, "event.name");
   $event_name := $exists($semantic_name_raw) and $string($semantic_name_raw) != "" ? $string($semantic_name_raw) : event.name;
-  $harness := event.source = "codex_cli_rs" ? "codex" : event.source;
+  $harness := (event.source = "codex_cli_rs" or event.source = "codex_exec") ? "codex" : event.source;
   $event_time := event.time_unix_nano ? event.time_unix_nano :
     (event.observed_unix_nano ? event.observed_unix_nano : null);
   $claude := $event_name = "claude_code.tool_result" or $event_name = "claude_code.tool_decision";
