@@ -1,1 +1,1 @@
-{"target":"f1b5ca141b8eea8893a562b35be8c3ec2512029b","text":"Retire abandoned promise; took over #360 with db5d4b37."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:f1b5ca141b8eea8893a562b35be8c3ec2512029b","text":"Retire abandoned re-review promise from the stopped checker instance; this checker took over #360 and filed promise db5d4b37."}
