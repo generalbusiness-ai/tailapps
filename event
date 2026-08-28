@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:39586cea7832c001acb753cfcdea8ee05b93ff1a","text":"Replaced by the revised design at d0874d5 after checker changes and Hugh’s immediate-value criterion"}
+{"kind":"promise","text":"I will re-review the revised Tailapp design at d0874d5 against review d6243a36 and the immediate-value criterion."}
