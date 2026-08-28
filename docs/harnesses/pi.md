@@ -42,14 +42,14 @@ Examples currently listed in the ecosystem include:
 - `@mobrienv/pi-otlp`, which advertises OTLP metrics.
 
 These are useful starting points, not plug-compatible Tailapp guarantees. The
-two examples shipped with Tailapp do not currently recognize `pi.*` event
-names, and metrics alone do not drive either example. They are not the Tailapp
-catalog. Users and agents are encouraged to install a Pi-native Tailapp, fork
-an example with a `pi.*` normalizer, or replace the examples with analytics
-suited to their own adapter and policy. Translating Pi lifecycle data to the
-input contracts documented by [`agent-guard`](../../tailapps/agent-guard/README.md#input-model)
-and [`session-cost`](../../tailapps/session-cost/README.md#input-model) is only
-one available path.
+three shipped Tailapps do not currently recognize `pi.*` event names, and
+metrics alone do not drive them. They are not the Tailapp catalog. Users and
+agents can install a Pi-native Tailapp, fork an example with a `pi.*`
+normalizer, or replace the examples with analytics suited to their own adapter
+and policy. Translating Pi lifecycle data to the input contracts documented by
+[`agent-guard`](../../tailapps/agent-guard/README.md#input-model) and
+[`session-cost`](../../tailapps/session-cost/README.md#input-model) is only one
+available path.
 
 Point an HTTP/protobuf or HTTP/JSON logs exporter at
 `http://127.0.0.1:4318/v1/logs`. Tailapp does not accept OTLP gRPC. Preserve a
@@ -58,9 +58,9 @@ the action succeeded, and distinguish redacted target/progress data from an
 observed value.
 
 Until a Pi-aware Tailapp or mapping exists, the Pi MCP adapter can query and
-manage Tailapp but Pi's own activity will not appear in the two shipped
-examples' tables. See [Author and install a Tailapp](../authoring.md) for the
-CLI and MCP lifecycle.
+manage Tailapp, but Pi's own activity will not appear in the shipped examples'
+tables. See [Author and install a Tailapp](../authoring.md) for the CLI and MCP
+lifecycle.
 
 References: [Pi's extension model and intentionally minimal core](https://pi.dev/),
 the third-party [Pi MCP Adapter](https://www.npmjs.com/package/pi-mcp-adapter),

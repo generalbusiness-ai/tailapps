@@ -8,6 +8,9 @@ rests_on:
 
 # Disk session-log ingestion
 
+> **Status:** Proposed and not implemented. Tailapp currently ingests OTLP/HTTP
+> only.
+
 Coding harnesses persist rich session records on disk: Claude Code writes
 JSONL transcripts under `~/.claude/projects/`, Codex writes rollout JSONL
 under `~/.codex/sessions/`, and most other tools (Cursor, Zed, Copilot,

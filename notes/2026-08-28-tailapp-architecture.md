@@ -8,6 +8,10 @@ rests_on:
 
 # Tailapp architecture
 
+> **Status:** Implemented baseline. This note records the architectural
+> decisions; the [documentation map](../docs/README.md) and references describe
+> the current user-facing interfaces.
+
 Tailapp is a local analytics engine for agent-harness telemetry. It accepts
 OpenTelemetry (OTel) streams and continuously materializes user-defined
 relational projections. It does not retain the telemetry stream as an event

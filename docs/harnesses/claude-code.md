@@ -33,8 +33,7 @@ there. Settings files are strict JSON, and every `env` value is a string:
     "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
     "OTEL_LOGS_EXPORTER": "otlp",
     "OTEL_EXPORTER_OTLP_LOGS_PROTOCOL": "http/protobuf",
-    "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT": "http://127.0.0.1:4318/v1/logs",
-    "OTEL_LOG_TOOL_DETAILS": "1"
+    "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT": "http://127.0.0.1:4318/v1/logs"
   }
 }
 ```
@@ -47,10 +46,9 @@ per-signal endpoints and protocols. Run `/status` inside Claude Code to confirm
 which settings sources loaded, and `claude doctor` to find invalid or rejected
 entries.
 
-Claude Code watches settings files and reapplies telemetry `env` changes to a
-running session. Starting a new session after the edit is still the clearest
-setup test because it establishes a clean exporter lifecycle. A value exported
-directly by your shell is read only when the next `claude` process starts.
+Run `/status` after saving to confirm the file loaded, then start a new Claude
+Code session for a clean exporter lifecycle. Values exported directly by your
+shell are read when the next `claude` process starts.
 
 ### One-session shell configuration
 
@@ -62,16 +60,21 @@ export CLAUDE_CODE_ENABLE_TELEMETRY=1
 export OTEL_LOGS_EXPORTER=otlp
 export OTEL_EXPORTER_OTLP_LOGS_PROTOCOL=http/protobuf
 export OTEL_EXPORTER_OTLP_LOGS_ENDPOINT=http://127.0.0.1:4318/v1/logs
-export OTEL_LOG_TOOL_DETAILS=1
 claude
 ```
 
 Use the signal-specific endpoint exactly as shown, including `/v1/logs`.
 Tailapp accepts both `http/protobuf` and `http/json`; it does not accept OTLP
-gRPC. `OTEL_LOG_TOOL_DETAILS=1` exposes details such as file paths, full shell
-commands, and tool inputs. Those fields improve guard coverage but may contain
-sensitive code, paths, commands, or identifiers, so enable them only under an
-appropriate data policy.
+gRPC.
+
+The shipped analytics do not require prompt text, assistant-response text, or
+tool content. Leave `OTEL_LOG_USER_PROMPTS`,
+`OTEL_LOG_ASSISTANT_RESPONSES`, and `OTEL_LOG_TOOL_CONTENT` unset to keep
+that content redacted; prompt and response length analytics still work.
+`OTEL_LOG_TOOL_DETAILS=1` additionally exposes tool parameters and inputs,
+including paths and full shell commands. The shipped guard deliberately does
+not parse those raw structures, so enable detailed logging only for a trusted
+custom Tailapp or downstream collector with an appropriate data policy.
 
 Claude Code emits logs in batches. For a setup check, perform a tool call, wait
 for the default five-second log export interval, and run:
@@ -117,11 +120,9 @@ Inside Claude Code, `/mcp` shows connection status. A useful first prompt is:
 
 ## Current bundle fit
 
-`activity-stats`, `agent-guard`, and `session-cost` are shipped examples, not
-the available set of Tailapp applications. Users and agents are encouraged to
-fork, extend, replace, or supplement them with analytics and policy specific
-to their environment; the [authoring guide](../authoring.md) covers
-installation over CLI and MCP.
+The three shipped Tailapps are examples, not a catalog. Users and agents can
+fork, extend, replace, or supplement them; the
+[authoring guide](../authoring.md) covers installation over CLI and MCP.
 
 `agent-guard` recognizes `claude_code.tool_result` and
 `claude_code.tool_decision`. Current Claude Code records carry a short

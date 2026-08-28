@@ -20,8 +20,8 @@ the native JSON value in `structuredContent`:
 
 ```json
 {
-  "content": [{"type": "text", "text": "{...}"}],
-  "structuredContent": {...}
+  "content": [{"type": "text", "text": "{\"ok\":true}"}],
+  "structuredContent": {"ok": true}
 }
 ```
 
