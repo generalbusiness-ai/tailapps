@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Scrubbed representative OpenCode fixture matching DEVtheOPS plugin 1.5.1 logs and duplicate tool span.","body":{"commit":"6addc4093fb45c1f34551d28abe7115174dd6ec4","dead_basis_override":"true","path":"tailapps/testdata/opencode-adapter.json"}}
+{"kind":"artifact","text":"Updated embedded-bundle tests for observed OpenCode names, fields, dollar-to-microdollar conversion, and duplicate-span ineffectiveness.","body":{"commit":"6addc4093fb45c1f34551d28abe7115174dd6ec4","dead_basis_override":"true","path":"tailapps/embed_test.go"}}
