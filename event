@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at go.sum","body":{"commit":"095841ffed8bb1998943c1f20503bf485a3b595a","path":"go.sum"}}
+{"kind":"artifact","text":"Merge published the current artifact at internal/cli/cli.go","body":{"commit":"095841ffed8bb1998943c1f20503bf485a3b595a","path":"internal/cli/cli.go"}}
