@@ -1,4 +1,4 @@
-# Tailapp
+# Tailapps
 
 Simple micro-apps that read OTLP/HTTP logs, spans, and metric points and
 produce SQLite projections, inspectable over CLI or MCP, so you can easily
@@ -9,7 +9,7 @@ is a small declarative source set—not another service—and has its own isolat
 continuously materialized SQLite projection. Agents manage and query Tailapps
 through MCP; people and scripts can do the same through the CLI.
 
-![Tailapp pipeline: OTLP/HTTP enters a local resident, DDL and JSONata define a two-stage Tailapp, and MCP queries its SQLite projection.](docs/assets/tailapp-architecture.svg)
+![Tailapps pipeline: OTLP/HTTP enters a local resident, DDL and JSONata define a two-stage Tailapp, and MCP queries its SQLite projection.](docs/assets/tailapp-architecture.svg)
 
 ## Try it
 
