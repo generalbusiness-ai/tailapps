@@ -5,6 +5,7 @@ import "testing"
 func TestMutationToolsRequireIdempotencyKeys(t *testing.T) {
 	mutations := map[string]bool{
 		"tailapp_create":         true,
+		"tailapp_install":        true,
 		"tailapp_delete":         true,
 		"tailapp_put_element":    true,
 		"tailapp_delete_element": true,
@@ -27,6 +28,20 @@ func TestMutationToolsRequireIdempotencyKeys(t *testing.T) {
 	if len(mutations) != 0 {
 		t.Fatalf("mutation tools not found: %#v", mutations)
 	}
+}
+
+func TestInstallToolRequiresExactlyOneCompleteSourceKind(t *testing.T) {
+	for _, item := range tools() {
+		if item.Name != "tailapp_install" {
+			continue
+		}
+		oneOf, ok := item.InputSchema["oneOf"].([]map[string]any)
+		if !ok || len(oneOf) != 2 {
+			t.Fatalf("install schema does not select bundle or sources: %#v", item.InputSchema)
+		}
+		return
+	}
+	t.Fatal("tailapp_install tool not found")
 }
 
 func contains(values []string, wanted string) bool {

@@ -128,6 +128,44 @@ Arguments:
 Optional `bundle` is a string. Built-in values are `agent-guard` and
 `session-cost`; omit it for custom source. Result: [App](#app).
 
+### `tailapp_install`
+
+Validates a complete source set and first-activates one new Tailapp in a single
+idempotent request. It never replaces an existing Tailapp.
+
+Custom-source arguments:
+
+```json
+{
+  "name": "event-counts",
+  "sources": {
+    "application.sql": "Q1JFQVRFIC4uLg==",
+    "folds/normalize.jsonata": "KC4uLik=",
+    "folds/count.jsonata": "KC4uLik="
+  },
+  "idempotency_key": "event-counts-install-v1"
+}
+```
+
+Every source value is standard base64. Supply the complete source map; the
+normal source limits still apply. To install a shipped example, omit `sources`
+and pass `"bundle": "agent-guard"` or `"bundle": "session-cost"`. Supplying
+both is invalid.
+
+Result:
+
+```json
+{
+  "app": {"name": "event-counts", "active_revision": "sha256:..."},
+  "profile": {"name": "event-counts", "revision": "sha256:..."},
+  "frontier": {"revision": "sha256:...", "complete": true}
+}
+```
+
+The real `profile` and `frontier` contain the complete structures documented
+under `tailapp_validate` and [Frontier](#frontier). Use element mutation and
+explicit activation for later updates.
+
 ### `tailapp_delete`
 
 Deletes one definition and detaches only its projection.

@@ -25,31 +25,15 @@ export TAILAPP_HOME="$HOME/.local/share/tailapp"
 Keep `serve` running. Tailapp requires an explicit loopback IP and refuses
 `localhost`. The actual URL is recorded in `$TAILAPP_HOME/engine.json`.
 
-In another terminal, export the same variables and install each built-in
-bundle. The create response supplies the exact draft revision required for
-validation and activation:
+In another terminal, export the same variables and install each shipped
+example in one validated, first-activated request:
 
 ```sh
-install_bundle() {
-  app=$1
-  created=$("$TAILAPP_BIN" apps create \
-    --bundle "$app" \
-    --idempotency-key "setup-create-$app-v1" \
-    "$app")
-  revision=$(printf '%s\n' "$created" |
-    sed -n 's/.*"draft_revision": "\([^"]*\)".*/\1/p')
-  test -n "$revision"
-  "$TAILAPP_BIN" apps validate --expected "$revision" "$app"
-  "$TAILAPP_BIN" apps activate \
-    --expected "$revision" \
-    --mode reset \
-    --ack-reset \
-    --idempotency-key "setup-activate-$app-v1" \
-    "$app"
-}
-
-install_bundle agent-guard
-install_bundle session-cost
+export TAILAPP_HOME="$HOME/.local/share/tailapp"
+"$TAILAPP_BIN" apps install --bundle agent-guard \
+  --idempotency-key setup-install-agent-guard-v1 agent-guard
+"$TAILAPP_BIN" apps install --bundle session-cost \
+  --idempotency-key setup-install-session-cost-v1 session-cost
 ```
 
 These commands install the two examples shipped with this release. They are a
@@ -58,10 +42,9 @@ to create additional Tailapps, fork or extend an example, or replace either
 example with policy- and harness-specific analytics. Custom Tailapps use the
 same CLI and MCP lifecycle; see [Author and install a Tailapp](../authoring.md).
 
-The keys above are stable retry keys for these exact operations. Use new keys
-if you intentionally issue different requests. If an app already exists,
-inspect it with `tailapp apps get APP` rather than changing the key and blindly
-recreating it.
+The keys above are stable retry keys for these exact operations. If an app
+already exists, inspect it with `tailapp apps get APP`; install never replaces
+an existing Tailapp.
 
 ## Choose a harness
 

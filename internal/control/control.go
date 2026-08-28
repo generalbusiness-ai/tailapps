@@ -45,6 +45,12 @@ type CreateArgs struct {
 	Bundle         string `json:"bundle,omitempty"`
 	IdempotencyKey string `json:"idempotency_key"`
 }
+type InstallArgs struct {
+	Name           string            `json:"name"`
+	Bundle         string            `json:"bundle,omitempty"`
+	Sources        map[string][]byte `json:"sources,omitempty"`
+	IdempotencyKey string            `json:"idempotency_key"`
+}
 type NameArgs struct {
 	Name string `json:"name"`
 }
@@ -131,6 +137,14 @@ func (server *Server) dispatch(ctx context.Context, request Request) (any, error
 		}
 		return server.idempotent(ctx, request.Operation, args.IdempotencyKey, args, func() (any, error) {
 			return server.Engine.Create(ctx, args.Name, args.Bundle)
+		})
+	case "app_install":
+		var args InstallArgs
+		if err := decode(&args); err != nil {
+			return nil, err
+		}
+		return server.idempotent(ctx, request.Operation, args.IdempotencyKey, args, func() (any, error) {
+			return server.Engine.Install(ctx, args.Name, args.Bundle, args.Sources)
 		})
 	case "app_get":
 		var args NameArgs

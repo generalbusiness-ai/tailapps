@@ -1,0 +1,20 @@
+{
+  "resourceMetrics": [{
+    "resource": {"attributes": [{"key": "service.name", "value": {"stringValue": "demo-agent"}}]},
+    "scopeMetrics": [{
+      "scope": {"name": "tailapp-demo", "version": "1"},
+      "metrics": [{
+        "name": "agent.tokens",
+        "unit": "token",
+        "sum": {
+          "aggregationTemporality": "AGGREGATION_TEMPORALITY_DELTA",
+          "isMonotonic": true,
+          "dataPoints": [{
+            "timeUnixNano": "1787900000000003000",
+            "asInt": "9"
+          }]
+        }
+      }]
+    }]
+  }]
+}
