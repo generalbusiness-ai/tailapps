@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Current projection OpenCode event-family tests at the rebased exact head, after retiring predecessor worlds.","body":{"commit":"2242bcdab72328eb6adcf5dcbb4302c80242e558","path":"internal/projection/projection_test.go"}}
+{"kind":"artifact","text":"Activity analytics corrected for the observed DEVtheOPS OpenCode OTLP profile, with log-only normalization and duplicate-span suppression.","body":{"commit":"2242bcdab72328eb6adcf5dcbb4302c80242e558","path":"tailapps/activity-stats"}}
