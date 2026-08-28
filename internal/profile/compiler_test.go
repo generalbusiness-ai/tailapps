@@ -333,13 +333,19 @@ func TestSourcePathsAndBounds(t *testing.T) {
 
 func TestJSONataSubsetRejectsUnboundedExtensionPoints(t *testing.T) {
 	for name, program := range map[string]string{
-		"user function":       `(function($x){$x})(1)`,
-		"higher order":        `$map([1,2], function($x){$x})`,
-		"unknown builtin":     `$mystery(event)`,
-		"object wildcard":     `event.record.*`,
-		"descendant wildcard": `event.record.**`,
-		"generative multiply": `[1..4096].[1..4096].($ * 2)`,
-		"generated range":     `[1..4096]`,
+		"user function":          `(function($x){$x})(1)`,
+		"unicode lambda":         `(λ($x){$x})(1)`,
+		"higher order":           `$map([1,2], function($x){$x})`,
+		"unknown builtin":        `$mystery(event)`,
+		"apply keys":             `event.record ~> $keys`,
+		"apply spread":           `event.record ~> $spread`,
+		"apply sort":             `event.record ~> $sort`,
+		"apply base64encode":     `event.record ~> $base64encode`,
+		"apply dynamic function": `event.record ~> event.callable`,
+		"object wildcard":        `event.record.*`,
+		"descendant wildcard":    `event.record.**`,
+		"generative multiply":    `[1..4096].[1..4096].($ * 2)`,
+		"generated range":        `[1..4096]`,
 	} {
 		t.Run(name, func(t *testing.T) {
 			files := validFS(validDDL)
@@ -348,6 +354,14 @@ func TestJSONataSubsetRejectsUnboundedExtensionPoints(t *testing.T) {
 				t.Fatalf("program accepted: %v", err)
 			}
 		})
+	}
+}
+
+func TestJSONataSubsetAllowsApplyOperatorForAllowlistedFunction(t *testing.T) {
+	files := validFS(validDDL)
+	files["folds/observe.jsonata"] = &fstest.MapFile{Data: []byte(`event.session_id ~> $string`)}
+	if _, err := Load(files, ".", "agent-guard"); err != nil {
+		t.Fatalf("allowlisted apply rejected: %v", err)
 	}
 }
 
