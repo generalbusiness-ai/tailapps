@@ -117,5 +117,37 @@
       "record": {"attributes": {"event.name": "codex.websocket_request", "conversation.id": "session-scrubbed", "duration_ms": 75, "success": true}, "resource": {"attributes": {"service.name": "codex_exec"}}}
     },
     "rows": {}
+  },
+  "app_server_tool_result": {
+    "meta": {"position": 48, "event_id": "local:48", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:48", "signal": "log", "name": "event <scrubbed-codex-callsite>",
+      "source": "codex-app-server", "time_unix_nano": null, "observed_unix_nano": "1787933000000000048",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:scrubbed-app-server-tool",
+      "record": {
+        "attributes": {
+          "event.name": "codex.tool_result", "conversation.id": "session-app-server-scrubbed",
+          "tool_name": "read", "success": true
+        },
+        "resource": {"attributes": {"service.name": "codex-app-server"}}
+      }
+    },
+    "rows": {}
+  },
+  "app_server_usage": {
+    "meta": {"position": 49, "event_id": "local:49", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:49", "signal": "log", "name": "event <scrubbed-codex-callsite>",
+      "source": "codex-app-server", "time_unix_nano": null, "observed_unix_nano": "1787933000000000049",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:scrubbed-app-server-usage",
+      "record": {
+        "attributes": {
+          "event.name": "codex.sse_event", "event.kind": "response.completed",
+          "conversation.id": "session-app-server-scrubbed", "input_token_count": 25
+        },
+        "resource": {"attributes": {"service.name": "codex-app-server"}}
+      }
+    },
+    "rows": {}
   }
 }

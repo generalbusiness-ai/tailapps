@@ -277,6 +277,39 @@ func TestAgentGuardMapsObservedCodexOTLPShape(t *testing.T) {
 	}
 }
 
+func TestCodexAppServerIdentityNormalizesAcrossBundles(t *testing.T) {
+	inputs := observedCodexInputs(t)
+	tests := []struct {
+		name     string
+		tailapp  string
+		fold     string
+		inputKey string
+	}{
+		{name: "agent-guard", tailapp: "agent-guard", fold: "normalize_harness_event", inputKey: "app_server_tool_result"},
+		{name: "session-cost", tailapp: "session-cost", fold: "normalize_usage", inputKey: "app_server_usage"},
+		{name: "activity-stats", tailapp: "activity-stats", fold: "normalize_activity", inputKey: "app_server_tool_result"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			bundle, err := Load(tc.tailapp)
+			if err != nil {
+				t.Fatal(err)
+			}
+			normalized, err := bundle.Evaluate(tc.fold, inputs[tc.inputKey])
+			if err != nil {
+				t.Fatal(err)
+			}
+			events := normalized.Events["otel_event"]
+			if normalized.Decision != "effective" || len(events) != 1 {
+				t.Fatalf("normalized = %#v", normalized)
+			}
+			if got := events[0]["harness"]; got != "codex" {
+				t.Fatalf("harness = %#v, want codex; event = %#v", got, events[0])
+			}
+		})
+	}
+}
+
 func TestSessionCostMapsObservedCodexSSEUsage(t *testing.T) {
 	cost, err := Load("session-cost")
 	if err != nil {

@@ -51,10 +51,12 @@ listed in the [`agent-guard` input model](../../tailapps/agent-guard/README.md#i
 Codex CLI can export a Rust tracing callsite as the OTLP log-record name while
 putting the semantic `codex.*` name in the `event.name` attribute. The shipped
 normalizer prefers that semantic attribute and maps the native
-`service.name = codex_cli_rs` and `service.name = codex_exec` sources to the
-stable `codex` harness name. Query `telemetry_coverage` after a real call to
-learn whether the current Codex version exported enough target and progress
-detail for a rule. If the query's
+`service.name = codex_cli_rs`, `service.name = codex_exec`, and
+`service.name = codex-app-server` sources to the stable `codex` harness name.
+The app-server identity is used by rich clients such as the Codex extension;
+client-specific originator metadata does not change this source mapping. Query
+`telemetry_coverage` after a real call to learn whether the current Codex
+version exported enough target and progress detail for a rule. If the query's
 `ineffective_records` count rises without coverage rows, inspect the current
 memory-only sample with `tailapp ineffective agent-guard` or the MCP tool
 `tailapp_ineffective` before changing the normalizer.
