@@ -1,1 +1,1 @@
-{"kind":"promise","text":"Implement and validate the README architecture graphic","body":{"to":"builder"}}
+{"kind":"artifact","text":"README placement for the Tailapp architecture graphic at exact head dabd238a9f7213e8b9131ad9b8728cfa50bd8c28","body":{"commit":"dabd238a9f7213e8b9131ad9b8728cfa50bd8c28","path":"README.md"}}
