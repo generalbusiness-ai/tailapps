@@ -13,6 +13,8 @@ The normalizer accepts exactly these event names:
 - `claude_code.api_request`
 - `codex.api_request`
 - `codex.sse_event` when at least one supported token counter is present
+- `api_request` from the DEVtheOPS OpenCode plugin 1.5.1 when
+  `service.name = opencode`
 - `opencode.api_request` from an adapter
 
 It reads session identity from `session.id`, `conversation.id`, `session_id`,
@@ -40,6 +42,13 @@ latency/status-only `codex.api_request` events do not create zero-valued
 unknown-session rows. This Tailapp does not record an `unknown` coverage state
 for individual counters; within an effective row, a zero can therefore mean
 either a real zero or an absent sibling field.
+
+The DEVtheOPS OpenCode profile maps `reasoning_tokens` to
+`reasoning_output_tokens`, `cache_read_tokens` to `cached_input_tokens`, and
+rounds `cost_usd` dollars to integer `cost_microusd`. Only its `api_request`
+logs are counted. Its LLM and tool spans are ignored both to prevent duplicate
+accounting and because they can carry complete prompts, outputs, and tool
+parameters.
 
 Codex documents token counts on `response.completed` SSE events. Other
 `codex.sse_event` and API-request records remain ineffective unless a supported

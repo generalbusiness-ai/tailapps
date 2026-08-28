@@ -29,6 +29,8 @@ The normalizer accepts these event names:
 
 - Claude Code: `claude_code.tool_result`, `claude_code.tool_decision`
 - Codex: `codex.tool_result`, `codex.tool_decision`, `codex.tool_call`
+- DEVtheOPS OpenCode plugin 1.5.1 logs: `tool_result` when
+  `service.name = opencode`
 - OpenCode adapters: `opencode.tool.execute.after`,
   `opencode.tool.execute.before`
 
@@ -55,6 +57,12 @@ Do not emit both an OpenCode `before` and `after` record for one completed call
 unless two counted actions are intended. Prefer `after` for completed calls and
 reserve `before` for an attempted call that will not have a corresponding
 result.
+
+The DEVtheOPS plugin also emits `opencode.tool.*` spans for the same actions.
+They are deliberately ineffective here to avoid double counting and because
+those spans can carry raw tool parameters and results. Its log record already
+supplies `tool_name` and `success`; target and progress coverage normally remain
+unknown.
 
 ## Analytics model
 

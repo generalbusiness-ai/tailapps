@@ -7,11 +7,13 @@
   $event_name := $claude_body_name ? $body_name :
     ($exists($semantic_name_raw) and $string($semantic_name_raw) != "" ? $string($semantic_name_raw) : event.name);
   $harness := (event.source = "codex_cli_rs" or event.source = "codex_exec") ? "codex" : event.source;
+  $opencode_log := $harness = "opencode" and event.signal = "log";
   $event_time := event.time_unix_nano ? event.time_unix_nano :
     (event.observed_unix_nano ? event.observed_unix_nano : null);
   $claude := $event_name = "claude_code.tool_result" or $event_name = "claude_code.tool_decision";
   $codex := $event_name = "codex.tool_result" or $event_name = "codex.tool_decision" or $event_name = "codex.tool_call";
-  $opencode := $event_name = "opencode.tool.execute.after" or $event_name = "opencode.tool.execute.before";
+  $opencode := $event_name = "opencode.tool.execute.after" or $event_name = "opencode.tool.execute.before" or
+    ($opencode_log and $event_name = "tool_result");
   $recognized := ($claude or $codex or $opencode) and $event_time;
   $session_raw := $lookup($attrs, "session.id") ? $lookup($attrs, "session.id") :
     ($lookup($attrs, "conversation.id") ? $lookup($attrs, "conversation.id") :
