@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:6620b9df6d48e393ded0b81fd53c1a6afb8a442f","text":"Merge retired a covered predecessor; the successor is at tailapps/session-cost/folds/normalize.jsonata."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:69411c042a5166befe42bb43e0fcaab9e03704b7","text":"Merge retired a covered predecessor; the successor is at internal/mcp/server_test.go."}
