@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Ineffective-diagnostics candidate at exact head a242296 for docs/harnesses/codex.md.","body":{"commit":"a24229663c518d72adfe856106d798b615a8a9ef","dead_basis_override":"true","path":"docs/harnesses/codex.md"}}
+{"kind":"artifact","text":"Ineffective-diagnostics candidate at exact head a242296 for notes/2026-08-28-tailapp-architecture.md.","body":{"commit":"a24229663c518d72adfe856106d798b615a8a9ef","path":"notes/2026-08-28-tailapp-architecture.md"}}
