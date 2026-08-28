@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Scrubbed OpenCode fixture now represents DEVtheOPS 1.5.1 logs and a duplicate content-bearing span.","body":{"commit":"6addc40309be622de85c4a1862f4749a8712e104","path":"tailapps/testdata/opencode-adapter.json"}}
+{"kind":"artifact","text":"Bundle tests verify DEVtheOPS tool and usage normalization, microdollar conversion, and duplicate-span exclusion.","body":{"commit":"6addc40309be622de85c4a1862f4749a8712e104","path":"tailapps/embed_test.go"}}
