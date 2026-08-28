@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:fe3ef5baa61e8fbc5747d12445c2a0ce01c1275f","text":"Merge retired a covered predecessor; the successor is at docs/reference/mcp.md."}
+{"kind":"artifact","text":"README first-use value and detective-policy clarification at exact head a498991db9ef1d36e1392e039109dfeec84f35d5; full test, race, vet, demo, internal-link, external-reference, and live SQL checks passed on the identical source tree.","body":{"commit":"a498991db9ef1d36e1392e039109dfeec84f35d5","path":"README.md"}}
