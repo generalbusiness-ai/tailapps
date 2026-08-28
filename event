@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at internal/mcp/server.go","body":{"commit":"3786ce69f21332ddfe407fc89a555e003cff82fc","path":"internal/mcp/server.go"}}
+{"kind":"artifact","text":"Merge published the current artifact at internal/mcp/server_test.go","body":{"commit":"3786ce69f21332ddfe407fc89a555e003cff82fc","path":"internal/mcp/server_test.go"}}
