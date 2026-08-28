@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:31d71a63aff186ecf793918f6f13e42d12e148bb","text":"Merge retired a covered predecessor; the successor is at testdata/otlp/cross-harness.json."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:762a63312844d2ec32d342f2c44dec304ebc4eee","text":"Merge retired a covered predecessor; the successor is at tailapps/embed_test.go."}
