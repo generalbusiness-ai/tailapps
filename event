@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at README.md","body":{"commit":"e6330304365e1d5a09ee900c31d78ec32d08a4dc","path":"README.md"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:20586893e1576f6e16247daaa764814449727a0d","text":"Merge retired a covered predecessor; the successor is at README.md."}
