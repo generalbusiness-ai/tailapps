@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Current pre-effectiveness branch candidate at exact head 3b08654 for internal/cli/cli.go.","body":{"commit":"3b086547b200a330ea3af2f764dc548856df4ffe","path":"internal/cli/cli.go"}}
+{"kind":"artifact","text":"Current pre-effectiveness branch candidate at exact head 3b08654 for internal/cli/cli_test.go.","body":{"commit":"3b086547b200a330ea3af2f764dc548856df4ffe","path":"internal/cli/cli_test.go"}}
