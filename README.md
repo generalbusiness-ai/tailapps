@@ -150,6 +150,11 @@ through that alias.
 
 ```sh
 go test ./...
+go test -race ./...
 go vet ./...
 ./scripts/demo.sh
 ```
+
+GitHub Actions runs the same four gates on pushes and pull requests to `main`
+with the exact Go version declared in `go.mod`. The demo's root `tailapp`
+binary is ignored so local verification leaves the checkout clean.
