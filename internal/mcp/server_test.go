@@ -56,6 +56,23 @@ func TestMetricsToolIsExposedWithoutArguments(t *testing.T) {
 	t.Fatal("tailapp_metrics tool not found")
 }
 
+func TestIneffectiveToolRequiresTailappName(t *testing.T) {
+	for _, item := range tools() {
+		if item.Name != "tailapp_ineffective" {
+			continue
+		}
+		if operation := operations[item.Name]; operation != "ineffective" {
+			t.Fatalf("ineffective operation = %q", operation)
+		}
+		required, ok := item.InputSchema["required"].([]string)
+		if !ok || !contains(required, "name") {
+			t.Fatalf("ineffective schema = %#v", item.InputSchema)
+		}
+		return
+	}
+	t.Fatal("tailapp_ineffective tool not found")
+}
+
 func contains(values []string, wanted string) bool {
 	for _, value := range values {
 		if value == wanted {

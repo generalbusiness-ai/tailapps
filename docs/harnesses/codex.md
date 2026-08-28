@@ -50,7 +50,10 @@ the [authoring guide](../authoring.md) covers installation over CLI and MCP.
 `codex.tool_result`. Its reference policy consumes only the canonical fields
 listed in the [`agent-guard` input model](../../tailapps/agent-guard/README.md#input-model).
 Query `telemetry_coverage` after a real call to learn whether the current Codex
-version exported enough target and progress detail for a rule.
+version exported enough target and progress detail for a rule. If the query's
+`ineffective_records` count rises without coverage rows, inspect the current
+memory-only sample with `tailapp ineffective agent-guard` or the MCP tool
+`tailapp_ineffective` before changing the normalizer.
 
 `session-cost` recognizes `codex.api_request`, but Codex documentation places
 token counts on completed stream events and does not promise them on that API

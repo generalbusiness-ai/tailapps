@@ -300,6 +300,46 @@ gauges. Process counters reset on resident restart; durable projection totals
 do not. See the [runtime metrics reference](metrics.md) for the complete schema,
 timing boundaries, reset semantics, and cardinality limits.
 
+### `tailapp_ineffective`
+
+Arguments:
+
+```json
+{"name": "agent-guard"}
+```
+
+Returns the same bounded diagnostic snapshot as `tailapp ineffective APP`:
+
+```json
+{
+  "tailapp": "agent-guard",
+  "revision": "sha256:...",
+  "capacity": 16,
+  "ineffective_records": 24,
+  "available_records": 16,
+  "unavailable_records": 8,
+  "records": [{
+    "position": 57,
+    "event_id": "local:57",
+    "revision": "sha256:...",
+    "signal": "log",
+    "name": "codex.sse_event",
+    "source": "codex",
+    "content_digest": "sha256:...",
+    "record_bytes": 412,
+    "record": {"attributes": {}, "resource": {"attributes": {}}}
+  }]
+}
+```
+
+The per-Tailapp buffer keeps the 16 newest ineffective canonical records in
+resident memory only and clears on restart or activation. Payloads above 32
+KiB are omitted while their metadata and original byte size remain. Records
+may contain sensitive telemetry; this tool deliberately exposes payloads for
+local diagnosis and is not an event-history API. `ineffective_records` is the
+durable total, while `available_records` and `unavailable_records` explicitly
+state how much of that total is and is not represented by the current buffer.
+
 ### `tailapp_schema`
 
 Reads the active compiled profile, not the draft.
@@ -359,6 +399,7 @@ Result:
   "revision": "sha256:...",
   "delivery_head": 57,
   "interpreted_position": 57,
+  "ineffective_records": 12,
   "schemas": [{
     "alias": "cost",
     "tailapp": "session-cost",
@@ -373,6 +414,11 @@ Result:
   "truncated": false
 }
 ```
+
+`ineffective_records` is the primary Tailapp projection's durable count since
+initial activation or its most recent reset, including across compatible
+continue activations. It records normalizer decisions and is not a count of
+rows omitted from this SQL result.
 
 Mounted projections must be complete and aligned to the primary interpreted
 position. Only their explicit exports are visible. See the [query SQL

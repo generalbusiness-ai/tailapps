@@ -65,14 +65,18 @@ perform a tool call, then inspect what arrived:
 ```sh
 ./tailapp health
 ./tailapp metrics --json
+./tailapp ineffective agent-guard
 ./tailapp query \
   --sql 'SELECT harness, capability, state, reason FROM telemetry_coverage ORDER BY harness, capability' \
   agent-guard
 ```
 
-An empty result means the installed Tailapp has not received a recognized
-event yet. The harness guides explain exporter batching, expected event names,
-and coverage limits.
+The metrics intake counters prove OTLP transport. `tailapp ineffective` shows a
+memory-only sample of rejected canonical records, while every query result's
+`ineffective_records` field gives the durable rejection count for that
+projection. An empty SQL result means the installed Tailapp has not received a
+recognized event yet. The harness guides explain exporter batching, expected
+event names, and coverage limits.
 
 ## Build and install your own
 
@@ -131,9 +135,11 @@ with its wall deadline retained as secondary safety. The runtime profile pins
 OTLP canonicalization, JSONata, SQLite, numeric rules, and admitted limits.
 
 Consumed OTLP content is not retained as an event log. The bounded inbox keeps
-a record only until every captured consumer commits or detaches. A projection
-gap is fail-stop and local to that Tailapp; without external replay, telemetry
-missed while detached is absent.
+a record only until every captured consumer commits or detaches. For local
+diagnosis, the resident keeps only the 16 newest ineffective records per
+Tailapp in memory; `tailapp ineffective APP` exposes them, and restart or
+activation clears them. A projection gap is fail-stop and local to that
+Tailapp; without external replay, telemetry missed while detached is absent.
 
 Mounted exports use explicit `FROM alias.export` or `JOIN alias.export`
 relations; comma-listed mounted relations are outside the admitted query

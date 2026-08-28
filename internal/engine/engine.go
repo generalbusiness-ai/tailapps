@@ -5,6 +5,7 @@ package engine
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -42,6 +43,7 @@ type Engine struct {
 	unavailable    map[string]string
 	metrics        *operationalmetrics.Registry
 	processing     map[string]*operationalmetrics.Processing
+	ineffective    map[string][]IneffectiveRecord
 }
 
 var ErrProjectionUnavailable = errors.New("projection_unavailable")
@@ -60,7 +62,38 @@ type InstallResult struct {
 	Frontier projection.Frontier `json:"frontier"`
 }
 
-const MaxMetricTailapps = 256
+const (
+	MaxMetricTailapps            = 256
+	IneffectiveBufferCapacity    = 16
+	MaxIneffectiveRecordJSONSize = 32 << 10
+)
+
+type IneffectiveRecord struct {
+	Position         int64           `json:"position"`
+	EventID          string          `json:"event_id"`
+	Revision         string          `json:"revision"`
+	Signal           string          `json:"signal"`
+	Name             string          `json:"name"`
+	Source           string          `json:"source"`
+	TimeUnixNano     *string         `json:"time_unix_nano,omitempty"`
+	ObservedUnixNano *string         `json:"observed_unix_nano,omitempty"`
+	TraceID          *string         `json:"trace_id,omitempty"`
+	SpanID           *string         `json:"span_id,omitempty"`
+	ContentDigest    string          `json:"content_digest"`
+	RecordBytes      int             `json:"record_bytes"`
+	RecordOmitted    bool            `json:"record_omitted,omitempty"`
+	Record           json.RawMessage `json:"record,omitempty"`
+}
+
+type IneffectiveSnapshot struct {
+	Tailapp            string              `json:"tailapp"`
+	Revision           string              `json:"revision"`
+	Capacity           int                 `json:"capacity"`
+	IneffectiveRecords int64               `json:"ineffective_records"`
+	AvailableRecords   int                 `json:"available_records"`
+	UnavailableRecords int64               `json:"unavailable_records"`
+	Records            []IneffectiveRecord `json:"records"`
+}
 
 type TailappMetrics struct {
 	DeliveryHead        int64            `json:"delivery_head"`
@@ -120,7 +153,7 @@ func Open(ctx context.Context, home string) (*Engine, error) {
 		lockFile.Close()
 		return nil, err
 	}
-	engine := &Engine{home: home, queue: queue, registry: registry, active: map[string]*projection.Projection{}, upgradePending: map[string]bool{}, unavailable: map[string]string{}, metrics: operationalmetrics.New(), processing: map[string]*operationalmetrics.Processing{}, notify: make(chan struct{}, 1), stop: make(chan struct{}), done: make(chan struct{}), lockFile: lockFile}
+	engine := &Engine{home: home, queue: queue, registry: registry, active: map[string]*projection.Projection{}, upgradePending: map[string]bool{}, unavailable: map[string]string{}, metrics: operationalmetrics.New(), processing: map[string]*operationalmetrics.Processing{}, ineffective: map[string][]IneffectiveRecord{}, notify: make(chan struct{}, 1), stop: make(chan struct{}), done: make(chan struct{}), lockFile: lockFile}
 	if err := engine.recoverActivations(ctx); err != nil {
 		engine.closeResources()
 		return nil, err
@@ -389,6 +422,9 @@ func (e *Engine) drainPassLocked(ctx context.Context, waveLimit int) (bool, erro
 				e.processing[item.name].Observe(0, false, "gap", queueDelay, time.Since(started))
 				continue
 			}
+			if processed.Ineffective {
+				e.recordIneffectiveLocked(item.name, item.delivery)
+			}
 			if err := e.queue.Complete(ctx, item.name, item.delivery.Position); err != nil {
 				e.processing[item.name].Observe(processed.EmittedEvents, processed.Ineffective, "retry", queueDelay, time.Since(started))
 				return false, err
@@ -624,9 +660,11 @@ func (e *Engine) activateLocked(ctx context.Context, name, expected, mode string
 		_ = current.Close()
 		delete(e.active, name)
 		delete(e.processing, name)
+		delete(e.ineffective, name)
 		e.unavailable[name] = fmt.Sprintf("finish activation: %v", err)
 		return projection.Frontier{}, fmt.Errorf("%w: activation journal awaits recovery", ErrProjectionUnavailable)
 	}
+	delete(e.ineffective, name)
 	_, _, previous := e.activationPaths(name)
 	removeProjectionFile(previous)
 	e.active[name] = current
@@ -740,9 +778,64 @@ func (e *Engine) Delete(ctx context.Context, name string) error {
 		delete(e.active, name)
 		delete(e.processing, name)
 	}
+	delete(e.ineffective, name)
 	delete(e.unavailable, name)
 	delete(e.upgradePending, name)
 	return e.registry.Delete(ctx, name)
+}
+
+func (e *Engine) recordIneffectiveLocked(name string, delivery inbox.Delivery) {
+	if e.ineffective == nil {
+		e.ineffective = map[string][]IneffectiveRecord{}
+	}
+	record := IneffectiveRecord{
+		Position: delivery.Position, EventID: delivery.EventID, Revision: delivery.Revision,
+		Signal: delivery.Signal, Name: delivery.Name, Source: delivery.Source,
+		TimeUnixNano: delivery.TimeUnixNano, ObservedUnixNano: delivery.ObservedUnixNano,
+		TraceID: delivery.TraceID, SpanID: delivery.SpanID, ContentDigest: delivery.ContentDigest,
+		RecordBytes: len(delivery.JSON),
+	}
+	if len(delivery.JSON) <= MaxIneffectiveRecordJSONSize {
+		record.Record = append(json.RawMessage(nil), delivery.JSON...)
+	} else {
+		record.RecordOmitted = true
+	}
+	items := append(e.ineffective[name], record)
+	if len(items) > IneffectiveBufferCapacity {
+		items = append([]IneffectiveRecord(nil), items[len(items)-IneffectiveBufferCapacity:]...)
+	}
+	e.ineffective[name] = items
+}
+
+func (e *Engine) Ineffective(ctx context.Context, name string) (IneffectiveSnapshot, error) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	current := e.active[name]
+	if current == nil {
+		if _, blocked := e.unavailable[name]; blocked {
+			return IneffectiveSnapshot{}, fmt.Errorf("%w: %s", ErrProjectionUnavailable, name)
+		}
+		return IneffectiveSnapshot{}, sql.ErrNoRows
+	}
+	durable, err := current.Stats(ctx)
+	if err != nil {
+		return IneffectiveSnapshot{}, err
+	}
+	items := e.ineffective[name]
+	unavailable := durable.IneffectiveRecords - int64(len(items))
+	if unavailable < 0 {
+		unavailable = 0
+	}
+	result := IneffectiveSnapshot{
+		Tailapp: name, Revision: current.Profile().Revision, Capacity: IneffectiveBufferCapacity,
+		IneffectiveRecords: durable.IneffectiveRecords, AvailableRecords: len(items), UnavailableRecords: unavailable,
+		Records: make([]IneffectiveRecord, len(items)),
+	}
+	copy(result.Records, items)
+	for index := range result.Records {
+		result.Records[index].Record = append(json.RawMessage(nil), items[index].Record...)
+	}
+	return result, nil
 }
 func (e *Engine) Status(ctx context.Context) (Status, error) {
 	e.mu.Lock()
@@ -849,6 +942,10 @@ func (e *Engine) Query(ctx context.Context, app string, request query.Request, m
 	if err != nil {
 		return query.Result{}, err
 	}
+	durable, err := primary.Stats(ctx)
+	if err != nil {
+		return query.Result{}, err
+	}
 	stats, err := e.queue.Stats(ctx)
 	if err != nil {
 		return query.Result{}, err
@@ -868,7 +965,8 @@ func (e *Engine) Query(ctx context.Context, app string, request query.Request, m
 		}
 		mounts[alias] = query.Namespace{Path: item.Path(), Profile: item.Profile(), Frontier: mountedFrontier}
 	}
-	sandbox, err := query.Open(query.Namespace{Path: primary.Path(), Profile: primary.Profile(), Frontier: frontier, DeliveryHead: stats.DeliveryHead}, mounts)
+	sandbox, err := query.Open(query.Namespace{Path: primary.Path(), Profile: primary.Profile(), Frontier: frontier,
+		DeliveryHead: stats.DeliveryHead, IneffectiveRecords: durable.IneffectiveRecords}, mounts)
 	if err != nil {
 		return query.Result{}, err
 	}

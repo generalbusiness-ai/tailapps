@@ -51,6 +51,27 @@ totals survive a restart. See the [runtime metrics reference](metrics.md) for
 field definitions, fixed histogram boundaries, privacy constraints, and reset
 semantics.
 
+### `tailapp ineffective APP`
+
+Returns the 16 most recent records that the named Tailapp's normalizer declared
+ineffective. Samples are held only in resident memory, disappear on restart or
+activation, and are ordered oldest to newest. Each sample includes its delivery
+position, active revision, signal, event name, source, timestamps and IDs when
+present, content digest, and the actual canonical `record` JSON.
+
+`ineffective_records` is the durable total since initial activation or reset,
+`available_records` is the number represented by the current memory buffer, and
+`unavailable_records` makes restart, activation, and ring-eviction gaps explicit.
+The last value is zero only when every durable ineffective decision remains in
+the buffer; it does not claim that omitted or redacted fields were observed.
+
+A canonical record larger than 32 KiB retains only metadata, `record_bytes`,
+and `record_omitted: true`. The buffer can contain sensitive prompt, tool, path,
+or attribute content and is available to any process that can access the
+owner-only control socket. Use the durable `ineffective_records` query-result
+field or metrics for counting; this command is a bounded diagnostic sample,
+not an event log.
+
 ### `tailapp mcp`
 
 Runs the MCP JSON-RPC adapter over newline-delimited stdio. It does not start
@@ -181,8 +202,13 @@ tailapp query \
 ```
 
 The result reports the active revision, delivery head, interpreted position,
-mounted schemas, completeness, column metadata, rows, encoded `result_bytes`,
-and whether output was truncated. See the [query SQL reference](query-sql.md).
+durable `ineffective_records` count for the active projection, mounted schemas,
+completeness, column metadata, rows, encoded `result_bytes`, and whether output
+was truncated. `ineffective_records` counts records rejected since the
+projection's initial activation or most recent reset, including across
+compatible continue activations; it is independent of the
+number of rows returned by the SQL statement. See the [query SQL
+reference](query-sql.md).
 
 ## Idempotency and revisions
 

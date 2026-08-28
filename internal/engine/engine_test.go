@@ -90,6 +90,16 @@ func TestEngineLifecycleIngestionProjectionQueryAndIsolation(t *testing.T) {
 	if len(joined.Rows) != 1 || joined.Rows[0][0] != "s1" {
 		t.Fatalf("joined = %#v", joined)
 	}
+	if joined.IneffectiveRecords != 1 {
+		t.Fatalf("guard ineffective records = %d", joined.IneffectiveRecords)
+	}
+	samples, err := engine.Ineffective(ctx, "agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if samples.Capacity != IneffectiveBufferCapacity || samples.IneffectiveRecords != 1 || samples.AvailableRecords != 1 || samples.UnavailableRecords != 0 || len(samples.Records) != 1 || samples.Records[0].Name != "codex.api_request" || len(samples.Records[0].Record) == 0 {
+		t.Fatalf("guard ineffective samples = %#v", samples)
+	}
 	performance, err := engine.Metrics(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -128,8 +138,12 @@ func TestEngineLifecycleIngestionProjectionQueryAndIsolation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.Rows[0][0] != int64(1) {
+	if result.Rows[0][0] != int64(1) || result.IneffectiveRecords != 1 {
 		t.Fatalf("continue lost rows: %#v", result)
+	}
+	samples, err = engine.Ineffective(ctx, "agent-guard")
+	if err != nil || samples.IneffectiveRecords != 1 || samples.AvailableRecords != 0 || samples.UnavailableRecords != 1 || len(samples.Records) != 0 {
+		t.Fatalf("activation did not clear ineffective samples: samples=%#v err=%v", samples, err)
 	}
 
 	// Stored-table changes refuse continuation and require explicit reset,
@@ -192,6 +206,22 @@ func TestWallElapsedCountsClockRegression(t *testing.T) {
 	}
 	if snapshot.ClockRegressionsTotal != 1 {
 		t.Fatalf("clock regressions = %d", snapshot.ClockRegressionsTotal)
+	}
+}
+
+func TestIneffectiveBufferIsBoundedAndOmitsOversizedPayloads(t *testing.T) {
+	resident := &Engine{}
+	for position := int64(1); position <= IneffectiveBufferCapacity+1; position++ {
+		resident.recordIneffectiveLocked("guard", inbox.Delivery{Position: position, EventID: fmt.Sprintf("local:%d", position), Revision: "sha256:test", Signal: "log", Name: "unknown", Source: "codex", ContentDigest: "sha256:test", JSON: []byte(`{"attributes":{}}`)})
+	}
+	items := resident.ineffective["guard"]
+	if len(items) != IneffectiveBufferCapacity || items[0].Position != 2 || items[len(items)-1].Position != IneffectiveBufferCapacity+1 {
+		t.Fatalf("bounded records = %#v", items)
+	}
+	resident.recordIneffectiveLocked("guard", inbox.Delivery{Position: 99, EventID: "local:99", Revision: "sha256:test", Signal: "log", Name: "large", Source: "codex", ContentDigest: "sha256:large", JSON: bytes.Repeat([]byte("x"), MaxIneffectiveRecordJSONSize+1)})
+	last := resident.ineffective["guard"][IneffectiveBufferCapacity-1]
+	if !last.RecordOmitted || last.RecordBytes != MaxIneffectiveRecordJSONSize+1 || len(last.Record) != 0 {
+		t.Fatalf("oversized record = %#v", last)
 	}
 }
 

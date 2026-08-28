@@ -77,6 +77,11 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 			return errors.New("metrics supports JSON output only")
 		}
 		return call(stdout, home, "metrics", nil)
+	case "ineffective":
+		if len(args) != 2 {
+			return errors.New("ineffective requires APP")
+		}
+		return call(stdout, home, "ineffective", control.NameArgs{Name: args[1]})
 	case "apps":
 		return apps(stdout, home, args[1:])
 	case "query":
@@ -105,6 +110,7 @@ Usage:
   tailapp query --sql SQL [options] APP
   tailapp health
   tailapp metrics [--json]
+  tailapp ineffective APP
   tailapp ingest-fixture [--signal logs|traces|metrics] FILE
   tailapp mcp
 

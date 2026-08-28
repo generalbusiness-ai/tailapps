@@ -49,7 +49,7 @@ func TestBoundedQueryJoinsOnlyExplicitExportsAtAlignedFrontier(t *testing.T) {
 	}
 	guardFrontier, _ := guard.Frontier(context.Background())
 	costFrontier, _ := cost.Frontier(context.Background())
-	sandbox, err := Open(Namespace{Path: filepath.Join(root, "guard.sqlite"), Profile: guardProfile, Frontier: guardFrontier, DeliveryHead: 5}, map[string]Namespace{
+	sandbox, err := Open(Namespace{Path: filepath.Join(root, "guard.sqlite"), Profile: guardProfile, Frontier: guardFrontier, DeliveryHead: 5, IneffectiveRecords: 1}, map[string]Namespace{
 		"cost": {Path: filepath.Join(root, "cost.sqlite"), Profile: costProfile, Frontier: costFrontier},
 	})
 	if err != nil {
@@ -65,7 +65,7 @@ ORDER BY progress.session_id`, ExpectedRevision: guardProfile.Revision, Expected
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(result.Rows) != 1 || fmt.Sprint(result.Rows[0]) != "[s1 1 100 7]" || len(result.Schemas) != 1 || result.Schemas[0].Contract != costProfile.ExportContractDigest || result.DeliveryHead != 5 || result.InterpretedPosition != 2 {
+	if len(result.Rows) != 1 || fmt.Sprint(result.Rows[0]) != "[s1 1 100 7]" || len(result.Schemas) != 1 || result.Schemas[0].Contract != costProfile.ExportContractDigest || result.DeliveryHead != 5 || result.InterpretedPosition != 2 || result.IneffectiveRecords != 1 {
 		t.Fatalf("joined result = %#v", result)
 	}
 	if result.ResultBytes == 0 {

@@ -14,7 +14,7 @@ func TestHelpLeadsWithProductAndInstallPath(t *testing.T) {
 	if err := Run(context.Background(), []string{"--help"}, &stdout, &stderr); err != nil {
 		t.Fatal(err)
 	}
-	for _, wanted := range []string{"simple, local micro-apps", "apps install", "tailapp serve", "tailapp metrics"} {
+	for _, wanted := range []string{"simple, local micro-apps", "apps install", "tailapp serve", "tailapp metrics", "tailapp ineffective"} {
 		if !strings.Contains(stdout.String(), wanted) {
 			t.Fatalf("help omitted %q:\n%s", wanted, stdout.String())
 		}

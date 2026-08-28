@@ -144,6 +144,12 @@ func (server *Server) dispatch(ctx context.Context, request Request) (any, error
 		return server.Engine.Status(ctx)
 	case "metrics":
 		return server.Engine.Metrics(ctx)
+	case "ineffective":
+		var args NameArgs
+		if err := decode(&args); err != nil {
+			return nil, err
+		}
+		return server.Engine.Ineffective(ctx, args.Name)
 	case "apps_list":
 		return server.Engine.Apps(ctx)
 	case "app_create":

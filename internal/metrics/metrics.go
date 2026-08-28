@@ -216,7 +216,7 @@ func New() *Registry {
 	registry.intake.unroutedSignal = atomicCounts("log", "span", "metric", "unknown")
 	registry.intake.detachedReason = atomicCounts("projection_gap", "runtime_upgrade", "tailapp_deleted", "other")
 	registry.queries.requestState = newRequestState("ok", "not_found", "unavailable", "budget", "frontier_changed", "deadline", "cancelled", "error")
-	for _, operation := range []string{"health", "status", "metrics", "apps_list", "app_create", "app_install", "app_get", "app_delete", "element_put", "element_delete", "validate", "activate", "schema", "query", "unknown"} {
+	for _, operation := range []string{"health", "status", "metrics", "ineffective", "apps_list", "app_create", "app_install", "app_get", "app_delete", "element_put", "element_delete", "validate", "activate", "schema", "query", "unknown"} {
 		state := newRequestState("ok", "not_found", "revision_changed", "idempotency_conflict", "idempotency_in_doubt", "projection_unavailable", "deadline_exceeded", "frontier_changed", "query_budget_exceeded", "operation_failed")
 		registry.control[operation] = &state
 	}
@@ -364,7 +364,7 @@ func controlOutcome(value string) string {
 }
 func controlOperation(value string) string {
 	switch value {
-	case "health", "status", "metrics", "apps_list", "app_create", "app_install", "app_get", "app_delete", "element_put", "element_delete", "validate", "activate", "schema", "query":
+	case "health", "status", "metrics", "ineffective", "apps_list", "app_create", "app_install", "app_get", "app_delete", "element_put", "element_delete", "validate", "activate", "schema", "query":
 		return value
 	default:
 		return "unknown"

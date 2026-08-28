@@ -81,6 +81,9 @@ type Namespace struct {
 	// DeliveryHead is the durable inbox head observed at the query barrier. It
 	// may be ahead of this projection's interpreted frontier while work waits.
 	DeliveryHead int64
+	// IneffectiveRecords is the durable count for the active projection at the
+	// same engine query barrier as Frontier and DeliveryHead.
+	IneffectiveRecords int64
 }
 
 type Column struct {
@@ -99,6 +102,7 @@ type Result struct {
 	Revision            string            `json:"revision"`
 	DeliveryHead        int64             `json:"delivery_head"`
 	InterpretedPosition int64             `json:"interpreted_position"`
+	IneffectiveRecords  int64             `json:"ineffective_records"`
 	Schemas             []NamespaceResult `json:"schemas"`
 	Complete            bool              `json:"complete"`
 	Columns             []Column          `json:"columns"`
@@ -265,7 +269,8 @@ func (sandbox *Sandbox) Query(ctx context.Context, request Request) (Result, err
 		deliveryHead = sandbox.primary.Frontier.InterpretedPosition
 	}
 	result := Result{Tailapp: sandbox.primary.Profile.Name, Revision: sandbox.primary.Frontier.Revision,
-		DeliveryHead: deliveryHead, InterpretedPosition: sandbox.primary.Frontier.InterpretedPosition, Complete: true}
+		DeliveryHead: deliveryHead, InterpretedPosition: sandbox.primary.Frontier.InterpretedPosition,
+		IneffectiveRecords: sandbox.primary.IneffectiveRecords, Complete: true}
 	for alias, namespace := range sandbox.mounts {
 		result.Schemas = append(result.Schemas, NamespaceResult{Alias: alias, Tailapp: namespace.Profile.Name, Revision: namespace.Frontier.Revision, Contract: namespace.Profile.ExportContractDigest, InterpretedPosition: namespace.Frontier.InterpretedPosition})
 	}
