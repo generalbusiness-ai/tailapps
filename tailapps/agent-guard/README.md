@@ -73,6 +73,21 @@ count bounded no-progress. A run becomes a loop finding at three consecutive
 observations. The fold selects one finding kind per input in this order:
 repeated failure, repeated action, then bounded no-progress.
 
+When any action-fingerprint input is absent, gated, or redacted, repeated-action
+evidence marks `action_fingerprint_coverage` as `degraded` and carries an
+`action_fingerprint_reason`. For example, without target detail the fingerprint
+can distinguish tools but not their arguments or targets, so three consecutive
+calls to the same tool can satisfy the repetition threshold. The marker lives
+inside the existing `evidence` JSON rather than adding a writable table column;
+upgrades therefore preserve existing projection data and do not require reset
+activation.
+
+`bounded-no-progress` requires an observed `progress_fingerprint`. The native
+Claude Code, Codex, and OpenCode telemetry shapes documented here do not
+currently provide one, so that finding cannot fire for those records until a
+harness or adapter emits explicit progress fingerprints. Missing progress
+telemetry remains `unknown`; it is never counted as evidence of no progress.
+
 This is bounded event evidence, not a wall-clock monitor. A silent process
 emits no record, so stalled behavior is detected by comparing the last distinct
 progress timestamp with a caller-supplied cutoff.
