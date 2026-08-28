@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Re-anchored the unchanged inbox timing and detach accounting at the corrected exact head.","body":{"commit":"0e3df616530546eb160ad5a1758847b323a5f2ba","path":"internal/inbox/inbox.go"}}
+{"kind":"artifact","text":"Re-anchored the unchanged inbox detach tests at the corrected exact head.","body":{"commit":"0e3df616530546eb160ad5a1758847b323a5f2ba","path":"internal/inbox/inbox_test.go"}}
