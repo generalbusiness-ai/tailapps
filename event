@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at tailapps/testdata/codex-cli-0.150.1.json","body":{"commit":"10776dfa2e43e08fe5d7fcfca6ca3c7bc59da2b2","path":"tailapps/testdata/codex-cli-0.150.1.json"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:134a8d1af2ffda3428132d31ad08de71610fc780","text":"Merge retired a covered predecessor; the successor is at tailapps/activity-stats."}
