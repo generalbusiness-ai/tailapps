@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will complete the re-review of the corrected runtime metrics head 0e3df616 (taking over the stopped checker's promise), independently rerunning the gates and verifying the three required corrections."}
+{"target":"f1b5ca141b8eea8893a562b35be8c3ec2512029b","text":"Retire abandoned promise; took over #360 with db5d4b37."}
