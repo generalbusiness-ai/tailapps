@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Agent-guard compatibility for observed OpenCode tool_result logs, with content-bearing spans excluded.","body":{"commit":"2242bcdab72328eb6adcf5dcbb4302c80242e558","path":"tailapps/agent-guard"}}
+{"kind":"artifact","text":"Projection tests using the observed OpenCode tool_result event family.","body":{"commit":"2242bcdab72328eb6adcf5dcbb4302c80242e558","path":"internal/projection/projection_test.go"}}
