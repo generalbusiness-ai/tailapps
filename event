@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Cross-harness fixture using the native Claude Code cost field at the exact documentation head","body":{"commit":"373fe18ef5a410317fc0a41b5dc7bb7f258b1701","path":"testdata/otlp/cross-harness.json"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:40c010b481d82b2be3333b87d94babc101ea2500","text":"Replace the abbreviated commit pointer with the exact full head"}
