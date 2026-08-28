@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Harness setup installs and verifies activity-stats with explicit per-projection coverage semantics.","body":{"commit":"16675ab55bd90f94b3e15f1465a7545d61b1d4ed","path":"docs/harnesses/README.md"}}
+{"kind":"artifact","text":"Claude Code guide documents assistant-response length analytics without content retention.","body":{"commit":"16675ab55bd90f94b3e15f1465a7545d61b1d4ed","path":"docs/harnesses/claude-code.md"}}
