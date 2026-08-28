@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"End-to-end CLI and MCP demo verifies cross-harness activity statistics.","body":{"commit":"16675ab55bd90f94b3e15f1465a7545d61b1d4ed","path":"scripts/demo.sh"}}
+{"kind":"artifact","text":"Root onboarding presents the privacy-preserving activity-stats bundle and install command.","body":{"commit":"16675ab55bd90f94b3e15f1465a7545d61b1d4ed","path":"README.md"}}
