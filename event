@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will implement the approved initial Tailapp specification, including the bundled cross-harness agent-guard, required tests and scripted demo, and checker review at material milestones and the exact final head.","body":{"branch":"request/initial-tailapp-product","head":"5d18fa8dbc483dc6004a1ddd8d3f704f6c1796f3"}}
+{"kind":"artifact","text":"Milestone A Tailapp profile compiler and evaluator boundary at 699c206","body":{"commit":"699c206ac35a8f0be73b2f7e073f5f64e5c65a2f","path":"internal/profile"}}
