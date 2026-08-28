@@ -1,9 +1,14 @@
 # Tailapp
 
-Tailapp is a local, continuously materialized analytics engine for coding-agent
-telemetry. It accepts standard OTLP/HTTP logs, spans, and metric points, then
-runs deterministic Tailapp definitions into isolated SQLite projections that
-agents can inspect through bounded read-only SQL over CLI or MCP.
+Tailapps are simple, local micro-apps that turn OTLP/HTTP logs, spans, and
+metric points into SQLite projections you can inspect over CLI or MCP, making
+agent behavior easy to monitor.
+
+One resident engine hosts any number of installed Tailapps on your machine.
+Each Tailapp is a small declarative source set—not another service process—and
+has its own isolated, continuously materialized SQLite projection. Agents can
+author, install, query, and manage Tailapps through MCP; people and scripts can
+do the same through the CLI.
 
 The shipped `agent-guard` example provides:
 
@@ -23,12 +28,14 @@ harness control adapter, which is outside this release.
 ./scripts/demo.sh
 ```
 
-The script builds the binary, starts an ephemeral resident, installs and
-activates `agent-guard` and `session-cost` through the public service, sends a
-cross-harness OTLP fixture, and verifies policy, unknown coverage, loops,
-stalled sessions, export joins, CLI, and MCP results.
+The demo builds the binary, starts an ephemeral resident, installs two shipped
+examples and one custom Tailapp in one request each, sends logs, a span, and a
+metric point, and prints a real projection before checking CLI and MCP access.
 
-For a persistent engine:
+## Start locally
+
+Prerequisites are macOS or Linux, Go 1.26.7 or later, and Git. Build and start
+the resident in one terminal:
 
 ```sh
 go build -o tailapp ./cmd/tailapp
@@ -37,23 +44,52 @@ export TAILAPP_HOME="$HOME/.local/share/tailapp"
 ./tailapp serve --otlp-http 127.0.0.1:4318
 ```
 
-The bind must use an explicit loopback IP; `localhost:4318` is deliberately
-refused. Point harness OTLP/HTTP exporters at the address in
-`$TAILAPP_HOME/engine.json`, then install the bundles:
+Keep `serve` running. The bind uses an explicit loopback IP because names such
+as `localhost` and non-loopback interfaces are deliberately refused. The
+actual receiver URL is also written to `$TAILAPP_HOME/engine.json`.
+
+In another terminal, export the same `TAILAPP_HOME`, then install and
+first-activate the two examples shipped with this release:
 
 ```sh
-./tailapp apps create --bundle agent-guard --idempotency-key install-agent-guard-v1 agent-guard
-./tailapp apps create --bundle session-cost --idempotency-key install-session-cost-v1 session-cost
+export TAILAPP_HOME="$HOME/.local/share/tailapp"
+./tailapp apps install --bundle agent-guard \
+  --idempotency-key install-agent-guard-v1 agent-guard
+./tailapp apps install --bundle session-cost \
+  --idempotency-key install-session-cost-v1 session-cost
 ```
 
-Creation returns a draft revision. Validate and reset-activate each exact draft
-with `apps validate --expected REV APP` and `apps activate --expected REV
---mode reset --ack-reset --idempotency-key KEY APP`. Create, delete, element
-mutation, and activation keys are durably bound to the exact request; retrying
-a completed key replays its original success or error. Reusing it for another
-request is refused. A key left pending by a crash is reported as in doubt
-instead of risking a duplicate destructive effect. Draft edits never change
-live behavior until activation.
+Connect a harness using the [harness setup guide](docs/harnesses/README.md),
+perform a tool call, then inspect what arrived:
+
+```sh
+./tailapp health
+./tailapp query \
+  --sql 'SELECT harness, capability, state, reason FROM telemetry_coverage ORDER BY harness, capability' \
+  agent-guard
+```
+
+An empty result means the installed Tailapp has not received a recognized
+event yet. The harness guides explain exporter batching, expected event names,
+and coverage limits.
+
+## Build and install your own
+
+The [`signal-counts`](examples/signal-counts/README.md) example is a complete
+custom Tailapp. Install its entire directory in one validated, first-activated
+request:
+
+```sh
+./tailapp apps install \
+  --idempotency-key install-signal-counts-v1 \
+  signal-counts examples/signal-counts
+```
+
+An MCP agent does the same with one `tailapp_install` call containing the
+complete source map. Installation is create-only and never replaces an
+existing Tailapp. Incremental updates deliberately retain the lower-level
+draft, exact-revision validation, and explicit activation lifecycle described
+in the [authoring guide](docs/authoring.md).
 
 ## Documentation
 
@@ -63,6 +99,7 @@ live behavior until activation.
   [Codex](docs/harnesses/codex.md),
   [OpenCode](docs/harnesses/opencode.md), and [Pi](docs/harnesses/pi.md)
 - [Author and install a Tailapp](docs/authoring.md)
+- [Five-minute signal-counts example](examples/signal-counts/README.md)
 - References: [CLI](docs/reference/cli.md), [MCP](docs/reference/mcp.md),
   [DDL/JSONata](docs/reference/ddl-jsonata.md), and
   [query SQL](docs/reference/query-sql.md)
@@ -72,12 +109,8 @@ live behavior until activation.
 
 The built-in source sets are examples, not a closed catalog. Operators and
 agents are encouraged to create new Tailapps, fork or extend these examples,
-or substitute different analytics and policy. They can create a draft, upload
-its `application.sql` and `folds/*.jsonata` elements, validate the exact
-revision, and activate it using either CLI or MCP. Tailapp v1 has no
-directory-import command and `--bundle` names only a built-in source set;
-custom source sets use the ordinary element lifecycle described in the
-authoring guide.
+or substitute different analytics and policy. Custom source sets and the two
+shipped examples use the same compiler, install boundary, and runtime.
 
 ## Boundaries
 

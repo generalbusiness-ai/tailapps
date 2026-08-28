@@ -93,7 +93,7 @@ func (server *Server) handle(ctx context.Context, request message) response {
 	return reply
 }
 
-var operations = map[string]string{"tailapps_list": "apps_list", "tailapp_get": "app_get", "tailapp_create": "app_create", "tailapp_delete": "app_delete", "tailapp_put_element": "element_put", "tailapp_delete_element": "element_delete", "tailapp_validate": "validate", "tailapp_activate": "activate", "tailapp_status": "status", "tailapp_schema": "schema", "tailapp_query": "query"}
+var operations = map[string]string{"tailapps_list": "apps_list", "tailapp_get": "app_get", "tailapp_create": "app_create", "tailapp_install": "app_install", "tailapp_delete": "app_delete", "tailapp_put_element": "element_put", "tailapp_delete_element": "element_delete", "tailapp_validate": "validate", "tailapp_activate": "activate", "tailapp_status": "status", "tailapp_schema": "schema", "tailapp_query": "query"}
 
 func tools() []tool {
 	object := func(properties map[string]any, required ...string) map[string]any {
@@ -106,10 +106,18 @@ func tools() []tool {
 	text := map[string]any{"type": "string"}
 	idempotencyKey := map[string]any{"type": "string", "minLength": 1, "maxLength": 128, "pattern": `^[!-~]+$`}
 	boolean := map[string]any{"type": "boolean"}
+	sourceContent := map[string]any{"type": "string", "contentEncoding": "base64"}
+	install := object(map[string]any{
+		"name": text, "bundle": text,
+		"sources":         map[string]any{"type": "object", "additionalProperties": sourceContent, "minProperties": 1},
+		"idempotency_key": idempotencyKey,
+	}, "name", "idempotency_key")
+	install["oneOf"] = []map[string]any{{"required": []string{"bundle"}}, {"required": []string{"sources"}}}
 	return []tool{
 		{"tailapps_list", "List local Tailapps and their draft/active revisions.", object(nil)},
 		{"tailapp_get", "Read one Tailapp draft and exact source revision. Draft edits are not live until activation.", object(map[string]any{"name": text}, "name")},
 		{"tailapp_create", "Create a Tailapp draft, optionally from a bundled source set. Reusing the same idempotency key replays the original outcome.", object(map[string]any{"name": text, "bundle": text, "idempotency_key": idempotencyKey}, "name", "idempotency_key")},
+		{"tailapp_install", "Install and first-activate one new Tailapp from a complete source map or bundled example in one validated operation. Existing Tailapps are never replaced.", install},
 		{"tailapp_delete", "Delete one Tailapp definition and detach only its projection. Reusing the same idempotency key replays the original outcome.", object(map[string]any{"name": text, "idempotency_key": idempotencyKey}, "name", "idempotency_key")},
 		{"tailapp_put_element", "Put a bounded source element using optimistic draft revision control; this does not activate it.", object(map[string]any{"name": text, "path": text, "content": map[string]any{"type": "string", "contentEncoding": "base64"}, "expected_revision": text, "idempotency_key": idempotencyKey}, "name", "path", "content", "expected_revision", "idempotency_key")},
 		{"tailapp_delete_element", "Delete a draft element using optimistic revision control; this does not activate it.", object(map[string]any{"name": text, "path": text, "expected_revision": text, "idempotency_key": idempotencyKey}, "name", "path", "expected_revision", "idempotency_key")},

@@ -1,5 +1,10 @@
 # Tailapp documentation
 
+New here? Run the [quick demo](../README.md#quick-demo), then follow
+[Start locally](../README.md#start-locally). The
+[`signal-counts`](../examples/signal-counts/README.md) example shows a complete
+custom Tailapp installed in one request and fed all three OTLP signal types.
+
 ## Run and connect
 
 - [Harness setup overview](harnesses/README.md)
@@ -11,6 +16,7 @@
 ## Extend
 
 - [Author and install a Tailapp](authoring.md)
+- [Canonical OTLP record shapes](reference/otel-records.md)
 - [DDL and JSONata reference](reference/ddl-jsonata.md)
 - [Query SQL reference](reference/query-sql.md)
 

@@ -49,6 +49,12 @@ type Status struct {
 	Unavailable    map[string]string              `json:"unavailable,omitempty"`
 }
 
+type InstallResult struct {
+	App      definition.App      `json:"app"`
+	Profile  *profile.Profile    `json:"profile"`
+	Frontier projection.Frontier `json:"frontier"`
+}
+
 func InitHome(home string) error {
 	if home == "" {
 		return errors.New("TAILAPP_HOME is required")
@@ -382,6 +388,55 @@ func (e *Engine) Create(ctx context.Context, name, bundle string) (definition.Ap
 	}
 	return e.registry.Create(ctx, name, sources)
 }
+
+// Install validates a complete source set and first-activates it as one
+// create-only operation. Incremental updates keep using the explicit
+// draft/revision lifecycle so this convenience boundary cannot silently
+// replace or reset an existing Tailapp.
+func (e *Engine) Install(ctx context.Context, name, bundle string, sources map[string][]byte) (InstallResult, error) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	if err := profile.ValidateName(name); err != nil {
+		return InstallResult{}, err
+	}
+	if bundle != "" && len(sources) != 0 {
+		return InstallResult{}, errors.New("install accepts either bundle or sources, not both")
+	}
+	if bundle != "" {
+		var err error
+		sources, err = tailapps.Source(bundle)
+		if err != nil {
+			return InstallResult{}, err
+		}
+	} else if len(sources) == 0 {
+		return InstallResult{}, errors.New("install requires a bundle or complete sources")
+	}
+	compiled, err := compile(name, sources)
+	if err != nil {
+		return InstallResult{}, err
+	}
+	if err := e.drainLocked(ctx); err != nil {
+		return InstallResult{}, err
+	}
+	if _, err := e.registry.Get(ctx, name); err == nil {
+		return InstallResult{}, fmt.Errorf("tailapp %q already exists", name)
+	} else if !errors.Is(err, sql.ErrNoRows) {
+		return InstallResult{}, err
+	}
+	app, err := e.registry.Create(ctx, name, sources)
+	if err != nil {
+		return InstallResult{}, err
+	}
+	frontier, err := e.activateLocked(ctx, name, app.DraftRevision, "reset", true)
+	if err != nil {
+		return InstallResult{}, fmt.Errorf("activate installed tailapp (validated draft remains): %w", err)
+	}
+	app, err = e.registry.Get(ctx, name)
+	if err != nil {
+		return InstallResult{}, err
+	}
+	return InstallResult{App: app, Profile: compiled, Frontier: frontier}, nil
+}
 func (e *Engine) Put(ctx context.Context, name, path string, content []byte, expected string) (definition.App, error) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
@@ -426,6 +481,10 @@ func (e *Engine) Validate(ctx context.Context, name, expected string) (*profile.
 func (e *Engine) Activate(ctx context.Context, name, expected, mode string, ackReset bool) (projection.Frontier, error) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
+	return e.activateLocked(ctx, name, expected, mode, ackReset)
+}
+
+func (e *Engine) activateLocked(ctx context.Context, name, expected, mode string, ackReset bool) (projection.Frontier, error) {
 	if err := e.drainLocked(ctx); err != nil {
 		return projection.Frontier{}, err
 	}

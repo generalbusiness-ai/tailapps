@@ -36,19 +36,18 @@ while [ ! -S "$TAILAPP_HOME/engine.sock" ]; do
   sleep 0.05
 done
 
-guard_create=$("$binary" apps create --bundle agent-guard --idempotency-key demo-create-agent-guard agent-guard)
-guard_draft=$(printf '%s\n' "$guard_create" | sed -n 's/.*"draft_revision": "\([^"]*\)".*/\1/p')
-cost_create=$("$binary" apps create --bundle session-cost --idempotency-key demo-create-session-cost session-cost)
-cost_draft=$(printf '%s\n' "$cost_create" | sed -n 's/.*"draft_revision": "\([^"]*\)".*/\1/p')
-test -n "$guard_draft"
-test -n "$cost_draft"
-
-"$binary" apps validate --expected "$guard_draft" agent-guard >/dev/null
-"$binary" apps validate --expected "$cost_draft" session-cost >/dev/null
-"$binary" apps activate --expected "$guard_draft" --mode reset --ack-reset --idempotency-key demo-activate-agent-guard agent-guard >/dev/null
-"$binary" apps activate --expected "$cost_draft" --mode reset --ack-reset --idempotency-key demo-activate-session-cost session-cost >/dev/null
+"$binary" apps install --bundle agent-guard --idempotency-key demo-install-agent-guard agent-guard >/dev/null
+"$binary" apps install --idempotency-key demo-install-signal-counts signal-counts examples/signal-counts >/dev/null
+mcp_install=$(printf '%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
+  '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
+  '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"tailapp_install","arguments":{"name":"session-cost","bundle":"session-cost","idempotency_key":"demo-install-session-cost"}}}' \
+  | "$binary" mcp)
+printf '%s\n' "$mcp_install" | grep -q 'session-cost'
 
 "$binary" ingest-fixture --signal logs --content-type application/json testdata/otlp/cross-harness.json >/dev/null
+"$binary" ingest-fixture --signal traces --content-type application/json testdata/otlp/one-span.json >/dev/null
+"$binary" ingest-fixture --signal metrics --content-type application/json testdata/otlp/one-metric.json >/dev/null
 
 attempt=0
 while :; do
@@ -70,6 +69,7 @@ unknowns=$("$binary" query --sql "SELECT harness, session_id, rule_id, coverage_
 loops=$("$binary" query --sql "SELECT harness, session_id, finding_kind FROM loop_findings ORDER BY finding_kind" agent-guard)
 stalled=$("$binary" query --sql "SELECT harness, session_id, last_distinct_progress_unix_nano FROM session_progress WHERE last_distinct_progress_unix_nano < ? ORDER BY harness, session_id" --param '"1787900000009999999"' agent-guard)
 joined=$("$binary" query --mount cost=session-cost --sql "SELECT progress.harness, progress.session_id, costrow.input_tokens, costrow.output_tokens FROM session_progress progress JOIN cost.session_cost costrow ON costrow.harness=progress.harness AND costrow.session_id=progress.session_id ORDER BY progress.harness" agent-guard)
+signals=$("$binary" query --sql "SELECT source, signal, event_name, event_count FROM signal_counts WHERE source='demo-agent' ORDER BY signal" signal-counts)
 
 printf '%s\n' "$violations" | grep -q 'violation-claude'
 printf '%s\n' "$violations" | grep -q 'violation-codex'
@@ -83,6 +83,8 @@ printf '%s\n' "$stalled" | grep -q 'no-progress-opencode'
 printf '%s\n' "$joined" | grep -q 'shared-claude'
 printf '%s\n' "$joined" | grep -q 'shared-codex'
 printf '%s\n' "$joined" | grep -q 'shared-opencode'
+printf '%s\n' "$signals" | grep -q 'agent.run'
+printf '%s\n' "$signals" | grep -q 'agent.tokens'
 
 mcp_output=$(printf '%s\n' \
   '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
@@ -93,4 +95,6 @@ mcp_output=$(printf '%s\n' \
 printf '%s\n' "$mcp_output" | grep -q 'tailapp_query'
 printf '%s\n' "$mcp_output" | grep -q 'shared-opencode'
 
-echo "Tailapp demo passed: cross-harness violations, explicit unknowns, loops, stalled sessions, joined exports, CLI, and MCP."
+echo "Example projection: OTLP span and metric-point counts"
+printf '%s\n' "$signals"
+echo "Tailapp demo passed: three OTLP signals, one-shot installs, cross-harness guard and cost analytics, joined exports, CLI, and MCP."

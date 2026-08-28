@@ -5,11 +5,16 @@ process. Its DDL declares a private normalized event, materialized tables,
 bounded reads, JSONata programs, and explicit query exports. The resident
 compiles the complete source set before it can become active.
 
-The lifecycle is:
+The first-install lifecycle is:
 
 ```text
-create draft -> put/remove elements -> validate exact revision -> activate -> query
+complete source set -> validate -> create -> first activation -> query
 ```
+
+CLI `apps install` and MCP `tailapp_install` perform that lifecycle in one
+idempotent request. Existing applications use the deliberately explicit update
+lifecycle: `get draft -> put/remove elements -> validate exact revision ->
+activate`.
 
 Draft editing is optimistic: every element mutation names the current draft
 revision and returns a new one. Mutation idempotency keys are durably bound to
@@ -107,64 +112,51 @@ ineffective. Effective log records produce a transaction-local `otel_event`.
 The analytic fold reads its own prior row and upserts the next count. Neither
 the source record nor the private event becomes queryable storage.
 
-## Install with CLI
+## Install with CLI in one request
 
-Start from an empty draft. The examples below use `jq` only to extract the
-revision returned by each JSON response:
+Install and first-activate the complete directory:
 
 ```sh
-revision=$(tailapp apps create \
-  --idempotency-key event-counts-create-v1 \
-  event-counts | jq -r .draft_revision)
-
-revision=$(tailapp apps put \
-  --expected "$revision" \
-  --idempotency-key event-counts-put-application-v1 \
-  event-counts application.sql event-counts/application.sql |
-  jq -r .draft_revision)
-
-revision=$(tailapp apps put \
-  --expected "$revision" \
-  --idempotency-key event-counts-put-normalize-v1 \
-  event-counts folds/normalize.jsonata event-counts/folds/normalize.jsonata |
-  jq -r .draft_revision)
-
-revision=$(tailapp apps put \
-  --expected "$revision" \
-  --idempotency-key event-counts-put-count-v1 \
-  event-counts folds/count.jsonata event-counts/folds/count.jsonata |
-  jq -r .draft_revision)
-
-tailapp apps validate --expected "$revision" event-counts
-tailapp apps activate \
-  --expected "$revision" \
-  --mode reset \
-  --ack-reset \
-  --idempotency-key event-counts-activate-v1 \
-  event-counts
+tailapp apps install \
+  --idempotency-key event-counts-install-v1 \
+  event-counts event-counts
 ```
 
-There is no custom directory-import command in v1. `apps create --bundle`
-selects only a source set embedded in the Tailapp binary. A custom "bundle"
-is installed by creating an empty app and putting every source element as
-shown above.
+The command reads `application.sql` and every `folds/*.jsonata` file, validates
+the complete source set before creating anything, and activates a fresh
+projection at the current delivery boundary. Files such as `README.md` remain
+author documentation and are not installed as executable source.
 
-## Install with MCP
+The result contains the installed app, compiled-profile identity and contract
+digests, and the active frontier; pass `--full` when reviewing the complete
+compiled profile. Installation is create-only: it refuses an existing name
+rather than silently replacing source or resetting materialized state.
 
-An agent follows the same sequence:
+## Install with MCP in one request
 
-1. Call `tailapp_create` with a name and idempotency key, omitting `bundle`.
-2. For each source file, call `tailapp_put_element` with the latest
-   `expected_revision`, a new idempotency key, and base64-encoded content.
-3. Call `tailapp_validate` with the final exact revision and inspect the
-   compiled schema, writers, reads, exports, and contract digests.
-4. Call `tailapp_activate`. Use `reset` with `acknowledge_reset = true` for the
-   first activation.
-5. Call `tailapp_schema` and `tailapp_query` to verify live behavior.
+An agent calls `tailapp_install` with:
 
-The complete schemas are in the [MCP reference](reference/mcp.md). Agents
-should keep source files in a normal repository as the human-reviewable source
-of truth; the Tailapp registry is deployment state, not an authoring workspace.
+- the new Tailapp `name`;
+- `sources`, a map containing `application.sql` and every referenced
+  `folds/*.jsonata` file as base64 values; and
+- one stable `idempotency_key` for the complete request.
+
+The returned app, compiled profile, and frontier provide immediate review and
+query context. The same tool can install a shipped example by supplying
+`bundle` instead of `sources`, but those examples have no privileged runtime
+path.
+
+The complete schema is in the [MCP reference](reference/mcp.md). Agents should
+keep source files in a normal repository as the human-reviewable source of
+truth; the Tailapp registry is deployment state, not an authoring workspace.
+
+## Lower-level lifecycle
+
+`apps create`, `apps put`, `apps validate`, and `apps activate`—and their MCP
+counterparts—remain available for reviewed, incremental control. Every element
+mutation names the prior draft revision and returns the next revision. This is
+the appropriate path for updating an existing Tailapp, because an activation
+must explicitly choose compatible continuation or acknowledged reset.
 
 ## Update safely
 

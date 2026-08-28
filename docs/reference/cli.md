@@ -5,6 +5,9 @@ and return a nonzero exit status. Except for `init`, `serve`, and
 `ingest-fixture` transport, commands are clients of the resident engine's
 owner-only Unix socket.
 
+`tailapp --help` summarizes the shortest init, serve, install, and query path;
+`tailapp apps --help` lists the one-shot install and lower-level lifecycle.
+
 ## Environment
 
 `TAILAPP_HOME` selects the engine home. If unset, Tailapp uses
@@ -67,6 +70,34 @@ Lists definitions with draft and optional active revision metadata.
 
 Creates a draft. Omit `--bundle` for an empty custom Tailapp. The only built-in
 bundle names in this release are `agent-guard` and `session-cost`.
+
+### `tailapp apps install [options] --idempotency-key KEY APP [DIRECTORY]`
+
+Validates a complete source set and first-activates one new Tailapp in a single
+idempotent control request. It is create-only and refuses an existing app name.
+
+Install custom source from a directory:
+
+```sh
+tailapp apps install \
+  --idempotency-key install-signal-counts-v1 \
+  signal-counts examples/signal-counts
+```
+
+The directory may contain author documentation. Only `application.sql` and
+regular, non-symlink `folds/*.jsonata` files become executable source.
+
+Install a shipped example without a directory:
+
+```sh
+tailapp apps install --bundle agent-guard \
+  --idempotency-key install-agent-guard-v1 agent-guard
+```
+
+The concise result contains `app`, compiled-profile identity and contract
+digests, and the active `frontier`. Pass `--full` to include the complete
+compiled profile. Use the lower-level commands below for updates to an existing
+app.
 
 ### `tailapp apps get APP`
 
@@ -146,12 +177,12 @@ truncated. See the [query SQL reference](query-sql.md).
 
 ## Idempotency and revisions
 
-Create, put, remove, activate, and delete require a printable ASCII key of 1 to
-128 characters with no leading or trailing space. Retrying the identical
-operation, arguments, and key replays the original success or error. Reusing a
-key for any different request returns `idempotency_conflict`. A key left
-pending across a crash returns `idempotency_in_doubt`; Tailapp will not guess
-whether to repeat the mutation.
+Install, create, put, remove, activate, and delete require a printable ASCII
+key of 1 to 128 characters with no leading or trailing space. Retrying the
+identical operation, arguments, and key replays the original success or error.
+Reusing a key for any different request returns `idempotency_conflict`. A key
+left pending across a crash returns `idempotency_in_doubt`; Tailapp will not
+guess whether to repeat the mutation.
 
 Element mutations and validation use the exact draft revision. A stale value
 returns `revision_changed`. Query expectations return `frontier_changed` when

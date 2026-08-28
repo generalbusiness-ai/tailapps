@@ -3,6 +3,7 @@ package engine
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -152,6 +153,34 @@ func TestEngineLifecycleIngestionProjectionQueryAndIsolation(t *testing.T) {
 	}
 	if _, err := engine.Query(ctx, "session-cost", query.Request{SQL: `SELECT COUNT(*) FROM session_cost`}, nil); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestInstallValidatesAndFirstActivatesWithoutReplacing(t *testing.T) {
+	ctx := context.Background()
+	resident, err := Open(ctx, filepath.Join(t.TempDir(), "home"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resident.Close()
+	if _, err := resident.Install(ctx, "invalid", "", map[string][]byte{"application.sql": []byte("not Tailapp DDL")}); err == nil {
+		t.Fatal("invalid source installed")
+	}
+	if _, _, err := resident.App(ctx, "invalid"); !errors.Is(err, sql.ErrNoRows) {
+		t.Fatalf("failed validation created a draft: %v", err)
+	}
+	installed, err := resident.Install(ctx, "agent-guard", "agent-guard", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if installed.App.ActiveRevision == nil || *installed.App.ActiveRevision != installed.Profile.Revision || installed.Frontier.Revision != installed.Profile.Revision {
+		t.Fatalf("install result = %#v", installed)
+	}
+	if installed.App.ActivationMode == nil || *installed.App.ActivationMode != "reset" {
+		t.Fatalf("install did not first-activate with reset: %#v", installed.App)
+	}
+	if _, err := resident.Install(ctx, "agent-guard", "agent-guard", nil); err == nil || !strings.Contains(err.Error(), "already exists") {
+		t.Fatalf("install replaced an existing Tailapp: %v", err)
 	}
 }
 

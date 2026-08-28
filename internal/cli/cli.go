@@ -10,6 +10,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"net"
 	"net/http"
 	"os"
@@ -23,6 +24,7 @@ import (
 	"github.com/generalbusiness-ai/tailapp/internal/engine"
 	"github.com/generalbusiness-ai/tailapp/internal/ingest"
 	"github.com/generalbusiness-ai/tailapp/internal/mcp"
+	"github.com/generalbusiness-ai/tailapp/internal/profile"
 )
 
 func Home() (string, error) {
@@ -39,6 +41,10 @@ func Home() (string, error) {
 func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	if len(args) == 0 {
 		return usage(stderr)
+	}
+	if args[0] == "help" || args[0] == "--help" || args[0] == "-h" {
+		printUsage(stdout)
+		return nil
 	}
 	home, err := Home()
 	if err != nil {
@@ -69,8 +75,25 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 }
 
 func usage(writer io.Writer) error {
-	_, _ = fmt.Fprintln(writer, "usage: tailapp <init|serve|health|apps|query|ingest-fixture|mcp>")
+	printUsage(writer)
 	return errors.New("invalid command")
+}
+
+func printUsage(writer io.Writer) {
+	_, _ = fmt.Fprintln(writer, `Tailapps are simple, local micro-apps that turn OTLP/HTTP telemetry into
+SQLite projections you can inspect over CLI or MCP.
+
+Usage:
+  tailapp init
+  tailapp serve [--otlp-http IP:PORT]
+  tailapp apps install [--bundle BUNDLE] --idempotency-key KEY NAME [DIRECTORY]
+  tailapp apps <list|create|get|put|rm|validate|activate|delete|status|schema>
+  tailapp query --sql SQL [options] APP
+  tailapp health
+  tailapp ingest-fixture [--signal logs|traces|metrics] FILE
+  tailapp mcp
+
+Start with: tailapp init, keep tailapp serve running, then install a Tailapp.`)
 }
 
 func serve(ctx context.Context, home string, args []string, stdout, stderr io.Writer) error {
@@ -143,7 +166,12 @@ func statusProfile(resident *engine.Engine, ctx context.Context) string {
 
 func apps(stdout io.Writer, home string, args []string) error {
 	if len(args) == 0 {
+		printAppsUsage(stdout)
 		return errors.New("apps subcommand required")
+	}
+	if args[0] == "help" || args[0] == "--help" || args[0] == "-h" {
+		printAppsUsage(stdout)
+		return nil
 	}
 	client := control.NewClient(filepath.Join(home, "engine.sock"))
 	ctx := context.Background()
@@ -151,6 +179,42 @@ func apps(stdout io.Writer, home string, args []string) error {
 	switch args[0] {
 	case "list":
 		return clientCallOutput(ctx, stdout, client, "apps_list", nil)
+	case "install":
+		flags := flag.NewFlagSet("apps install", flag.ContinueOnError)
+		bundle := flags.String("bundle", "", "bundled source name")
+		full := flags.Bool("full", false, "print the complete compiled profile")
+		idempotencyKey := flags.String("idempotency-key", "", "stable retry key")
+		if err := flags.Parse(args[1:]); err != nil {
+			return err
+		}
+		if *idempotencyKey == "" || (*bundle == "" && flags.NArg() != 2) || (*bundle != "" && flags.NArg() != 1) {
+			return errors.New("apps install requires NAME DIRECTORY --idempotency-key KEY, or --bundle BUNDLE NAME --idempotency-key KEY")
+		}
+		request := control.InstallArgs{Name: flags.Arg(0), Bundle: *bundle, IdempotencyKey: *idempotencyKey}
+		if *bundle == "" {
+			sources, err := readSourceDirectory(flags.Arg(1))
+			if err != nil {
+				return err
+			}
+			request.Sources = sources
+		}
+		var installed engine.InstallResult
+		if err := client.Call(ctx, "app_install", request, &installed); err != nil {
+			return err
+		}
+		if *full {
+			return output(stdout, installed)
+		}
+		return output(stdout, map[string]any{
+			"app": installed.App,
+			"profile": map[string]any{
+				"name": installed.Profile.Name, "revision": installed.Profile.Revision,
+				"runtime_profile":        installed.Profile.RuntimeProfile,
+				"storage_schema_digest":  installed.Profile.StorageSchemaDigest,
+				"export_contract_digest": installed.Profile.ExportContractDigest,
+			},
+			"frontier": installed.Frontier,
+		})
 	case "create":
 		flags := flag.NewFlagSet("apps create", flag.ContinueOnError)
 		bundle := flags.String("bundle", "", "bundled source name")
@@ -237,6 +301,89 @@ func apps(stdout io.Writer, home string, args []string) error {
 		_ = result
 		return errors.New("unknown apps subcommand")
 	}
+}
+
+func printAppsUsage(writer io.Writer) {
+	_, _ = fmt.Fprintln(writer, `Usage:
+  tailapp apps install --idempotency-key KEY NAME DIRECTORY
+  tailapp apps install --bundle BUNDLE --idempotency-key KEY NAME
+  tailapp apps list
+  tailapp apps create|get|put|rm|validate|activate|delete|status|schema ...
+
+install validates a complete source set and first-activates it in one request.
+Use create/put/validate/activate for reviewed incremental updates.`)
+}
+
+func readSourceDirectory(root string) (map[string][]byte, error) {
+	absolute, err := filepath.Abs(root)
+	if err != nil {
+		return nil, err
+	}
+	rootInfo, err := os.Lstat(absolute)
+	if err != nil {
+		return nil, err
+	}
+	if !rootInfo.IsDir() || rootInfo.Mode()&os.ModeSymlink != 0 {
+		return nil, errors.New("Tailapp source directory must be a regular directory, not a symlink")
+	}
+	sources := map[string][]byte{}
+	read := func(filePath, sourcePath string, entry fs.DirEntry) error {
+		if entry.Type()&os.ModeSymlink != 0 {
+			return fmt.Errorf("Tailapp source %q may not be a symlink", sourcePath)
+		}
+		info, err := entry.Info()
+		if err != nil {
+			return err
+		}
+		if !info.Mode().IsRegular() {
+			return fmt.Errorf("Tailapp source %q must be a regular file", sourcePath)
+		}
+		content, err := os.ReadFile(filePath)
+		if err != nil {
+			return err
+		}
+		if err := profile.ValidateSourceElement(sourcePath, content); err != nil {
+			return err
+		}
+		sources[sourcePath] = content
+		return nil
+	}
+	application := filepath.Join(absolute, "application.sql")
+	applicationInfo, err := os.Lstat(application)
+	if err != nil {
+		return nil, err
+	}
+	if err := read(application, "application.sql", fs.FileInfoToDirEntry(applicationInfo)); err != nil {
+		return nil, err
+	}
+	folds := filepath.Join(absolute, "folds")
+	if err := filepath.WalkDir(folds, func(filePath string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		relative, err := filepath.Rel(absolute, filePath)
+		if err != nil {
+			return err
+		}
+		sourcePath := filepath.ToSlash(relative)
+		if !strings.HasSuffix(sourcePath, ".jsonata") {
+			return nil
+		}
+		return read(filePath, sourcePath, entry)
+	}); err != nil {
+		return nil, err
+	}
+	total := 0
+	for _, content := range sources {
+		total += len(content)
+	}
+	if total > profile.MaxSourceBytes {
+		return nil, fmt.Errorf("tailapp source exceeds %d bytes", profile.MaxSourceBytes)
+	}
+	return sources, nil
 }
 
 type stringsFlag []string

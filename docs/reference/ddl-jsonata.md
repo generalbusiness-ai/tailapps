@@ -197,7 +197,8 @@ For a normalizer, `event` has scalar envelope fields:
 normalized attribute maps and instrumentation identity. `record.otel` retains
 the decoded original OTLP record. The source is the first nonempty resource
 attribute among `service.name`, `gen_ai.agent.name`, and `telemetry.sdk.name`,
-or `unknown`.
+or `unknown`. See [Canonical OTLP records](otel-records.md) for the complete
+log, span, and metric-point shapes and value rules.
 
 For an analytic fold, `event` is one object emitted against the declared
 `otel_event` schema. `meta.event_id` adds an emission ordinal, while

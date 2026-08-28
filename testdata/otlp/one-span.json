@@ -1,0 +1,15 @@
+{
+  "resourceSpans": [{
+    "resource": {"attributes": [{"key": "service.name", "value": {"stringValue": "demo-agent"}}]},
+    "scopeSpans": [{
+      "scope": {"name": "tailapp-demo", "version": "1"},
+      "spans": [{
+        "traceId": "AwMDAwMDAwMDAwMDAwMDAw==",
+        "spanId": "BAQEBAQEBAQ=",
+        "name": "agent.run",
+        "startTimeUnixNano": "1787900000000002000",
+        "endTimeUnixNano": "1787900000000002500"
+      }]
+    }]
+  }]
+}

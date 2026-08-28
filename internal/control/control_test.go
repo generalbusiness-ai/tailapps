@@ -96,6 +96,35 @@ func TestMutationRequiresPrintableBoundedKey(t *testing.T) {
 	}
 }
 
+func TestInstallIsOneIdempotentValidatedActivation(t *testing.T) {
+	ctx := context.Background()
+	resident, err := engine.Open(ctx, filepath.Join(t.TempDir(), "tailapp"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resident.Close()
+	server := &Server{Engine: resident}
+	request := InstallArgs{Name: "session-cost", Bundle: "session-cost", IdempotencyKey: "install-session-cost-v1"}
+	first, err := dispatchArgs(ctx, server, "app_install", request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	replayed, err := dispatchArgs(ctx, server, "app_install", request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if encoded(first) != encoded(replayed) {
+		t.Fatalf("install replay changed response: %s != %s", encoded(first), encoded(replayed))
+	}
+	app, _, err := resident.App(ctx, "session-cost")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if app.ActiveRevision == nil || app.ActivationMode == nil || *app.ActivationMode != "reset" {
+		t.Fatalf("install left an inactive app: %#v", app)
+	}
+}
+
 func dispatchArgs(ctx context.Context, server *Server, operation string, args any) (any, error) {
 	encodedArgs, err := json.Marshal(args)
 	if err != nil {
