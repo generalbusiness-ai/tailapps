@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Fresh Claude Code privacy clarification candidate at exact head a498991db9ef1d36e1392e039109dfeec84f35d5, replacing the stale intermediate pointer while preserving the verified source tree.","body":{"commit":"a498991db9ef1d36e1392e039109dfeec84f35d5","path":"docs/harnesses/claude-code.md"}}
+{"kind":"promise","text":"I will land the two-file analytics/privacy clarification only after clean exact-head artifacts and independent checker approval.","body":{"branch":"request/docs-refresh"}}
