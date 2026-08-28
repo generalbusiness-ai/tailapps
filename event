@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Agent-guard consumes DEVtheOPS tool_result logs while rejecting duplicate tool spans.","body":{"commit":"6addc40309be622de85c4a1862f4749a8712e104","path":"tailapps/agent-guard"}}
+{"kind":"artifact","text":"Projection integration tests exercise the observed OpenCode tool_result name.","body":{"commit":"6addc40309be622de85c4a1862f4749a8712e104","path":"internal/projection/projection_test.go"}}
