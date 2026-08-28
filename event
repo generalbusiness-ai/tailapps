@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"jsonata-ddl-core extraction design at exact head 8f4c44f","body":{"commit":"8f4c44f93f6f1f0ab998982c6bb31fa11f2eda1f","path":"notes/2026-08-28-jsonata-ddl-core-extraction.md"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:f35e3b5b166cafc5104df7b25d47722f01241c86","text":"Withdrawn before review: artifact body contained a mistyped commit; the branch actually stands at 8f4c44f080f24f76b2cbd9ec793eabf6793c0083."}
