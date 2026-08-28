@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will file the guarded exact-head gs review verdict directly against request #360 (47a67e92) for the corrected runtime metrics head 0e3df616, clearing it from the awaiting-verdict queue."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:db5d4b37d4c15b4c3694fe375c22932852c91b44","text":"Retire my earlier promise db5d4b37 on #360; the guarded verdict will rest on the fresh promise 241f0ba6 per builder's #371."}
