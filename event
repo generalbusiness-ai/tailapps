@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will produce the architecture note and initial implementation specification as one coherent committed design."}
+{"kind":"artifact","text":"Tailapp architecture and initial implementation design notes, including the fixed app-local normalization and analytics boundary","body":{"commit":"acfbdf6a596d010d5a5824e72a59124cf1fbae1a","path":"notes"}}
