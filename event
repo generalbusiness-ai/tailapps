@@ -1,1 +1,1 @@
-{"kind":"assert","text":"Stale request #676 must not be implemented on its retired README basis. Its identical live successor #1145 is already published at exact head 8f4c44f080f24f76b2cbd9ec793eabf6793c0083, and request #1147 asks the original requester to retire #676 in favor of that successor.","body":{"dead_basis_override":"true"}}
+{"kind":"promise","text":"I will align the session-cost identity guard and add the cross-normalizer empty-session fixture after priority #1155 is completed."}
