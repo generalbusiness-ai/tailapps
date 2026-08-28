@@ -1,6 +1,6 @@
 ---
 date: 2026-08-28
-status: draft design note, revision 2 after builder review 64bc1115; research pending
+status: draft design note, revision 3 after builder reviews 64bc1115 and 4eb42cc3; research pending
 companion: notes/2026-08-28-tailapp-architecture.md
 rests_on:
   - git:sha1:a24229663c518d72adfe856106d798b615a8a9ef
@@ -110,8 +110,10 @@ transcript entry and the OTel event for the same action have different
 shapes, so `content_digest` never matches across paths. The default stance
 is **namespace, don't deduplicate**: disk-sourced records carry distinct
 event names (for example `claude_code.transcript.assistant` rather than
-the live `claude_code.tool_result`) and an asserted source resource
-attribute identifying the reader. Overlap then becomes a semantic join on
+the live `claude_code.tool_result`), the `tailapp.capture = "disk"`
+marker, and the `tailapp.reader.name` / `tailapp.reader.version`
+provenance attributes from the mapping contract below — never a
+reader-invented `source`. Overlap then becomes a semantic join on
 `(harness, session_id)` inside a tailapp, not an engine problem, which is
 exactly where the architecture already places domain deduplication.
 
@@ -154,10 +156,17 @@ and the shipped tailapps treat that source as the harness. A reader that
 asserted `service.name=tailapp-reader` would therefore hide claude_code
 and codex from every existing normalizer. The mapping contract is:
 
-- `service.name` carries the harness identity, exactly the value the live
-  telemetry path uses (`claude_code`, `codex`, …). The reader identifies
-  itself in separate resource attributes (`tailapp.reader.name`,
-  `tailapp.reader.version`) — provenance, not source.
+- `service.name` carries the exact native value the live telemetry path
+  emits for that harness — for Codex that is `codex_cli_rs`, the observed
+  contract in the Codex effectiveness work, not a normalized alias — so
+  canonical `event.source` is indistinguishable across capture paths.
+  The definitive per-harness values are recorded by the paired-capture
+  research below. Normalizing a native source to a harness key
+  (`codex_cli_rs` → `codex`) remains the normalizer's contract, exactly
+  as on the live path; the reader never invents or rewrites a source.
+  The reader identifies itself in separate resource attributes
+  (`tailapp.reader.name`, `tailapp.reader.version`) — provenance, not
+  source.
 - Every disk-sourced record carries `tailapp.capture = "disk"` as an
   explicit capture/backfill marker, beyond the event-name namespace.
 - Event names are namespaced per entry type:
@@ -203,6 +212,9 @@ is fixed, run a paired-capture study for at least Claude Code and Codex:
    (Claude Code: the JSONL filename / `sessionId` field)? Do tool-call ids
    in `claude_code.tool_result` / `codex.tool_result` match `tool_use` ids
    in the transcript? Are API message ids present in telemetry at all?
+   Record the exact native `service.name` and canonical `event.source`
+   values observed per harness on both paths (`codex_cli_rs` for Codex);
+   these become the mapping contract's fixed per-harness values.
    The answer determines whether stream fusion by domain key is possible
    or whether namespacing is not just the default but the only option.
 3. **Coverage comparison.** Which transcript entries have no telemetry
