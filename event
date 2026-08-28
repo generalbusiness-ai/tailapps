@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Claude Code guide documents assistant-response length analytics without content retention.","body":{"commit":"16675ab55bd90f94b3e15f1465a7545d61b1d4ed","path":"docs/harnesses/claude-code.md"}}
+{"kind":"artifact","text":"Codex guide distinguishes activity latency signals from session-cost usage signals.","body":{"commit":"16675ab55bd90f94b3e15f1465a7545d61b1d4ed","path":"docs/harnesses/codex.md"}}
