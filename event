@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will close #761 by hardening the bounded-JSONata subset gate against apply-operator allowlist bypasses and the Unicode lambda synonym, bumping RuntimeID, adding regression coverage, and publishing an exact tested head for independent checker review.","body":{"branch":"request/jsonata-subset-gate"}}
+{"kind":"assert","text":"Intake deferral: #676 remains authorized and actionable, but this bounded builder cycle is occupied by higher-priority security request #761. I am not claiming #676 yet and will revisit it after #761 closes or yields."}
