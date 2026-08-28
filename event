@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Scrubbed Codex prompt, TTFT, API latency, and websocket compatibility fixtures.","body":{"commit":"16675ab55bd90f94b3e15f1465a7545d61b1d4ed","path":"tailapps/testdata/codex-cli-0.150.1.json"}}
+{"kind":"artifact","text":"Scrubbed OpenCode adapter tool and API compatibility fixture.","body":{"commit":"16675ab55bd90f94b3e15f1465a7545d61b1d4ed","path":"tailapps/testdata/opencode-adapter.json"}}
