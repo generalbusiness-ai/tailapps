@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at tailapps/testdata/opencode-adapter.json","body":{"commit":"eef59366ccfa544baaae7fb880a55b7d5149a8bd","path":"tailapps/testdata/opencode-adapter.json"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:12daf762da300a67818a4fbe70eeaadebc85f6b5","text":"Merge retired a covered predecessor; the successor is at scripts/demo.sh."}
