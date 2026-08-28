@@ -37,8 +37,9 @@ working directory:
 ```sh
 claude mcp add --transport stdio \
   --scope user \
+  tailapp \
   --env TAILAPP_HOME="$HOME/.local/share/tailapp" \
-  tailapp -- /absolute/path/to/tailapp mcp
+  -- /absolute/path/to/tailapp mcp
 claude mcp get tailapp
 ```
 
@@ -56,15 +57,24 @@ or supplement them with analytics and policy specific to their environment;
 the [authoring guide](../authoring.md) covers installation over CLI and MCP.
 
 `agent-guard` recognizes `claude_code.tool_result` and
-`claude_code.tool_decision`. Claude supplies `tool_name` and `success` on tool
-results; detailed logging supplies `file_path` or `full_command` for relevant
-tools. The reference policy still needs customization for your allowed roots
-and operation classes.
+`claude_code.tool_decision`. Current Claude Code records carry a short
+`event.name` (`tool_result` or `tool_decision`) and the namespaced name in the
+log body; the normalizer uses the namespaced body for this source. Claude
+supplies `tool_name` and `success` on tool results. Detailed logging exposes
+raw `tool_input` or `tool_parameters`; the shipped normalizer deliberately
+does not interpret those sensitive structures, so target coverage remains
+unknown unless an adapter promotes a safe `file_path`, `full_command`, or
+`target` attribute. The reference policy still needs customization for your
+allowed roots and operation classes.
 
 `session-cost` recognizes `claude_code.api_request` and its token attributes.
-It maps Claude Code's native `cost_usd_micros` field into the example's
-`cost_microusd` column. See the
+It maps Claude Code's native `cache_read_tokens` and `cost_usd_micros` fields
+into the example's `cached_input_tokens` and `cost_microusd` columns. See the
 [`session-cost` input model](../../tailapps/session-cost/README.md#input-model).
+
+The checked-in compatibility fixture is a structurally representative,
+scrubbed capture from Claude Code 2.1.250. Vendor fields may change; after an
+upgrade, use `ineffective` and `telemetry_coverage` to check the live shape.
 
 Official references: [Claude Code monitoring](https://code.claude.com/docs/en/monitoring-usage)
 and [Claude Code MCP setup](https://code.claude.com/docs/en/mcp).

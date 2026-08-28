@@ -18,7 +18,9 @@ The normalizer accepts exactly these event names:
 It reads session identity from `session.id`, `conversation.id`, `session_id`,
 or `service.instance.id`. If all are absent, events are grouped under
 `unknown:<harness>`. The normalizer prefers a nonempty semantic `event.name`
-attribute over the OTLP log-record name. The `harness` value comes from the
+attribute over the OTLP log-record name. For `claude-code`, whose current
+native records use a short `event.name`, a namespaced `claude_code.*` string
+body takes precedence. The `harness` value comes from the
 OTLP source, normally `service.name`; Codex's native `codex_cli_rs` and
 `codex_exec` values are both normalized to `codex`. Event time uses the source
 timestamp when present and otherwise the observed timestamp.
@@ -28,7 +30,8 @@ Generic numeric attributes are `input_tokens`, `output_tokens`,
 `codex.sse_event` attributes are `input_token_count`, `output_token_count`,
 `cached_token_count`, and `reasoning_token_count`; the alternate
 `cached_input_token_count` and `reasoning_output_token_count` aliases remain
-accepted for compatibility. Cost may arrive
+accepted for compatibility. Claude Code's native `cache_read_tokens` maps to
+`cached_input_tokens`. Cost may arrive
 as the generic `cost_microusd` or Claude Code's native `cost_usd_micros`; the
 generic name takes precedence when both are present. Missing values become
 zero; this Tailapp does not record an `unknown` coverage state for individual

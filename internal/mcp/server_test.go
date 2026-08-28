@@ -56,6 +56,14 @@ func TestMetricsToolIsExposedWithoutArguments(t *testing.T) {
 	t.Fatal("tailapp_metrics tool not found")
 }
 
+func TestToolSchemasAlwaysDeclarePropertiesObject(t *testing.T) {
+	for _, item := range tools() {
+		if _, ok := item.InputSchema["properties"].(map[string]any); !ok {
+			t.Fatalf("%s properties must be a JSON object: %#v", item.Name, item.InputSchema["properties"])
+		}
+	}
+}
+
 func TestIneffectiveToolRequiresTailappName(t *testing.T) {
 	for _, item := range tools() {
 		if item.Name != "tailapp_ineffective" {

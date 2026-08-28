@@ -97,6 +97,9 @@ var operations = map[string]string{"tailapps_list": "apps_list", "tailapp_get": 
 
 func tools() []tool {
 	object := func(properties map[string]any, required ...string) map[string]any {
+		if properties == nil {
+			properties = map[string]any{}
+		}
 		schema := map[string]any{"type": "object", "properties": properties, "additionalProperties": false}
 		if len(required) > 0 {
 			schema["required"] = required
