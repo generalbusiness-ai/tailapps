@@ -66,7 +66,7 @@ that the resident is healthy and its inbox has drained:
   --sql 'SELECT harness, capability, state, reason FROM telemetry_coverage ORDER BY harness, capability' \
   agent-guard
 "$TAILAPP_BIN" query \
-  --sql 'SELECT harness, session_id, input_tokens, output_tokens, cost_microusd FROM session_cost ORDER BY harness, session_id' \
+  --sql 'SELECT harness, session_id, input_tokens, cached_input_tokens, output_tokens, reasoning_output_tokens, cost_microusd FROM session_cost ORDER BY harness, session_id' \
   session-cost
 ```
 

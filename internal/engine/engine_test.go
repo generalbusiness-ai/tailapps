@@ -83,11 +83,11 @@ func TestEngineLifecycleIngestionProjectionQueryAndIsolation(t *testing.T) {
 		t.Fatalf("status = %#v", status)
 	}
 	expected := int64(2)
-	joined, err := engine.Query(ctx, "agent-guard", query.Request{SQL: `SELECT p.session_id,c.input_tokens FROM session_progress p JOIN cost.session_cost c ON c.session_id=p.session_id`, ExpectedPosition: &expected}, map[string]string{"cost": "session-cost"})
+	joined, err := engine.Query(ctx, "agent-guard", query.Request{SQL: `SELECT p.session_id,c.input_tokens,c.cached_input_tokens,c.reasoning_output_tokens FROM session_progress p JOIN cost.session_cost c ON c.session_id=p.session_id`, ExpectedPosition: &expected}, map[string]string{"cost": "session-cost"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(joined.Rows) != 1 || joined.Rows[0][0] != "s1" {
+	if len(joined.Rows) != 1 || joined.Rows[0][0] != "s1" || fmt.Sprint(joined.Rows[0][1]) != "100" || fmt.Sprint(joined.Rows[0][2]) != "40" || fmt.Sprint(joined.Rows[0][3]) != "9" {
 		t.Fatalf("joined = %#v", joined)
 	}
 	if joined.IneffectiveRecords != 1 {
@@ -97,7 +97,7 @@ func TestEngineLifecycleIngestionProjectionQueryAndIsolation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if samples.Capacity != IneffectiveBufferCapacity || samples.IneffectiveRecords != 1 || samples.AvailableRecords != 1 || samples.UnavailableRecords != 0 || len(samples.Records) != 1 || samples.Records[0].Name != "codex.api_request" || len(samples.Records[0].Record) == 0 {
+	if samples.Capacity != IneffectiveBufferCapacity || samples.IneffectiveRecords != 1 || samples.AvailableRecords != 1 || samples.UnavailableRecords != 0 || len(samples.Records) != 1 || samples.Records[0].Name != "event <scrubbed-codex-callsite>" || len(samples.Records[0].Record) == 0 {
 		t.Fatalf("guard ineffective samples = %#v", samples)
 	}
 	performance, err := engine.Metrics(ctx)
@@ -786,11 +786,11 @@ func otlpRequest() *collectorlogsv1.ExportLogsServiceRequest {
 	return &collectorlogsv1.ExportLogsServiceRequest{
 		ResourceLogs: []*logsv1.ResourceLogs{
 			{
-				Resource: &resourcev1.Resource{Attributes: attrs(map[string]*commonv1.AnyValue{"service.name": stringValue("codex")})},
+				Resource: &resourcev1.Resource{Attributes: attrs(map[string]*commonv1.AnyValue{"service.name": stringValue("codex_cli_rs")})},
 				ScopeLogs: []*logsv1.ScopeLogs{
 					{LogRecords: []*logsv1.LogRecord{
-						{EventName: "codex.tool_result", TimeUnixNano: 100, Attributes: attrs(map[string]*commonv1.AnyValue{"conversation.id": stringValue("s1"), "tool_name": stringValue("read"), "target": stringValue("/workspace"), "success": boolValue(true)})},
-						{EventName: "codex.api_request", TimeUnixNano: 200, Attributes: attrs(map[string]*commonv1.AnyValue{"conversation.id": stringValue("s1"), "input_tokens": intValue(100), "output_tokens": intValue(25), "cost_microusd": intValue(7)})},
+						{EventName: "event <scrubbed-codex-callsite>", ObservedTimeUnixNano: 100, Attributes: attrs(map[string]*commonv1.AnyValue{"event.name": stringValue("codex.tool_result"), "conversation.id": stringValue("s1"), "tool_name": stringValue("read"), "arguments": stringValue("<scrubbed>"), "success": boolValue(true)})},
+						{EventName: "event <scrubbed-codex-callsite>", ObservedTimeUnixNano: 200, Attributes: attrs(map[string]*commonv1.AnyValue{"event.name": stringValue("codex.sse_event"), "kind": stringValue("response.completed"), "conversation.id": stringValue("s1"), "input_token_count": intValue(100), "output_token_count": intValue(25), "cached_input_token_count": intValue(40), "reasoning_output_token_count": intValue(9)})},
 					}},
 				},
 			},

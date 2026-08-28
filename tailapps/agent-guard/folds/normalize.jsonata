@@ -1,11 +1,15 @@
 (
   $attrs := event.record.attributes ? event.record.attributes : {};
   $resource := event.record.resource.attributes ? event.record.resource.attributes : {};
-  $harness := event.source;
-  $claude := event.name = "claude_code.tool_result" or event.name = "claude_code.tool_decision";
-  $codex := event.name = "codex.tool_result" or event.name = "codex.tool_decision" or event.name = "codex.tool_call";
-  $opencode := event.name = "opencode.tool.execute.after" or event.name = "opencode.tool.execute.before";
-  $recognized := $claude or $codex or $opencode;
+  $semantic_name_raw := $lookup($attrs, "event.name");
+  $event_name := $exists($semantic_name_raw) and $string($semantic_name_raw) != "" ? $string($semantic_name_raw) : event.name;
+  $harness := event.source = "codex_cli_rs" ? "codex" : event.source;
+  $event_time := event.time_unix_nano ? event.time_unix_nano :
+    (event.observed_unix_nano ? event.observed_unix_nano : null);
+  $claude := $event_name = "claude_code.tool_result" or $event_name = "claude_code.tool_decision";
+  $codex := $event_name = "codex.tool_result" or $event_name = "codex.tool_decision" or $event_name = "codex.tool_call";
+  $opencode := $event_name = "opencode.tool.execute.after" or $event_name = "opencode.tool.execute.before";
+  $recognized := ($claude or $codex or $opencode) and $event_time;
   $session_raw := $lookup($attrs, "session.id") ? $lookup($attrs, "session.id") :
     ($lookup($attrs, "conversation.id") ? $lookup($attrs, "conversation.id") :
     ($lookup($attrs, "session_id") ? $lookup($attrs, "session_id") : $lookup($resource, "service.instance.id")));
@@ -46,7 +50,7 @@
         "target": $target,
         "argument_digest": $argument_digest,
         "success": $success,
-        "event_time_unix_nano": event.time_unix_nano,
+        "event_time_unix_nano": $string($event_time),
 		"action_fingerprint": $action_fingerprint,
 		"progress_fingerprint": $progress_fingerprint,
 		"progress_coverage": $progress_known ? "observed" : "unknown",

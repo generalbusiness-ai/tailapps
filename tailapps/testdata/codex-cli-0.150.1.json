@@ -1,0 +1,79 @@
+{
+  "tool_decision": {
+    "meta": {"position": 41, "event_id": "local:41", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:41",
+      "signal": "log",
+      "name": "event <scrubbed-codex-callsite>",
+      "source": "codex_cli_rs",
+      "time_unix_nano": null,
+      "observed_unix_nano": "1787933000000000041",
+      "trace_id": null,
+      "span_id": null,
+      "content_digest": "sha256:scrubbed-tool-decision",
+      "record": {
+        "attributes": {
+          "event.name": "codex.tool_decision",
+          "conversation.id": "session-scrubbed",
+          "tool_name": "exec_command",
+          "decision": "approved",
+          "arguments": "<scrubbed>"
+        },
+        "resource": {"attributes": {"service.name": "codex_cli_rs"}}
+      }
+    },
+    "rows": {}
+  },
+  "tool_result": {
+    "meta": {"position": 42, "event_id": "local:42", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:42",
+      "signal": "log",
+      "name": "event <scrubbed-codex-callsite>",
+      "source": "codex_cli_rs",
+      "time_unix_nano": null,
+      "observed_unix_nano": "1787933000000000042",
+      "trace_id": null,
+      "span_id": null,
+      "content_digest": "sha256:scrubbed-tool-result",
+      "record": {
+        "attributes": {
+          "event.name": "codex.tool_result",
+          "conversation.id": "session-scrubbed",
+          "tool_name": "exec_command",
+          "success": true,
+          "arguments": "<scrubbed>"
+        },
+        "resource": {"attributes": {"service.name": "codex_cli_rs"}}
+      }
+    },
+    "rows": {}
+  },
+  "sse_usage": {
+    "meta": {"position": 43, "event_id": "local:43", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:43",
+      "signal": "log",
+      "name": "event <scrubbed-codex-callsite>",
+      "source": "codex_cli_rs",
+      "time_unix_nano": null,
+      "observed_unix_nano": "1787933000000000043",
+      "trace_id": null,
+      "span_id": null,
+      "content_digest": "sha256:scrubbed-sse-usage",
+      "record": {
+        "attributes": {
+          "event.name": "codex.sse_event",
+          "kind": "response.completed",
+          "conversation.id": "session-scrubbed",
+          "input_token_count": 120,
+          "output_token_count": 30,
+          "cached_input_token_count": 40,
+          "reasoning_output_token_count": 9
+        },
+        "resource": {"attributes": {"service.name": "codex_cli_rs"}}
+      }
+    },
+    "rows": {}
+  }
+}

@@ -3,7 +3,10 @@ CREATE EVENT otel_event (
   session_id TEXT NOT NULL,
   input_tokens INTEGER NOT NULL,
   output_tokens INTEGER NOT NULL,
+  cached_input_tokens INTEGER NOT NULL,
+  reasoning_output_tokens INTEGER NOT NULL,
   cost_microusd INTEGER NOT NULL,
+  event_time_unix_nano TEXT NOT NULL,
   source_position INTEGER NOT NULL
 );
 
@@ -12,7 +15,10 @@ CREATE TABLE session_cost (
   session_id TEXT NOT NULL,
   input_tokens INTEGER NOT NULL,
   output_tokens INTEGER NOT NULL,
+  cached_input_tokens INTEGER NOT NULL,
+  reasoning_output_tokens INTEGER NOT NULL,
   cost_microusd INTEGER NOT NULL,
+  last_event_time_unix_nano TEXT NOT NULL,
   last_source_position INTEGER NOT NULL,
   PRIMARY KEY (harness, session_id)
 );
@@ -24,7 +30,8 @@ EMITS otel_event;
 CREATE FOLD accumulate_cost ON otel_event
 READ prior OPTIONAL ONE AS
   SELECT harness, session_id, input_tokens, output_tokens,
-         cost_microusd, last_source_position
+         cached_input_tokens, reasoning_output_tokens,
+         cost_microusd, last_event_time_unix_nano, last_source_position
   FROM session_cost
   WHERE harness = :event.harness AND session_id = :event.session_id
 USING 'folds/cost.jsonata'
@@ -32,6 +39,6 @@ WRITES session_cost;
 
 CREATE EXPORT session_cost AS
   SELECT harness, session_id, input_tokens, output_tokens,
-         cost_microusd, last_source_position
+         cached_input_tokens, reasoning_output_tokens,
+         cost_microusd, last_event_time_unix_nano, last_source_position
   FROM session_cost;
-

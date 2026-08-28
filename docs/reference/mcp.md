@@ -323,7 +323,7 @@ Returns the same bounded diagnostic snapshot as `tailapp ineffective APP`:
     "event_id": "local:57",
     "revision": "sha256:...",
     "signal": "log",
-    "name": "codex.sse_event",
+    "name": "codex.unmapped_event",
     "source": "codex",
     "content_digest": "sha256:...",
     "record_bytes": 412,

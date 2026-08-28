@@ -8,9 +8,11 @@
       "session_id": event.session_id,
       "input_tokens": ($old ? $old.input_tokens : 0) + event.input_tokens,
       "output_tokens": ($old ? $old.output_tokens : 0) + event.output_tokens,
+      "cached_input_tokens": ($old ? $old.cached_input_tokens : 0) + event.cached_input_tokens,
+      "reasoning_output_tokens": ($old ? $old.reasoning_output_tokens : 0) + event.reasoning_output_tokens,
       "cost_microusd": ($old ? $old.cost_microusd : 0) + event.cost_microusd,
+      "last_event_time_unix_nano": event.event_time_unix_nano,
       "last_source_position": event.source_position
     }]}}
   }
 )
-

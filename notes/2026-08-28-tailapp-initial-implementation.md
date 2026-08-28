@@ -499,6 +499,9 @@ OpenCode records into one private `otel_event` vocabulary containing, where
 observable: harness, session/agent identity, operation kind, tool, target,
 argument digest, result, event time, progress fingerprint, and source position.
 Vendor mappings are tailapp logic and compatibility fixtures, not engine code.
+Mappings may prefer a vendor's semantic `event.name` attribute over an
+instrumentation-callsite log name and normalize vendor service names, while
+leaving the fixed `otlp_record` contract unchanged.
 
 It owns at least these logical tables and read-only exports:
 

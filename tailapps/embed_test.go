@@ -1,7 +1,11 @@
 package tailapps
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/generalbusiness-ai/tailapp/internal/profile"
@@ -126,6 +130,104 @@ func TestSessionCostMapsClaudeNativeCost(t *testing.T) {
 	if len(events) != 1 || events[0]["cost_microusd"].(interface{ String() string }).String() != "11" {
 		t.Fatalf("normalized = %#v", normalized)
 	}
+}
+
+func TestAgentGuardMapsObservedCodexOTLPShape(t *testing.T) {
+	guard, err := Load("agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	inputs := observedCodexInputs(t)
+	for _, name := range []string{"tool_decision", "tool_result"} {
+		t.Run(name, func(t *testing.T) {
+			normalized, err := guard.Evaluate("normalize_harness_event", inputs[name])
+			if err != nil {
+				t.Fatal(err)
+			}
+			events := normalized.Events["otel_event"]
+			if normalized.Decision != "effective" || len(events) != 1 {
+				t.Fatalf("normalized = %#v", normalized)
+			}
+			event := events[0]
+			if event["harness"] != "codex" || event["tool"] != "exec_command" || event["session_id"] != "session-scrubbed" {
+				t.Fatalf("identity = %#v", event)
+			}
+			if event["event_time_unix_nano"] != inputs[name].Event["observed_unix_nano"] {
+				t.Fatalf("event time did not fall back to observed time: %#v", event)
+			}
+			if event["target"] != nil || event["target_coverage"] != "unknown" || event["tool_coverage"] != "observed" {
+				t.Fatalf("coverage = %#v", event)
+			}
+			encoded, err := json.Marshal(normalized)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if strings.Contains(string(encoded), "arguments") || strings.Contains(string(encoded), "<scrubbed>") {
+				t.Fatalf("raw arguments escaped normalized output: %s", encoded)
+			}
+		})
+	}
+}
+
+func TestSessionCostMapsObservedCodexSSEUsage(t *testing.T) {
+	cost, err := Load("session-cost")
+	if err != nil {
+		t.Fatal(err)
+	}
+	input := observedCodexInputs(t)["sse_usage"]
+	normalized, err := cost.Evaluate("normalize_usage", input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	events := normalized.Events["otel_event"]
+	if normalized.Decision != "effective" || len(events) != 1 {
+		t.Fatalf("normalized = %#v", normalized)
+	}
+	event := events[0]
+	if event["harness"] != "codex" || event["session_id"] != "session-scrubbed" || event["event_time_unix_nano"] != input.Event["observed_unix_nano"] {
+		t.Fatalf("identity = %#v", event)
+	}
+	for field, want := range map[string]string{
+		"input_tokens": "120", "output_tokens": "30", "cached_input_tokens": "40", "reasoning_output_tokens": "9",
+	} {
+		if got := fmt.Sprint(event[field]); got != want {
+			t.Fatalf("%s = %s, want %s; event = %#v", field, got, want, event)
+		}
+	}
+	result, err := cost.Evaluate("accumulate_cost", profile.EvaluationInput{
+		Meta:  map[string]any{"position": 43, "event_id": "local:43", "event_type": "otel_event", "emission_ordinal": 0},
+		Event: event,
+		Rows:  map[string]any{"prior": nil},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	row := result.Tables["session_cost"].Upsert[0]
+	if fmt.Sprint(row["cached_input_tokens"]) != "40" || fmt.Sprint(row["reasoning_output_tokens"]) != "9" || row["last_event_time_unix_nano"] != input.Event["observed_unix_nano"] {
+		t.Fatalf("row = %#v", row)
+	}
+	unrelated, err := cost.Evaluate("normalize_usage", harnessInput(44, "codex_cli_rs", "event <scrubbed-codex-callsite>", map[string]any{
+		"event.name": "codex.sse_event", "kind": "response.output_text.delta", "conversation.id": "session-scrubbed",
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if unrelated.Decision != "ineffective" || len(unrelated.Events["otel_event"]) != 0 {
+		t.Fatalf("unrelated SSE event = %#v", unrelated)
+	}
+}
+
+func observedCodexInputs(t *testing.T) map[string]profile.EvaluationInput {
+	t.Helper()
+	encoded, err := os.ReadFile(filepath.Join("testdata", "codex-cli-0.150.1.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var inputs map[string]profile.EvaluationInput
+	if err := json.Unmarshal(encoded, &inputs); err != nil {
+		t.Fatal(err)
+	}
+	return inputs
 }
 
 func harnessInput(position int, source, name string, attributes map[string]any) profile.EvaluationInput {
