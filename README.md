@@ -9,6 +9,8 @@ is a small declarative source set—not another service—and has its own isolat
 continuously materialized SQLite projection. Agents manage and query Tailapps
 through MCP; people and scripts can do the same through the CLI.
 
+![Tailapp pipeline: OTLP/HTTP enters a local resident, DDL and JSONata define a two-stage Tailapp, and MCP queries its SQLite projection.](docs/assets/tailapp-architecture.svg)
+
 ## Try it
 
 Prerequisites are macOS or Linux, Go 1.26.7 or later, and Git. The demo builds
