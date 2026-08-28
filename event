@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:f922c5166b21f855d33bf6d79e9048081e06e17f","text":"Merge retired a covered predecessor; the successor is at internal/mcp/server.go."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:16512391e50bbb50665a299cfd958652eaf12fc5","text":"Retire stale repair request #371: fresh guarded request #385 was promised exactly once, approved at exact head 0e3df616530546eb160ad5a1758847b323a5f2ba, ratified, and merged by #389; no checker action remains on the retired review chain."}
