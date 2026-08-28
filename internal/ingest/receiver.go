@@ -59,6 +59,7 @@ type Receiver struct {
 	limits     ReceiverLimits
 	requests   chan struct{}
 	onAccepted func()
+	accept     func(context.Context, []inbox.Record) ([]int64, error)
 }
 
 func NewReceiver(queue *inbox.Queue, consumers ConsumerSource, limits ReceiverLimits) *Receiver {
@@ -70,6 +71,9 @@ func NewReceiver(queue *inbox.Queue, consumers ConsumerSource, limits ReceiverLi
 }
 
 func (receiver *Receiver) SetAcceptedHook(hook func()) { receiver.onAccepted = hook }
+func (receiver *Receiver) SetAcceptor(accept func(context.Context, []inbox.Record) ([]int64, error)) {
+	receiver.accept = accept
+}
 
 func ValidateLoopbackAddress(address string) error {
 	host, _, err := net.SplitHostPort(address)
@@ -145,12 +149,16 @@ func (receiver *Receiver) ServeHTTP(writer http.ResponseWriter, request *http.Re
 		writeError(writer, http.StatusRequestEntityTooLarge, "too_many_records", "OTLP record limit exceeded")
 		return
 	}
-	consumers, err := receiver.consumers(ctx)
-	if err != nil {
-		writeError(writer, http.StatusServiceUnavailable, "consumer_snapshot_failed", "active consumers unavailable")
-		return
+	var positions []int64
+	if receiver.accept != nil {
+		positions, err = receiver.accept(ctx, records)
+	} else {
+		var consumers []inbox.Consumer
+		consumers, err = receiver.consumers(ctx)
+		if err == nil {
+			positions, err = receiver.queue.Enqueue(ctx, records, consumers)
+		}
 	}
-	positions, err := receiver.queue.Enqueue(ctx, records, consumers)
 	if errors.Is(err, inbox.ErrFull) {
 		writer.Header().Set("Retry-After", "1")
 		writeError(writer, http.StatusServiceUnavailable, "inbox_full", "durable inbox capacity exceeded")

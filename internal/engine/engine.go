@@ -154,12 +154,17 @@ func (e *Engine) closeResources() error {
 
 func (e *Engine) Receiver() *ingest.Receiver {
 	receiver := ingest.NewReceiver(e.queue, e.consumers, ingest.ReceiverLimits{})
+	receiver.SetAcceptor(e.accept)
 	receiver.SetAcceptedHook(e.signal)
 	return receiver
 }
 func (e *Engine) consumers(ctx context.Context) ([]inbox.Consumer, error) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
+	return e.consumersLocked(ctx)
+}
+
+func (e *Engine) consumersLocked(ctx context.Context) ([]inbox.Consumer, error) {
 	if len(e.upgradePending) != 0 {
 		return nil, errors.New("runtime profile upgrade requires activation")
 	}
@@ -175,6 +180,16 @@ func (e *Engine) consumers(ctx context.Context) ([]inbox.Consumer, error) {
 		}
 	}
 	return result, nil
+}
+
+func (e *Engine) accept(ctx context.Context, records []inbox.Record) ([]int64, error) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	consumers, err := e.consumersLocked(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return e.queue.Enqueue(ctx, records, consumers)
 }
 func (e *Engine) signal() {
 	select {
@@ -197,6 +212,10 @@ func (e *Engine) worker() {
 func (e *Engine) Drain(ctx context.Context) error {
 	e.mu.Lock()
 	defer e.mu.Unlock()
+	return e.drainLocked(ctx)
+}
+
+func (e *Engine) drainLocked(ctx context.Context) error {
 	if len(e.upgradePending) != 0 {
 		return nil
 	}
@@ -483,12 +502,6 @@ func (e *Engine) Schema(name string) (*profile.Profile, error) {
 
 func (e *Engine) projectionPath(name string) string {
 	return filepath.Join(e.home, "projections", name, "state.sqlite")
-}
-func (e *Engine) drainLocked(ctx context.Context) error {
-	e.mu.Unlock()
-	err := e.Drain(ctx)
-	e.mu.Lock()
-	return err
 }
 func compile(name string, sources map[string][]byte) (*profile.Profile, error) {
 	files := fstest.MapFS{}
