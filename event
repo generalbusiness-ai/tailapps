@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Session-cost input model documents DEVtheOPS mapping and duplicate-span privacy behavior.","body":{"commit":"6addc40309be622de85c4a1862f4749a8712e104","path":"tailapps/session-cost/README.md"}}
+{"kind":"artifact","text":"Agent-guard consumes DEVtheOPS tool_result logs while rejecting duplicate tool spans.","body":{"commit":"6addc40309be622de85c4a1862f4749a8712e104","path":"tailapps/agent-guard"}}
