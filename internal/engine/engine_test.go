@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/ncruces/go-sqlite3"
 	collectorlogsv1 "go.opentelemetry.io/proto/otlp/collector/logs/v1"
@@ -173,6 +174,56 @@ func TestEngineLifecycleIngestionProjectionQueryAndIsolation(t *testing.T) {
 	}
 	if _, err := engine.Query(ctx, "session-cost", query.Request{SQL: `SELECT COUNT(*) FROM session_cost`}, nil); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestWallElapsedCountsClockRegression(t *testing.T) {
+	resident, err := Open(context.Background(), filepath.Join(t.TempDir(), "home"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resident.Close()
+	if elapsed := resident.wallElapsed(time.Now().Add(time.Hour)); elapsed != 0 {
+		t.Fatalf("regressed elapsed = %s", elapsed)
+	}
+	snapshot, err := resident.Metrics(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if snapshot.ClockRegressionsTotal != 1 {
+		t.Fatalf("clock regressions = %d", snapshot.ClockRegressionsTotal)
+	}
+}
+
+func TestUnroutedIntakeIsSplitBySignal(t *testing.T) {
+	resident, err := Open(context.Background(), filepath.Join(t.TempDir(), "home"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resident.Close()
+	body, err := proto.Marshal(otlpRequest())
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := httptest.NewRequest(http.MethodPost, "/v1/logs", bytes.NewReader(body))
+	request.Header.Set("Content-Type", "application/x-protobuf")
+	response := httptest.NewRecorder()
+	resident.Receiver().ServeHTTP(response, request)
+	if response.Code != http.StatusOK {
+		t.Fatalf("OTLP response %d: %s", response.Code, response.Body.String())
+	}
+	snapshot, err := resident.Metrics(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if snapshot.Intake.UnroutedRecordsTotal != 2 || snapshot.Intake.UnroutedRecordsBySignal["log"] != 2 {
+		t.Fatalf("unrouted intake = %#v", snapshot.Intake)
+	}
+}
+
+func TestQueryMetricOutcomeDistinguishesCancellation(t *testing.T) {
+	if outcome := queryMetricOutcome(context.Canceled); outcome != "cancelled" {
+		t.Fatalf("cancelled query outcome = %q", outcome)
 	}
 }
 

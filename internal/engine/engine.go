@@ -279,7 +279,11 @@ func (e *Engine) accept(ctx context.Context, records []inbox.Record) ([]int64, e
 	}
 	positions, err := e.queue.Enqueue(ctx, records, consumers)
 	if err == nil {
-		e.metrics.ObserveRouting(len(records), len(records)*len(consumers))
+		recordsBySignal := map[string]int{}
+		for _, record := range records {
+			recordsBySignal[record.Signal]++
+		}
+		e.metrics.ObserveRouting(recordsBySignal, len(records)*len(consumers))
 	}
 	return positions, err
 }
@@ -359,7 +363,7 @@ func (e *Engine) drainPassLocked(ctx context.Context, waveLimit int) (bool, erro
 			started := time.Now()
 			queueDelay := time.Duration(0)
 			if !item.delivery.ReceivedAt.IsZero() {
-				queueDelay = time.Since(item.delivery.ReceivedAt)
+				queueDelay = e.wallElapsed(item.delivery.ReceivedAt)
 			}
 			processed, err := current.Process(ctx, item.delivery)
 			if err != nil {
@@ -380,7 +384,8 @@ func (e *Engine) drainPassLocked(ctx context.Context, waveLimit int) (bool, erro
 					e.processing[item.name].Observe(0, false, "error", queueDelay, time.Since(started))
 					return false, detachErr
 				}
-				e.metrics.ObserveDetachedObligations(detached)
+				e.metrics.ObserveDetachedObligations("projection_gap", detached)
+				e.processing[item.name].ObserveDetached("projection_gap", detached)
 				e.processing[item.name].Observe(0, false, "gap", queueDelay, time.Since(started))
 				continue
 			}
@@ -597,7 +602,10 @@ func (e *Engine) activateLocked(ctx context.Context, name, expected, mode string
 			abort()
 			return projection.Frontier{}, err
 		}
-		e.metrics.ObserveDetachedObligations(detached)
+		e.metrics.ObserveDetachedObligations("runtime_upgrade", detached)
+		if handle := e.processing[name]; handle != nil {
+			handle.ObserveDetached("runtime_upgrade", detached)
+		}
 	}
 	if mode == "continue" {
 		if err := current.Continue(ctx, compiled, boundary); err != nil {
@@ -724,7 +732,10 @@ func (e *Engine) Delete(ctx context.Context, name string) error {
 	defer e.mu.Unlock()
 	if current := e.active[name]; current != nil {
 		detached, _ := e.queue.DetachAll(ctx, name, "tailapp_deleted")
-		e.metrics.ObserveDetachedObligations(detached)
+		e.metrics.ObserveDetachedObligations("tailapp_deleted", detached)
+		if handle := e.processing[name]; handle != nil {
+			handle.ObserveDetached("tailapp_deleted", detached)
+		}
 		_ = current.Close()
 		delete(e.active, name)
 		delete(e.processing, name)
@@ -797,14 +808,21 @@ func (e *Engine) Metrics(ctx context.Context) (MetricsSnapshot, error) {
 	e.mu.Unlock()
 	result := MetricsSnapshot{Snapshot: e.metrics.Snapshot(handles), Inbox: stats, Tailapps: tailappMetrics, ActiveTailapps: activeCount, UnavailableTailapps: unavailableCount, UpgradePendingTailapps: upgradeCount, OmittedTailapps: omitted}
 	if stats.OldestReceivedAtUnixNano != nil {
-		age := float64(time.Since(time.Unix(0, *stats.OldestReceivedAtUnixNano))/time.Microsecond) / 1000
-		if age < 0 {
-			age = 0
-		}
+		elapsed := e.wallElapsed(time.Unix(0, *stats.OldestReceivedAtUnixNano))
+		age := float64(elapsed/time.Microsecond) / 1000
 		result.OldestInboxAgeMilliseconds = &age
 	}
 	result.SnapshotDurationMilliseconds = float64(time.Since(started)/time.Microsecond) / 1000
 	return result, nil
+}
+
+func (e *Engine) wallElapsed(since time.Time) time.Duration {
+	elapsed := time.Since(since)
+	if elapsed < 0 {
+		e.metrics.ObserveClockRegression()
+		return 0
+	}
+	return elapsed
 }
 
 func (e *Engine) ObserveControl(operation, outcome string, duration time.Duration) {
@@ -868,6 +886,8 @@ func queryMetricOutcome(err error) string {
 		return "unavailable"
 	case errors.Is(err, context.DeadlineExceeded):
 		return "deadline"
+	case errors.Is(err, context.Canceled):
+		return "cancelled"
 	case strings.Contains(err.Error(), "query_budget_exceeded"):
 		return "budget"
 	case strings.Contains(err.Error(), "frontier_changed"):

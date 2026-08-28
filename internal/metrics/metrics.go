@@ -31,22 +31,25 @@ type RequestMetrics struct {
 }
 type IntakeMetrics struct {
 	RequestMetrics
-	DurableAcceptDuration    Histogram         `json:"durable_accept_duration_milliseconds"`
-	RecordsTotal             map[string]uint64 `json:"records_total"`
-	CanonicalBytesTotal      map[string]uint64 `json:"canonical_bytes_total"`
-	ObligationsTotal         uint64            `json:"obligations_total"`
-	UnroutedRecordsTotal     uint64            `json:"unrouted_records_total"`
-	DetachedObligationsTotal uint64            `json:"detached_obligations_total"`
+	DurableAcceptDuration       Histogram         `json:"durable_accept_duration_milliseconds"`
+	RecordsTotal                map[string]uint64 `json:"records_total"`
+	CanonicalBytesTotal         map[string]uint64 `json:"canonical_bytes_total"`
+	ObligationsTotal            uint64            `json:"obligations_total"`
+	UnroutedRecordsTotal        uint64            `json:"unrouted_records_total"`
+	UnroutedRecordsBySignal     map[string]uint64 `json:"unrouted_records_by_signal"`
+	DetachedObligationsTotal    uint64            `json:"detached_obligations_total"`
+	DetachedObligationsByReason map[string]uint64 `json:"detached_obligations_by_reason"`
 }
 type ProcessingMetrics struct {
-	AttemptsTotal    uint64            `json:"attempts_total"`
-	ErrorsTotal      uint64            `json:"errors_total"`
-	IneffectiveTotal uint64            `json:"ineffective_records_total"`
-	EmittedTotal     uint64            `json:"emitted_events_total"`
-	LastSuccessAt    *string           `json:"last_success_at,omitempty"`
-	Outcomes         map[string]uint64 `json:"outcomes"`
-	QueueDelay       Histogram         `json:"queue_delay_milliseconds"`
-	Duration         Histogram         `json:"duration_milliseconds"`
+	AttemptsTotal            uint64            `json:"attempts_total"`
+	ErrorsTotal              uint64            `json:"errors_total"`
+	IneffectiveTotal         uint64            `json:"ineffective_records_total"`
+	EmittedTotal             uint64            `json:"emitted_events_total"`
+	LastSuccessAt            *string           `json:"last_success_at,omitempty"`
+	Outcomes                 map[string]uint64 `json:"outcomes"`
+	DetachedObligationsTotal map[string]uint64 `json:"detached_obligations_total"`
+	QueueDelay               Histogram         `json:"queue_delay_milliseconds"`
+	Duration                 Histogram         `json:"duration_milliseconds"`
 }
 type QueryMetrics struct {
 	RequestMetrics
@@ -68,6 +71,7 @@ type Snapshot struct {
 	GeneratedAt                  string                       `json:"generated_at"`
 	UptimeSeconds                float64                      `json:"uptime_seconds"`
 	SnapshotDurationMilliseconds float64                      `json:"snapshot_duration_milliseconds"`
+	ClockRegressionsTotal        uint64                       `json:"clock_regressions_total"`
 	Intake                       IntakeMetrics                `json:"intake"`
 	Processing                   map[string]ProcessingMetrics `json:"processing"`
 	Queries                      QueryMetrics                 `json:"queries"`
@@ -76,7 +80,6 @@ type Snapshot struct {
 }
 
 type histogram struct {
-	count     atomic.Uint64
 	sumMicros atomic.Uint64
 	buckets   [len(durationBoundsMS) + 1]atomic.Uint64
 }
@@ -85,7 +88,6 @@ func (h *histogram) observe(duration time.Duration) {
 	if duration < 0 {
 		duration = 0
 	}
-	h.count.Add(1)
 	h.sumMicros.Add(uint64(duration / time.Microsecond))
 	index := len(durationBoundsMS)
 	for candidate, bound := range durationBoundsMS {
@@ -105,7 +107,7 @@ func (h *histogram) snapshot() Histogram {
 	}
 	cumulative += h.buckets[len(durationBoundsMS)].Load()
 	buckets = append(buckets, Bucket{LEMilliseconds: "+Inf", Count: cumulative})
-	return Histogram{Count: h.count.Load(), SumMilliseconds: float64(h.sumMicros.Load()) / 1000, Buckets: buckets}
+	return Histogram{Count: cumulative, SumMilliseconds: float64(h.sumMicros.Load()) / 1000, Buckets: buckets}
 }
 
 type requestState struct {
@@ -137,7 +139,9 @@ type intakeState struct {
 	bytes          map[string]*atomic.Uint64
 	obligations    atomic.Uint64
 	unrouted       atomic.Uint64
+	unroutedSignal map[string]*atomic.Uint64
 	detached       atomic.Uint64
+	detachedReason map[string]*atomic.Uint64
 }
 type queryState struct {
 	requestState
@@ -156,12 +160,13 @@ type Processing struct {
 	emitted             atomic.Uint64
 	lastSuccessUnixNano atomic.Int64
 	outcomes            map[string]*atomic.Uint64
+	detached            map[string]*atomic.Uint64
 	queueDelay          histogram
 	duration            histogram
 }
 
 func NewProcessing() *Processing {
-	return &Processing{outcomes: atomicCounts("ok", "gap", "retry", "error")}
+	return &Processing{outcomes: atomicCounts("ok", "gap", "retry", "error"), detached: atomicCounts("projection_gap", "runtime_upgrade", "tailapp_deleted", "other")}
 }
 func (processing *Processing) Observe(emitted int, ineffective bool, outcome string, queueDelay, duration time.Duration) {
 	outcome = processingOutcome(outcome)
@@ -181,8 +186,13 @@ func (processing *Processing) Observe(emitted int, ineffective bool, outcome str
 	processing.queueDelay.observe(queueDelay)
 	processing.duration.observe(duration)
 }
+func (processing *Processing) ObserveDetached(reason string, count int64) {
+	if count > 0 {
+		processing.detached[detachedReason(reason)].Add(uint64(count))
+	}
+}
 func (processing *Processing) Snapshot() ProcessingMetrics {
-	result := ProcessingMetrics{AttemptsTotal: processing.attempts.Load(), ErrorsTotal: processing.errors.Load(), IneffectiveTotal: processing.ineffective.Load(), EmittedTotal: processing.emitted.Load(), Outcomes: snapshotCounts(processing.outcomes), QueueDelay: processing.queueDelay.snapshot(), Duration: processing.duration.snapshot()}
+	result := ProcessingMetrics{AttemptsTotal: processing.attempts.Load(), ErrorsTotal: processing.errors.Load(), IneffectiveTotal: processing.ineffective.Load(), EmittedTotal: processing.emitted.Load(), Outcomes: snapshotCounts(processing.outcomes), DetachedObligationsTotal: snapshotCounts(processing.detached), QueueDelay: processing.queueDelay.snapshot(), Duration: processing.duration.snapshot()}
 	if value := processing.lastSuccessUnixNano.Load(); value != 0 {
 		formatted := time.Unix(0, value).UTC().Format(time.RFC3339Nano)
 		result.LastSuccessAt = &formatted
@@ -191,10 +201,11 @@ func (processing *Processing) Snapshot() ProcessingMetrics {
 }
 
 type Registry struct {
-	started time.Time
-	intake  intakeState
-	queries queryState
-	control map[string]*requestState
+	started          time.Time
+	intake           intakeState
+	queries          queryState
+	control          map[string]*requestState
+	clockRegressions atomic.Uint64
 }
 
 func New() *Registry {
@@ -202,7 +213,9 @@ func New() *Registry {
 	registry.intake.requestState = newRequestState("ok", "busy", "invalid", "limit", "backpressure", "not_ready", "error")
 	registry.intake.records = atomicCounts("log", "span", "metric", "unknown")
 	registry.intake.bytes = atomicCounts("log", "span", "metric", "unknown")
-	registry.queries.requestState = newRequestState("ok", "not_found", "unavailable", "budget", "frontier_changed", "deadline", "error")
+	registry.intake.unroutedSignal = atomicCounts("log", "span", "metric", "unknown")
+	registry.intake.detachedReason = atomicCounts("projection_gap", "runtime_upgrade", "tailapp_deleted", "other")
+	registry.queries.requestState = newRequestState("ok", "not_found", "unavailable", "budget", "frontier_changed", "deadline", "cancelled", "error")
 	for _, operation := range []string{"health", "status", "metrics", "apps_list", "app_create", "app_install", "app_get", "app_delete", "element_put", "element_delete", "validate", "activate", "schema", "query", "unknown"} {
 		state := newRequestState("ok", "not_found", "revision_changed", "idempotency_conflict", "idempotency_in_doubt", "projection_unavailable", "deadline_exceeded", "frontier_changed", "query_budget_exceeded", "operation_failed")
 		registry.control[operation] = &state
@@ -226,18 +239,28 @@ func (registry *Registry) ObserveIntake(signal string, records int, canonicalByt
 		registry.intake.bytes[signal].Add(uint64(canonicalBytes))
 	}
 }
-func (registry *Registry) ObserveRouting(records, obligations int) {
+func (registry *Registry) ObserveRouting(recordsBySignal map[string]int, obligations int) {
 	if obligations > 0 {
 		registry.intake.obligations.Add(uint64(obligations))
 	}
-	if records > 0 && obligations == 0 {
-		registry.intake.unrouted.Add(uint64(records))
+	if obligations != 0 {
+		return
+	}
+	for signal, records := range recordsBySignal {
+		if records > 0 {
+			registry.intake.unrouted.Add(uint64(records))
+			registry.intake.unroutedSignal[intakeSignal(signal)].Add(uint64(records))
+		}
 	}
 }
-func (registry *Registry) ObserveDetachedObligations(count int64) {
+func (registry *Registry) ObserveDetachedObligations(reason string, count int64) {
 	if count > 0 {
 		registry.intake.detached.Add(uint64(count))
+		registry.intake.detachedReason[detachedReason(reason)].Add(uint64(count))
 	}
+}
+func (registry *Registry) ObserveClockRegression() {
+	registry.clockRegressions.Add(1)
 }
 func (registry *Registry) ObserveQuery(rows, resultBytes int, truncated bool, outcome string, lockWait, duration time.Duration) {
 	outcome = queryOutcome(outcome)
@@ -259,8 +282,8 @@ func (registry *Registry) ObserveControl(operation, outcome string, duration tim
 func (registry *Registry) Snapshot(processing map[string]*Processing) Snapshot {
 	started := time.Now()
 	now := time.Now()
-	result := Snapshot{Version: SnapshotVersion, ResetSemantics: "process counters and histograms reset when the resident restarts; per-projection durable totals do not", StartedAt: registry.started.UTC().Format(time.RFC3339Nano), GeneratedAt: now.UTC().Format(time.RFC3339Nano), UptimeSeconds: now.Sub(registry.started).Seconds(), Processing: map[string]ProcessingMetrics{}, Control: map[string]RequestMetrics{}}
-	result.Intake = IntakeMetrics{RequestMetrics: registry.intake.requestState.snapshot(), DurableAcceptDuration: registry.intake.acceptDuration.snapshot(), RecordsTotal: snapshotCounts(registry.intake.records), CanonicalBytesTotal: snapshotCounts(registry.intake.bytes), ObligationsTotal: registry.intake.obligations.Load(), UnroutedRecordsTotal: registry.intake.unrouted.Load(), DetachedObligationsTotal: registry.intake.detached.Load()}
+	result := Snapshot{Version: SnapshotVersion, ResetSemantics: "process counters and histograms reset when the resident restarts; per-projection durable totals do not", StartedAt: registry.started.UTC().Format(time.RFC3339Nano), GeneratedAt: now.UTC().Format(time.RFC3339Nano), UptimeSeconds: now.Sub(registry.started).Seconds(), ClockRegressionsTotal: registry.clockRegressions.Load(), Processing: map[string]ProcessingMetrics{}, Control: map[string]RequestMetrics{}}
+	result.Intake = IntakeMetrics{RequestMetrics: registry.intake.requestState.snapshot(), DurableAcceptDuration: registry.intake.acceptDuration.snapshot(), RecordsTotal: snapshotCounts(registry.intake.records), CanonicalBytesTotal: snapshotCounts(registry.intake.bytes), ObligationsTotal: registry.intake.obligations.Load(), UnroutedRecordsTotal: registry.intake.unrouted.Load(), UnroutedRecordsBySignal: snapshotCounts(registry.intake.unroutedSignal), DetachedObligationsTotal: registry.intake.detached.Load(), DetachedObligationsByReason: snapshotCounts(registry.intake.detachedReason)}
 	for app, handle := range processing {
 		result.Processing[app] = handle.Snapshot()
 	}
@@ -317,10 +340,18 @@ func processingOutcome(value string) string {
 }
 func queryOutcome(value string) string {
 	switch value {
-	case "ok", "not_found", "unavailable", "budget", "frontier_changed", "deadline":
+	case "ok", "not_found", "unavailable", "budget", "frontier_changed", "deadline", "cancelled":
 		return value
 	default:
 		return "error"
+	}
+}
+func detachedReason(value string) string {
+	switch value {
+	case "projection_gap", "runtime_upgrade", "tailapp_deleted":
+		return value
+	default:
+		return "other"
 	}
 }
 func controlOutcome(value string) string {

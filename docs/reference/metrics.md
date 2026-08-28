@@ -64,10 +64,13 @@ A transient failure or failed settlement is a `retry`, not a success.
 - accepted record and canonical-byte totals for `log`, `span`, `metric`, and
   the closed fallback `unknown`;
 - `obligations_total`, the accepted fanout across active Tailapps;
-- `unrouted_records_total`, accepted records for which no Tailapp was active;
-  these records are discarded immediately; and
+- `unrouted_records_total`, accepted records for which no Tailapp was active,
+  plus `unrouted_records_by_signal` over the fixed `log`, `span`, `metric`, and
+  `unknown` keys; these records are discarded immediately; and
 - `detached_obligations_total`, work deliberately abandoned by a gap, runtime
-  upgrade, or Tailapp deletion.
+  upgrade, or Tailapp deletion, plus `detached_obligations_by_reason` over the
+  fixed `projection_gap`, `runtime_upgrade`, `tailapp_deleted`, and `other`
+  keys.
 
 The `inbox` gauge reports current retained records, canonical bytes, delivery
 head, oldest/newest positions, oldest receipt timestamp, and pending
@@ -79,7 +82,10 @@ to alert on without converting timestamps.
 `processing` contains process-lifetime attempts for active Tailapps only. Each
 entry reports `ok`, `gap`, `retry`, and `error` outcomes, ineffective records,
 emitted private events, the last successful settlement time, queue delay, and
-settlement-aware duration.
+settlement-aware duration. `detached_obligations_total` splits deliberate loss
+over the fixed `projection_gap`, `runtime_upgrade`, `tailapp_deleted`, and
+`other` reasons. The breakdown follows the same active-only lifetime as its
+Tailapp entry; the intake-level total remains visible across app deletion.
 
 `tailapps` contains snapshot gauges and durable projection totals:
 
@@ -96,8 +102,8 @@ unavailable, and runtime-upgrade-pending Tailapps remain visible.
 
 `queries` reports outcomes, total rows, encoded row bytes, truncations, engine
 lock wait, and total duration. Query outcomes are the closed set `ok`,
-`not_found`, `unavailable`, `budget`, `frontier_changed`, `deadline`, and
-`error`.
+`not_found`, `unavailable`, `budget`, `frontier_changed`, `deadline`,
+`cancelled`, and `error`.
 
 `control` is keyed by the fixed public operation names. It reports stable
 control error classes without retaining arguments, SQL, source, or result
@@ -106,6 +112,9 @@ classes collapse into `operation_failed`.
 
 `runtime` is sampled with Go's runtime metrics API and reports goroutines,
 heap-object bytes, total runtime-managed memory, and completed GC cycles.
+`clock_regressions_total` increments when a wall-clock jump would otherwise
+make queue delay or oldest-inbox age negative; the reported duration is clamped
+to zero, but the anomaly remains observable.
 
 ## Privacy and export boundary
 
