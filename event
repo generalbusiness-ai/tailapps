@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:2ecc776a318f5da7e9a0c2e9a32820868924eb53"}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:a6bede386d7cbadbe73532645f4144f2b4de5a9f","text":"Retire the approval filed against repair request #366: it targeted the repair request rather than original review request #360, and checker has now promised the corrected guarded verdict directly on #360."}
