@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Codex live OTLP compatibility at exact tested head","body":{"commit":"ba2e55ce047a704c746d5d836e3e8bbc4fc6a790","dead_basis_override":"true","path":"notes/2026-08-28-disk-session-ingestion.md"}}
+{"kind":"artifact","text":"Codex live OTLP compatibility at exact tested head","body":{"commit":"ba2e55ce047a704c746d5d836e3e8bbc4fc6a790","dead_basis_override":"true","path":"tailapps/agent-guard/README.md"}}
