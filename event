@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Corrected concurrent histogram snapshot invariants and added fixed-dimension loss and clock-regression measurements.","body":{"commit":"0e3df616530546eb160ad5a1758847b323a5f2ba","path":"internal/metrics/metrics.go"}}
+{"kind":"artifact","text":"Added concurrent histogram invariant, fixed loss-dimension, and clock-regression tests.","body":{"commit":"0e3df616530546eb160ad5a1758847b323a5f2ba","path":"internal/metrics/metrics_test.go"}}
