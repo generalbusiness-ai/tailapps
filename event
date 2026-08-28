@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Revised activity-stats bundle with the observed DEVtheOPS OpenCode log profile and span deduplication.","body":{"commit":"6addc40309be622de85c4a1862f4749a8712e104","path":"tailapps/activity-stats"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:37c3d981538d2c68cbf1ba88368d25b5fc12dfb5"}
