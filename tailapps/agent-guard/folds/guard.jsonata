@@ -2,8 +2,10 @@
   $old := rows.prior;
   $same := $old and $old.action_fingerprint = event.progress_fingerprint;
   $repeat := $same ? $old.repeat_count + 1 : 1;
-  $no_progress := $same ? $old.no_progress_count + 1 : 0;
   $failed := event.success = false;
+
+  $made_progress := event.success = true;
+  $no_progress := $made_progress ? 0 : ($old ? $old.no_progress_count + 1 : 1);
   $failures := $failed ? ($old ? $old.consecutive_failures + 1 : 1) : 0;
   $total := $old ? $old.total_actions + 1 : 1;
   $first := $old ? $old.first_activity_unix_nano : event.event_time_unix_nano;
@@ -20,7 +22,9 @@
     ($rule = "target-boundary" ? "Observed an out-of-bound target" :
     ($rule = "insufficient-telemetry" ? "Required policy telemetry was absent or redacted" : "")));
   $policy_rows := $rule != "" ? [{
-    "finding_id": "policy|" & event.harness & "|" & event.session_id & "|" & $string(event.source_position),
+    "finding_id": $rule = "insufficient-telemetry" ?
+      "policy|insufficient-telemetry|" & event.harness & "|" & event.session_id :
+      "policy|" & event.harness & "|" & event.session_id & "|" & $string(event.source_position),
     "rule_id": $rule,
     "severity": $severity,
     "harness": event.harness,
@@ -75,4 +79,3 @@
     }
   }
 )
-

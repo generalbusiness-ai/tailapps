@@ -116,14 +116,29 @@ func flattenMetrics(groups []*metricsv1.ResourceMetrics) ([]inbox.Record, error)
 				return nil, err
 			}
 			for _, metric := range scoped.GetMetrics() {
+				metricIdentity := map[string]any{"name": metric.GetName(), "description": metric.GetDescription(), "unit": metric.GetUnit()}
+				switch {
+				case metric.GetSum() != nil:
+					metricIdentity["aggregation_temporality"] = metric.GetSum().GetAggregationTemporality().String()
+					metricIdentity["is_monotonic"] = metric.GetSum().GetIsMonotonic()
+				case metric.GetHistogram() != nil:
+					metricIdentity["aggregation_temporality"] = metric.GetHistogram().GetAggregationTemporality().String()
+				case metric.GetExponentialHistogram() != nil:
+					metricIdentity["aggregation_temporality"] = metric.GetExponentialHistogram().GetAggregationTemporality().String()
+				}
 				appendPoint := func(point proto.Message, attributes []*commonv1.KeyValue, start, end uint64, pointType string) error {
 					attrs, err := attributeMap(attributes)
 					if err != nil {
 						return fmt.Errorf("metric point attributes: %w", err)
 					}
+					identity := make(map[string]any, len(metricIdentity)+1)
+					for key, value := range metricIdentity {
+						identity[key] = value
+					}
+					identity["point_type"] = pointType
 					canonical := map[string]any{
 						"attributes": attrs, "resource": resource, "scope": scope,
-						"metric":               map[string]any{"name": metric.GetName(), "description": metric.GetDescription(), "unit": metric.GetUnit(), "point_type": pointType},
+						"metric":               identity,
 						"start_time_unix_nano": uintText(start), "time_unix_nano": uintText(end),
 					}
 					result, err := makeRecord("metric", metric.GetName(), source, end, 0, nil, nil, canonical, point)

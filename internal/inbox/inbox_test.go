@@ -46,6 +46,9 @@ func TestQueuePersistsOrdersAndDeletesSettledContent(t *testing.T) {
 	if err := queue.Complete(context.Background(), "cost", 1); err != nil {
 		t.Fatal(err)
 	}
+	if err := queue.Complete(context.Background(), "cost", 1); err != nil {
+		t.Fatalf("replayed completion after cleanup: %v", err)
+	}
 	if stats, _ := queue.Stats(context.Background()); stats.Records != 1 {
 		t.Fatalf("settled content retained: %#v", stats)
 	}

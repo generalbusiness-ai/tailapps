@@ -72,20 +72,44 @@ func TestReceiverAcceptsJSONLogsAndProtobufTracesAndMetricsInOrder(t *testing.T)
 	if attributes["conversation.id"] != "session-1" || pending[0].Source != "codex" || pending[0].TraceID == nil {
 		t.Fatalf("canonical log = %#v / %#v", pending[0], canonical)
 	}
+	if err := json.Unmarshal(pending[2].JSON, &canonical); err != nil {
+		t.Fatal(err)
+	}
+	metric := canonical["metric"].(map[string]any)
+	if metric["aggregation_temporality"] != "AGGREGATION_TEMPORALITY_DELTA" || metric["is_monotonic"] != true {
+		t.Fatalf("canonical metric identity = %#v", metric)
+	}
 }
 
 func TestCanonicalBytesAndDigestAreStable(t *testing.T) {
 	request := logRequest("codex", "codex.tool_result", "s1")
-	first, err := flattenLogs(request.GetResourceLogs())
+	request.ResourceLogs[0].ScopeLogs[0].LogRecords[0].Attributes = append(
+		request.ResourceLogs[0].ScopeLogs[0].LogRecords[0].Attributes,
+		kv("large_integer", &commonv1.AnyValue{Value: &commonv1.AnyValue_IntValue{IntValue: 1 << 60}}),
+	)
+	protobufBody, _ := proto.Marshal(request)
+	protobufDecoded := new(collectorlogsv1.ExportLogsServiceRequest)
+	if err := decodeOTLP(protobufBody, "application/x-protobuf", protobufDecoded); err != nil {
+		t.Fatal(err)
+	}
+	jsonBody, _ := protojson.Marshal(request)
+	jsonDecoded := new(collectorlogsv1.ExportLogsServiceRequest)
+	if err := decodeOTLP(jsonBody, "application/json", jsonDecoded); err != nil {
+		t.Fatal(err)
+	}
+	first, err := flattenLogs(protobufDecoded.GetResourceLogs())
 	if err != nil {
 		t.Fatal(err)
 	}
-	second, err := flattenLogs(request.GetResourceLogs())
+	second, err := flattenLogs(jsonDecoded.GetResourceLogs())
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !bytes.Equal(first[0].JSON, second[0].JSON) || first[0].ContentDigest != second[0].ContentDigest {
 		t.Fatalf("canonicalization changed: %s / %s", first[0].JSON, second[0].JSON)
+	}
+	if !bytes.Contains(first[0].JSON, []byte(`"integer_decimal":"1152921504606846976"`)) {
+		t.Fatalf("large integer lost precision: %s", first[0].JSON)
 	}
 }
 
@@ -181,7 +205,7 @@ func metricRequest(source string) *collectormetricsv1.ExportMetricsServiceReques
 				Resource: &resourcev1.Resource{Attributes: []*commonv1.KeyValue{kv("service.name", stringValue(source))}},
 				ScopeMetrics: []*metricsv1.ScopeMetrics{
 					{Metrics: []*metricsv1.Metric{
-						{Name: "agent.tokens", Data: &metricsv1.Metric_Gauge{Gauge: &metricsv1.Gauge{DataPoints: []*metricsv1.NumberDataPoint{
+						{Name: "agent.tokens", Data: &metricsv1.Metric_Sum{Sum: &metricsv1.Sum{AggregationTemporality: metricsv1.AggregationTemporality_AGGREGATION_TEMPORALITY_DELTA, IsMonotonic: true, DataPoints: []*metricsv1.NumberDataPoint{
 							{TimeUnixNano: 300, Value: &metricsv1.NumberDataPoint_AsInt{AsInt: 9}},
 						}}}},
 					}},

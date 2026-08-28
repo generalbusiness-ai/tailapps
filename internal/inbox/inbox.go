@@ -101,7 +101,10 @@ func Open(path string, limits Limits) (*Queue, error) {
 		if _, err := connection.Config(sqlite3.DBCONFIG_ENABLE_LOAD_EXTENSION, false); err != nil {
 			return err
 		}
-		return nil
+		if err := connection.Exec("PRAGMA foreign_keys=ON"); err != nil {
+			return err
+		}
+		return connection.Exec("PRAGMA trusted_schema=OFF")
 	})
 	if err != nil {
 		return nil, fmt.Errorf("open control database: %w", err)
@@ -142,9 +145,11 @@ CREATE TABLE IF NOT EXISTS inbox_events (
 );
 CREATE TABLE IF NOT EXISTS inbox_state (
   singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
-  delivery_head INTEGER NOT NULL CHECK (delivery_head >= 0)
+  delivery_head INTEGER NOT NULL CHECK (delivery_head >= 0),
+  queued_records INTEGER NOT NULL CHECK (queued_records >= 0),
+  queued_bytes INTEGER NOT NULL CHECK (queued_bytes >= 0)
 );
-INSERT INTO inbox_state(singleton, delivery_head) VALUES (1, 0)
+INSERT INTO inbox_state(singleton, delivery_head, queued_records, queued_bytes) VALUES (1, 0, 0, 0)
   ON CONFLICT(singleton) DO NOTHING;
 CREATE TABLE IF NOT EXISTS inbox_obligations (
   position INTEGER NOT NULL REFERENCES inbox_events(position) ON DELETE CASCADE,
@@ -186,10 +191,7 @@ func (q *Queue) Enqueue(ctx context.Context, records []Record, consumers []Consu
 	}
 	defer tx.Rollback()
 	var count, bytes, maximum int64
-	if err := tx.QueryRowContext(ctx, `SELECT COUNT(*), COALESCE(SUM(canonical_bytes), 0) FROM inbox_events`).Scan(&count, &bytes); err != nil {
-		return nil, err
-	}
-	if err := tx.QueryRowContext(ctx, `SELECT delivery_head FROM inbox_state WHERE singleton=1`).Scan(&maximum); err != nil {
+	if err := tx.QueryRowContext(ctx, `SELECT delivery_head,queued_records,queued_bytes FROM inbox_state WHERE singleton=1`).Scan(&maximum, &count, &bytes); err != nil {
 		return nil, err
 	}
 	if count+int64(len(records)) > q.limits.Records || bytes+incomingBytes > q.limits.Bytes {
@@ -220,7 +222,11 @@ func (q *Queue) Enqueue(ctx context.Context, records []Record, consumers []Consu
 		}
 		positions[index] = position
 	}
-	if _, err := tx.ExecContext(ctx, `UPDATE inbox_state SET delivery_head=? WHERE singleton=1`, positions[len(positions)-1]); err != nil {
+	retainedRecords, retainedBytes := int64(len(records)), incomingBytes
+	if len(consumers) == 0 {
+		retainedRecords, retainedBytes = 0, 0
+	}
+	if _, err := tx.ExecContext(ctx, `UPDATE inbox_state SET delivery_head=?,queued_records=queued_records+?,queued_bytes=queued_bytes+? WHERE singleton=1`, positions[len(positions)-1], retainedRecords, retainedBytes); err != nil {
 		return nil, err
 	}
 	if len(consumers) == 0 {
@@ -297,15 +303,25 @@ func (q *Queue) settle(ctx context.Context, tailapp string, position int64, stat
 	if changed == 0 {
 		var current string
 		if err := tx.QueryRowContext(ctx, `SELECT state FROM inbox_obligations WHERE position=? AND tailapp=?`, position, tailapp).Scan(&current); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return tx.Commit()
+			}
 			return fmt.Errorf("obligation not pending: %w", err)
 		}
 		if current != state {
 			return fmt.Errorf("obligation already %s", current)
 		}
 	}
-	if _, err := tx.ExecContext(ctx, `DELETE FROM inbox_events WHERE position=? AND NOT EXISTS (
- SELECT 1 FROM inbox_obligations WHERE position=? AND state='pending')`, position, position); err != nil {
+	var removedBytes int64
+	err = tx.QueryRowContext(ctx, `DELETE FROM inbox_events WHERE position=? AND NOT EXISTS (
+ SELECT 1 FROM inbox_obligations WHERE position=? AND state='pending') RETURNING canonical_bytes`, position, position).Scan(&removedBytes)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
+	}
+	if err == nil {
+		if _, err := tx.ExecContext(ctx, `UPDATE inbox_state SET queued_records=queued_records-1,queued_bytes=queued_bytes-? WHERE singleton=1`, removedBytes); err != nil {
+			return err
+		}
 	}
 	return tx.Commit()
 }
@@ -321,8 +337,16 @@ func (q *Queue) DetachAll(ctx context.Context, tailapp, code string) error {
 	if _, err := tx.ExecContext(ctx, `UPDATE inbox_obligations SET state='detached', error_code=? WHERE tailapp=? AND state='pending'`, code, tailapp); err != nil {
 		return err
 	}
+	var removedRecords, removedBytes int64
+	if err := tx.QueryRowContext(ctx, `SELECT COUNT(*),COALESCE(SUM(canonical_bytes),0) FROM inbox_events WHERE NOT EXISTS (
+ SELECT 1 FROM inbox_obligations WHERE inbox_obligations.position=inbox_events.position AND state='pending')`).Scan(&removedRecords, &removedBytes); err != nil {
+		return err
+	}
 	if _, err := tx.ExecContext(ctx, `DELETE FROM inbox_events WHERE NOT EXISTS (
  SELECT 1 FROM inbox_obligations WHERE inbox_obligations.position=inbox_events.position AND state='pending')`); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, `UPDATE inbox_state SET queued_records=queued_records-?,queued_bytes=queued_bytes-? WHERE singleton=1`, removedRecords, removedBytes); err != nil {
 		return err
 	}
 	return tx.Commit()
@@ -331,8 +355,11 @@ func (q *Queue) DetachAll(ctx context.Context, tailapp, code string) error {
 func (q *Queue) Stats(ctx context.Context) (Stats, error) {
 	var result Stats
 	var oldest, newest sql.NullInt64
-	if err := q.db.QueryRowContext(ctx, `SELECT COUNT(*),COALESCE(SUM(canonical_bytes),0),MIN(position),MAX(position) FROM inbox_events`).Scan(
-		&result.Records, &result.CanonicalBytes, &oldest, &newest); err != nil {
+	if err := q.db.QueryRowContext(ctx, `SELECT queued_records,queued_bytes,delivery_head FROM inbox_state WHERE singleton=1`).Scan(
+		&result.Records, &result.CanonicalBytes, &result.DeliveryHead); err != nil {
+		return Stats{}, err
+	}
+	if err := q.db.QueryRowContext(ctx, `SELECT MIN(position),MAX(position) FROM inbox_events`).Scan(&oldest, &newest); err != nil {
 		return Stats{}, err
 	}
 	if oldest.Valid {
@@ -342,9 +369,6 @@ func (q *Queue) Stats(ctx context.Context) (Stats, error) {
 		result.NewestPosition = &newest.Int64
 	}
 	if err := q.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM inbox_obligations WHERE state='pending'`).Scan(&result.PendingObligations); err != nil {
-		return Stats{}, err
-	}
-	if err := q.db.QueryRowContext(ctx, `SELECT delivery_head FROM inbox_state WHERE singleton=1`).Scan(&result.DeliveryHead); err != nil {
 		return Stats{}, err
 	}
 	return result, nil
