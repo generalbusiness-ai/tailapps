@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:df840730c6dab50ea50c42d3aed0e8df2b393b10","text":"Retired because its predecessor citation was retired after publication; a clean artifact will be republished on the fresh follow-up request."}
+{"kind":"artifact","text":"README first-use value and detective-policy clarification; exact two-file follow-up head; full test, race, vet, demo, link, syntax, and live-query checks passed.","body":{"commit":"a498991db9ef1d36e1392e039109dfeec84f35d5","path":"README.md"}}
