@@ -185,6 +185,61 @@ func TestSessionCostMapsObservedClaudeUsage(t *testing.T) {
 	}
 }
 
+func TestOpenCodeDEVtheOPSProfileMapsLogsAndIgnoresDuplicateSpan(t *testing.T) {
+	inputs := observedOpenCodeInputs(t)
+
+	guard, err := Load("agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tool, err := guard.Evaluate("normalize_harness_event", inputs["tool_result"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	toolEvents := tool.Events["otel_event"]
+	if tool.Decision != "effective" || len(toolEvents) != 1 {
+		t.Fatalf("tool_result = %#v", tool)
+	}
+	if event := toolEvents[0]; event["harness"] != "opencode" || event["session_id"] != "session-scrubbed" || event["tool"] != "bash" || event["success"] != true {
+		t.Fatalf("tool_result event = %#v", event)
+	}
+	span, err := guard.Evaluate("normalize_harness_event", inputs["tool_span"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if span.Decision != "ineffective" || len(span.Events["otel_event"]) != 0 {
+		t.Fatalf("duplicate content-bearing span = %#v", span)
+	}
+
+	cost, err := Load("session-cost")
+	if err != nil {
+		t.Fatal(err)
+	}
+	usage, err := cost.Evaluate("normalize_usage", inputs["api_request"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	usageEvents := usage.Events["otel_event"]
+	if usage.Decision != "effective" || len(usageEvents) != 1 {
+		t.Fatalf("api_request = %#v", usage)
+	}
+	for field, want := range map[string]string{
+		"input_tokens": "80", "output_tokens": "20", "cached_input_tokens": "16",
+		"reasoning_output_tokens": "7", "cost_microusd": "69125",
+	} {
+		if got := fmt.Sprint(usageEvents[0][field]); got != want {
+			t.Fatalf("%s = %s, want %s; event = %#v", field, got, want, usageEvents[0])
+		}
+	}
+	spanCost, err := cost.Evaluate("normalize_usage", inputs["tool_span"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if spanCost.Decision != "ineffective" || len(spanCost.Events["otel_event"]) != 0 {
+		t.Fatalf("span counted as usage = %#v", spanCost)
+	}
+}
+
 func TestAgentGuardMapsObservedCodexOTLPShape(t *testing.T) {
 	guard, err := Load("agent-guard")
 	if err != nil {
@@ -307,7 +362,7 @@ func TestActivityStatsNormalizesCrossHarnessWithoutContent(t *testing.T) {
 		{"codex-request", codex["api_request"], "codex", "api-request", "not-applicable", "responses", true},
 		{"codex-websocket", codex["websocket_request"], "codex", "websocket-request", "not-applicable", "websocket", true},
 		{"opencode-tool", opencode["tool_result"], "opencode", "tool", "shell", "not-applicable", false},
-		{"opencode-request", opencode["api_request"], "opencode", "api-request", "not-applicable", "chat-completions", true},
+		{"opencode-request", opencode["api_request"], "opencode", "api-request", "not-applicable", "unknown", true},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -333,6 +388,13 @@ func TestActivityStatsNormalizesCrossHarnessWithoutContent(t *testing.T) {
 				}
 			}
 		})
+	}
+	ignored, err := stats.Evaluate("normalize_activity", opencode["tool_span"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ignored.Decision != "ineffective" || len(ignored.Events["otel_event"]) != 0 {
+		t.Fatalf("duplicate OpenCode span = %#v", ignored)
 	}
 }
 

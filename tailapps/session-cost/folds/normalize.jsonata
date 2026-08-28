@@ -7,6 +7,7 @@
   $event_name := $claude_body_name ? $body_name :
     ($exists($semantic_name_raw) and $string($semantic_name_raw) != "" ? $string($semantic_name_raw) : event.name);
   $harness := (event.source = "codex_cli_rs" or event.source = "codex_exec") ? "codex" : event.source;
+  $opencode_log := $harness = "opencode" and event.signal = "log";
   $event_time := event.time_unix_nano ? event.time_unix_nano :
     (event.observed_unix_nano ? event.observed_unix_nano : null);
   $codex_stream := $event_name = "codex.sse_event" and (
@@ -26,11 +27,12 @@
     $exists($lookup($attrs, "cached_token_count")) or
     $exists($lookup($attrs, "reasoning_output_tokens")) or
     $exists($lookup($attrs, "reasoning_output_token_count")) or
-    $exists($lookup($attrs, "reasoning_token_count")) or
+    $exists($lookup($attrs, "reasoning_token_count")) or $exists($lookup($attrs, "reasoning_tokens")) or
     $exists($lookup($attrs, "cost_microusd")) or
-    $exists($lookup($attrs, "cost_usd_micros"));
+    $exists($lookup($attrs, "cost_usd_micros")) or $exists($lookup($attrs, "cost_usd"));
   $usage := ($event_name = "claude_code.api_request" or $event_name = "codex.api_request" or
-    $event_name = "opencode.api_request" or $codex_stream) and $counter_present and $event_time;
+    $event_name = "opencode.api_request" or ($opencode_log and $event_name = "api_request") or $codex_stream) and
+    $counter_present and $event_time;
   $session_raw := $lookup($attrs, "session.id") ? $lookup($attrs, "session.id") :
     ($lookup($attrs, "conversation.id") ? $lookup($attrs, "conversation.id") :
     ($lookup($attrs, "session_id") ? $lookup($attrs, "session_id") : $lookup($resource, "service.instance.id")));
@@ -41,13 +43,16 @@
     ($exists($lookup($attrs, "cache_read_tokens")) ? $lookup($attrs, "cache_read_tokens") :
     ($exists($lookup($attrs, "cached_input_token_count")) ? $lookup($attrs, "cached_input_token_count") : $lookup($attrs, "cached_token_count")));
   $reasoning_raw := $exists($lookup($attrs, "reasoning_output_tokens")) ? $lookup($attrs, "reasoning_output_tokens") :
-    ($exists($lookup($attrs, "reasoning_output_token_count")) ? $lookup($attrs, "reasoning_output_token_count") : $lookup($attrs, "reasoning_token_count"));
+    ($exists($lookup($attrs, "reasoning_output_token_count")) ? $lookup($attrs, "reasoning_output_token_count") :
+    ($exists($lookup($attrs, "reasoning_token_count")) ? $lookup($attrs, "reasoning_token_count") : $lookup($attrs, "reasoning_tokens")));
   $input := $exists($input_raw) ? $number($input_raw) : 0;
   $output := $exists($output_raw) ? $number($output_raw) : 0;
   $cached := $exists($cached_raw) ? $number($cached_raw) : 0;
   $reasoning := $exists($reasoning_raw) ? $number($reasoning_raw) : 0;
   $cost_raw := $exists($lookup($attrs, "cost_microusd")) ? $lookup($attrs, "cost_microusd") : $lookup($attrs, "cost_usd_micros");
-  $cost := $exists($cost_raw) ? $number($cost_raw) : 0;
+  $cost_usd_raw := $lookup($attrs, "cost_usd");
+  $cost := $exists($cost_raw) ? $number($cost_raw) :
+    (($opencode_log and $exists($cost_usd_raw)) ? $round($number($cost_usd_raw) / 0.000001) : 0);
   $usage ? {
     "decision": "effective",
     "facts": [],

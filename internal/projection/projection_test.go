@@ -27,7 +27,7 @@ func TestAgentGuardMaterializesAllHarnessesUnknownLoopsAndStalledQuery(t *testin
 
 	position := int64(0)
 	for _, harness := range []struct{ source, name string }{
-		{"claude-code", "claude_code.tool_result"}, {"codex", "codex.tool_result"}, {"opencode", "opencode.tool.execute.after"},
+		{"claude-code", "claude_code.tool_result"}, {"codex", "codex.tool_result"}, {"opencode", "tool_result"},
 	} {
 		position++
 		if _, err := projection.Process(context.Background(), guardDelivery(position, harness.source, harness.name, map[string]any{
@@ -63,7 +63,7 @@ func TestAgentGuardMaterializesAllHarnessesUnknownLoopsAndStalledQuery(t *testin
 	// fingerprint accumulate no-progress without conflating missing telemetry.
 	for count := 0; count < 4; count++ {
 		position++
-		if _, err := projection.Process(context.Background(), guardDelivery(position, "opencode", "opencode.tool.execute.after", map[string]any{
+		if _, err := projection.Process(context.Background(), guardDelivery(position, "opencode", "tool_result", map[string]any{
 			"session_id": "no-progress", "tool_name": fmt.Sprintf("tool-%d", count), "target": "/workspace", "success": true, "progress_fingerprint": "stable-state",
 		})); err != nil {
 			t.Fatal(err)
@@ -88,7 +88,7 @@ func TestAgentGuardMaterializesAllHarnessesUnknownLoopsAndStalledQuery(t *testin
 		t.Fatal(err)
 	}
 	defer projection.Close()
-	last := guardDelivery(position, "opencode", "opencode.tool.execute.after", map[string]any{"session_id": "no-progress", "tool_name": "tool-2", "target": "/workspace"})
+	last := guardDelivery(position, "opencode", "tool_result", map[string]any{"session_id": "no-progress", "tool_name": "tool-2", "target": "/workspace"})
 	result, err := projection.Process(context.Background(), last)
 	if err != nil || !result.AlreadyApplied {
 		t.Fatalf("recovery re-evaluated committed delivery: %#v, %v", result, err)

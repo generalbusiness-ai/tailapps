@@ -22,7 +22,9 @@ The normalizer recognizes:
 - Codex: `codex.tool_call`, `codex.tool_decision`, `codex.tool_result`,
   `codex.user_prompt`, `codex.turn_ttft`, `codex.api_request`,
   `codex.websocket_request`, and counter-bearing `codex.sse_event`; and
-- OpenCode adapters: `opencode.tool.execute.before`,
+- DEVtheOPS OpenCode plugin 1.5.1 logs: `tool_result` and `api_request` when
+  `service.name = opencode`; and
+- generic OpenCode adapters: `opencode.tool.execute.before`,
   `opencode.tool.execute.after`, `opencode.api_request`, and the optional
   `opencode.user_prompt`, `opencode.assistant_response`,
   `opencode.turn_ttft`, and `opencode.websocket_request` families.
@@ -30,6 +32,12 @@ The normalizer recognizes:
 Codex's native `codex_cli_rs` and `codex_exec` service names become `codex`.
 Session identity uses the same bounded fallback as the other bundles; absent
 identity is grouped under `unknown:<harness>` and counted as unknown coverage.
+
+The DEVtheOPS profile consumes logs only. Its duplicate `opencode.tool.*`
+spans are intentionally ineffective, avoiding double counting and excluding
+the prompt, output, and tool-parameter content those spans may carry. Different
+OpenCode plugins require separate, named compatibility profiles and fixtures;
+their event shapes are not assumed to be interchangeable.
 
 Tool names are reduced to `shell`, `read`, `write`, `edit`, `search`, `other`,
 or `unknown`. Endpoint values are reduced to `responses`, `chat-completions`,
