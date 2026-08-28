@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Added bounded counter, cardinality, and exact histogram-boundary tests.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"internal/metrics/metrics_test.go"}}
+{"kind":"artifact","text":"Integrated settlement-aware processing, durable progress, backlog, query, and runtime metrics into the engine.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"internal/engine/engine.go"}}
