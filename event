@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:e2ae2dd8282326c6679c641e839673e3e351d7c4","text":"Merge retired a covered predecessor; the successor is at internal/profile/types.go."}
+{"kind":"promise","text":"I will build the operator-authorized privacy-preserving activity-stats bundle, preserve explicit unknown coverage, and obtain exact-head checker review before merge.","body":{"branch":"request/activity-stats"}}
