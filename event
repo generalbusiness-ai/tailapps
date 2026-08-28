@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"README first-use value and detective-policy clarification; exact two-file follow-up head; full test, race, vet, demo, link, syntax, and live-query checks passed.","body":{"commit":"a498991db9ef1d36e1392e039109dfeec84f35d5","path":"README.md"}}
+{"kind":"artifact","text":"Claude privacy-gate clarification; official monitoring docs distinguish tool identifying details from tracing tool input/output content; exact two-file follow-up head.","body":{"commit":"a498991db9ef1d36e1392e039109dfeec84f35d5","path":"docs/harnesses/claude-code.md"}}
