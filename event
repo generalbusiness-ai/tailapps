@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Verified metrics CLI discoverability and JSON-only output contract.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"internal/cli/cli_test.go"}}
+{"kind":"artifact","text":"Exposed the no-argument tailapp_metrics MCP tool.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"internal/mcp/server.go"}}
