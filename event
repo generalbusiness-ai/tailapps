@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:c3025d137288d11666009c03550d1938cafbd077","text":"Merge retired a covered predecessor; the successor is at testdata/otlp/one-span.json."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:c8e7d37c18334135f7a075332a4c5de4d16be871","text":"Merge retired a covered predecessor; the successor is at docs/reference/otel-records.md."}
