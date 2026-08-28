@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:b7195c6958d8453844a0e01d7d41e4b2a4b12d4f","text":"Merge retired a covered predecessor; the successor is at tailapps/testdata/codex-cli-0.150.1.json."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:bb95eec393077f3dc3f2b0670e3ea1e81cc522b6","text":"Merge retired a covered predecessor; the successor is at docs/harnesses/opencode.md."}
