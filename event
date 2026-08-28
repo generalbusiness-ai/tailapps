@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Scrubbed OpenCode adapter tool and API compatibility fixture.","body":{"commit":"16675ab55bd90f94b3e15f1465a7545d61b1d4ed","path":"tailapps/testdata/opencode-adapter.json"}}
+{"kind":"artifact","text":"End-to-end CLI and MCP demo verifies cross-harness activity statistics.","body":{"commit":"16675ab55bd90f94b3e15f1465a7545d61b1d4ed","path":"scripts/demo.sh"}}
