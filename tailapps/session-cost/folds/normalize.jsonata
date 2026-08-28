@@ -8,7 +8,8 @@
   $session := $exists($session_raw) ? $string($session_raw) : "unknown:" & event.source;
   $input := $lookup($attrs, "input_tokens") ? $number($lookup($attrs, "input_tokens")) : 0;
   $output := $lookup($attrs, "output_tokens") ? $number($lookup($attrs, "output_tokens")) : 0;
-  $cost := $lookup($attrs, "cost_microusd") ? $number($lookup($attrs, "cost_microusd")) : 0;
+  $cost_raw := $exists($lookup($attrs, "cost_microusd")) ? $lookup($attrs, "cost_microusd") : $lookup($attrs, "cost_usd_micros");
+  $cost := $exists($cost_raw) ? $number($cost_raw) : 0;
   $usage ? {
     "decision": "effective",
     "facts": [],

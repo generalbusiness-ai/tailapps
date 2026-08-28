@@ -1,8 +1,69 @@
-# Agent guard query recipes
+# Agent guard
 
-`agent-guard` records detective evidence only; it is not inline enforcement.
-Missing or redacted tool/target fields create `insufficient-telemetry` findings
-with `coverage_state = 'unknown'`, never a compliance claim.
+`agent-guard` is a reference detective-policy Tailapp. It normalizes selected
+tool events from Claude Code, Codex, and OpenCode into one private action
+vocabulary, then folds each short-lived event into durable coverage, policy,
+loop, and session-progress tables. Raw OTLP records and normalized events are
+not retained.
+
+The model separates an observed violation from missing evidence. A result can
+prove that a named action occurred, but an absent or redacted target cannot
+prove that the action stayed within a boundary. Missing session, tool, or
+target fields therefore produce `unknown` coverage and an
+`insufficient-telemetry` finding rather than a compliance claim.
+
+This is a starting policy, not a universal policy pack. Its built-in rules
+flag:
+
+- tools named `dangerous_shell` or `external_network`;
+- operation kinds named `destructive` or `network_external`; and
+- observed targets beginning with `/outside/`.
+
+Adapt `folds/normalize.jsonata` to derive the canonical fields available from
+your harness, and adapt `folds/guard.jsonata` to your actual tool names, roots,
+and operation classes before relying on the findings operationally.
+
+## Input model
+
+The normalizer accepts these event names:
+
+- Claude Code: `claude_code.tool_result`, `claude_code.tool_decision`
+- Codex: `codex.tool_result`, `codex.tool_decision`, `codex.tool_call`
+- OpenCode adapters: `opencode.tool.execute.after`,
+  `opencode.tool.execute.before`
+
+It reads session identity from `session.id`, `conversation.id`, `session_id`,
+or `service.instance.id`; tool identity from `tool_name` or `tool`; target from
+`target`, `file_path`, or `full_command`; and optional `success`,
+`operation_kind`, `argument_digest`, and `progress_fingerprint` attributes.
+The canonical `harness` comes from the OTLP source, normally `service.name`.
+
+Do not emit both an OpenCode `before` and `after` record for one completed call
+unless two counted actions are intended. Prefer `after` for completed calls and
+reserve `before` for an attempted call that will not have a corresponding
+result.
+
+## Analytics model
+
+`session_progress` keeps one row per harness and session. Exact action
+fingerprints count consecutive repeated actions; observed `success = false`
+values count consecutive failures; repeated observed progress fingerprints
+count bounded no-progress. A run becomes a loop finding at three consecutive
+observations. The fold selects one finding kind per input in this order:
+repeated failure, repeated action, then bounded no-progress.
+
+This is bounded event evidence, not a wall-clock monitor. A silent process
+emits no record, so stalled behavior is detected by comparing the last distinct
+progress timestamp with a caller-supplied cutoff.
+
+The queryable tables and exports are:
+
+- `telemetry_coverage`: latest observed/unknown state per harness capability;
+- `session_progress`: rolling counters and progress timestamps per session;
+- `policy_findings`: per-position violations plus stable per-session unknowns;
+- `loop_findings`: latest evidence per session and loop kind.
+
+## Query recipes
 
 Recent policy evidence:
 
@@ -10,6 +71,14 @@ Recent policy evidence:
 SELECT harness, session_id, rule_id, severity, summary, evidence, coverage_state
 FROM policy_findings
 ORDER BY source_position DESC;
+```
+
+Current instrumentation coverage:
+
+```sql
+SELECT harness, capability, state, reason, last_source_position
+FROM telemetry_coverage
+ORDER BY harness, capability;
 ```
 
 Loop evidence:
@@ -38,4 +107,6 @@ tailapp query --sql 'SELECT harness, session_id, last_distinct_progress_unix_nan
 
 `loop_findings` retains the latest row per session and finding kind. Policy
 violations retain per-position evidence, while insufficient telemetry uses a
-stable per-session ID to avoid a missing-field firehose.
+stable per-session ID to avoid a missing-field firehose. This remains detective
+evidence: Tailapp neither blocks a call nor proves that an unobserved operation
+did not happen.
