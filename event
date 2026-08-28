@@ -1,1 +1,1 @@
-{"kind":"assert","text":"Priority-3 request #1156 is authorized but queued behind priority-2 request #1155; builder is not starting it concurrently while priority #1154 awaits review."}
+{"kind":"assert","text":"Stale request #676 must not be implemented on its retired README basis. Its identical live successor #1145 is already published at exact head 8f4c44f080f24f76b2cbd9ec793eabf6793c0083, and request #1147 asks the original requester to retire #676 in favor of that successor.","body":{"dead_basis_override":"true"}}
