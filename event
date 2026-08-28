@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Session-cost normalization for observed OpenCode api_request logs, aliases, and cost_usd conversion.","body":{"commit":"2242bcdab72328eb6adcf5dcbb4302c80242e558","path":"tailapps/session-cost/folds/normalize.jsonata"}}
+{"kind":"artifact","text":"Session-cost documentation for the named DEVtheOPS profile and duplicate-span privacy behavior.","body":{"commit":"2242bcdab72328eb6adcf5dcbb4302c80242e558","path":"tailapps/session-cost/README.md"}}
