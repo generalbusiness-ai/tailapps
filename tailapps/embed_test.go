@@ -277,7 +277,7 @@ func TestAgentGuardMapsObservedCodexOTLPShape(t *testing.T) {
 	}
 }
 
-func TestCodexAppServerIdentityNormalizesAcrossBundles(t *testing.T) {
+func TestCodexServiceIdentitiesNormalizeAcrossBundles(t *testing.T) {
 	inputs := observedCodexInputs(t)
 	tests := []struct {
 		name     string
@@ -290,23 +290,28 @@ func TestCodexAppServerIdentityNormalizesAcrossBundles(t *testing.T) {
 		{name: "activity-stats", tailapp: "activity-stats", fold: "normalize_activity", inputKey: "app_server_tool_result"},
 	}
 	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			bundle, err := Load(tc.tailapp)
-			if err != nil {
-				t.Fatal(err)
-			}
-			normalized, err := bundle.Evaluate(tc.fold, inputs[tc.inputKey])
-			if err != nil {
-				t.Fatal(err)
-			}
-			events := normalized.Events["otel_event"]
-			if normalized.Decision != "effective" || len(events) != 1 {
-				t.Fatalf("normalized = %#v", normalized)
-			}
-			if got := events[0]["harness"]; got != "codex" {
-				t.Fatalf("harness = %#v, want codex; event = %#v", got, events[0])
-			}
-		})
+		for _, source := range []string{"codex_cli_rs", "codex_exec", "codex-app-server"} {
+			t.Run(tc.name+"/"+source, func(t *testing.T) {
+				bundle, err := Load(tc.tailapp)
+				if err != nil {
+					t.Fatal(err)
+				}
+				input := inputs[tc.inputKey]
+				input.Event = cloneMap(input.Event)
+				input.Event["source"] = source
+				normalized, err := bundle.Evaluate(tc.fold, input)
+				if err != nil {
+					t.Fatal(err)
+				}
+				events := normalized.Events["otel_event"]
+				if normalized.Decision != "effective" || len(events) != 1 {
+					t.Fatalf("normalized = %#v", normalized)
+				}
+				if got := events[0]["harness"]; got != "codex" {
+					t.Fatalf("harness = %#v, want codex; event = %#v", got, events[0])
+				}
+			})
+		}
 	}
 }
 
