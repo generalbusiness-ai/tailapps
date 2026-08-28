@@ -1,0 +1,16 @@
+(
+  $old := rows.prior;
+  {
+    "decision": "effective",
+    "facts": [],
+    "tables": {"session_cost": {"upsert": [{
+      "harness": event.harness,
+      "session_id": event.session_id,
+      "input_tokens": ($old ? $old.input_tokens : 0) + event.input_tokens,
+      "output_tokens": ($old ? $old.output_tokens : 0) + event.output_tokens,
+      "cost_microusd": ($old ? $old.cost_microusd : 0) + event.cost_microusd,
+      "last_source_position": event.source_position
+    }]}}
+  }
+)
+

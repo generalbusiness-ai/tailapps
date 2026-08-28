@@ -1,0 +1,30 @@
+(
+  $attrs := event.record.attributes ? event.record.attributes : {};
+  $resource := event.record.resource.attributes ? event.record.resource.attributes : {};
+  $usage := event.name = "claude_code.api_request" or event.name = "codex.api_request" or event.name = "opencode.api_request";
+  $session_raw := $lookup($attrs, "session.id") ? $lookup($attrs, "session.id") :
+    ($lookup($attrs, "conversation.id") ? $lookup($attrs, "conversation.id") : $lookup($resource, "service.instance.id"));
+  $session := $exists($session_raw) ? $string($session_raw) : "unknown:" & event.source;
+  $input := $lookup($attrs, "input_tokens") ? $number($lookup($attrs, "input_tokens")) : 0;
+  $output := $lookup($attrs, "output_tokens") ? $number($lookup($attrs, "output_tokens")) : 0;
+  $cost := $lookup($attrs, "cost_microusd") ? $number($lookup($attrs, "cost_microusd")) : 0;
+  $usage ? {
+    "decision": "effective",
+    "facts": [],
+    "events": {"otel_event": [{
+      "harness": event.source,
+      "session_id": $session,
+      "input_tokens": $input,
+      "output_tokens": $output,
+      "cost_microusd": $cost,
+      "source_position": meta.position
+    }]},
+    "tables": {}
+  } : {
+    "decision": "ineffective",
+    "facts": [],
+    "events": {},
+    "tables": {}
+  }
+)
+

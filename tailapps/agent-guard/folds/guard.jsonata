@@ -1,0 +1,78 @@
+(
+  $old := rows.prior;
+  $same := $old and $old.action_fingerprint = event.progress_fingerprint;
+  $repeat := $same ? $old.repeat_count + 1 : 1;
+  $no_progress := $same ? $old.no_progress_count + 1 : 0;
+  $failed := event.success = false;
+  $failures := $failed ? ($old ? $old.consecutive_failures + 1 : 1) : 0;
+  $total := $old ? $old.total_actions + 1 : 1;
+  $first := $old ? $old.first_activity_unix_nano : event.event_time_unix_nano;
+  $distinct := $same ? $old.last_distinct_progress_unix_nano : event.event_time_unix_nano;
+
+  $denied_tool := event.tool = "dangerous_shell" or event.tool = "external_network";
+  $denied_operation := event.operation_kind = "destructive" or event.operation_kind = "network_external";
+  $outside_target := event.target_coverage = "observed" and $substring(event.target, 0, 9) = "/outside/";
+  $unknown := event.tool_coverage != "observed" or event.target_coverage != "observed";
+  $rule := $denied_tool ? "denied-tool" : ($denied_operation ? "denied-operation" : ($outside_target ? "target-boundary" : ($unknown ? "insufficient-telemetry" : "")));
+  $severity := $unknown and $rule = "insufficient-telemetry" ? "unknown" : "high";
+  $summary := $rule = "denied-tool" ? "Observed a denied tool" :
+    ($rule = "denied-operation" ? "Observed a denied operation kind" :
+    ($rule = "target-boundary" ? "Observed an out-of-bound target" :
+    ($rule = "insufficient-telemetry" ? "Required policy telemetry was absent or redacted" : "")));
+  $policy_rows := $rule != "" ? [{
+    "finding_id": "policy|" & event.harness & "|" & event.session_id & "|" & $string(event.source_position),
+    "rule_id": $rule,
+    "severity": $severity,
+    "harness": event.harness,
+    "session_id": event.session_id,
+    "source_position": event.source_position,
+    "summary": $summary,
+    "evidence": {
+      "tool": event.tool,
+      "operation_kind": event.operation_kind,
+      "target": event.target,
+      "argument_digest": event.argument_digest,
+      "coverage_reason": event.coverage_reason
+    },
+    "coverage_state": $unknown ? "unknown" : "observed"
+  }] : [];
+
+  $loop_kind := $failures >= 3 ? "repeated-failure" : ($repeat >= 3 ? "repeated-action" : ($no_progress >= 3 ? "bounded-no-progress" : ""));
+  $loop_rows := $loop_kind != "" ? [{
+    "finding_id": "loop|" & $loop_kind & "|" & event.harness & "|" & event.session_id,
+    "finding_kind": $loop_kind,
+    "harness": event.harness,
+    "session_id": event.session_id,
+    "source_position": event.source_position,
+    "repeat_count": $repeat,
+    "consecutive_failures": $failures,
+    "no_progress_count": $no_progress,
+    "evidence": {
+      "action_fingerprint": event.progress_fingerprint,
+      "last_distinct_progress_unix_nano": $distinct
+    }
+  }] : [];
+
+  {
+    "decision": "effective",
+    "facts": [],
+    "tables": {
+      "session_progress": {"upsert": [{
+        "harness": event.harness,
+        "session_id": event.session_id,
+        "first_activity_unix_nano": $first,
+        "last_activity_unix_nano": event.event_time_unix_nano,
+        "last_distinct_progress_unix_nano": $distinct,
+        "action_fingerprint": event.progress_fingerprint,
+        "repeat_count": $repeat,
+        "no_progress_count": $no_progress,
+        "consecutive_failures": $failures,
+        "total_actions": $total,
+        "last_source_position": event.source_position
+      }]},
+      "policy_findings": {"upsert": $policy_rows},
+      "loop_findings": {"upsert": $loop_rows}
+    }
+  }
+)
+
