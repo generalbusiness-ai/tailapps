@@ -63,6 +63,20 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return (&mcp.Server{Client: client}).Serve(ctx, os.Stdin, os.Stdout)
 	case "health":
 		return call(stdout, home, "health", nil)
+	case "metrics":
+		flags := flag.NewFlagSet("metrics", flag.ContinueOnError)
+		flags.SetOutput(stderr)
+		jsonOutput := flags.Bool("json", true, "emit the versioned JSON metrics snapshot")
+		if err := flags.Parse(args[1:]); err != nil {
+			return err
+		}
+		if flags.NArg() != 0 {
+			return errors.New("metrics accepts only --json")
+		}
+		if !*jsonOutput {
+			return errors.New("metrics supports JSON output only")
+		}
+		return call(stdout, home, "metrics", nil)
 	case "apps":
 		return apps(stdout, home, args[1:])
 	case "query":
@@ -90,6 +104,7 @@ Usage:
   tailapp apps <list|create|get|put|rm|validate|activate|delete|status|schema>
   tailapp query --sql SQL [options] APP
   tailapp health
+  tailapp metrics [--json]
   tailapp ingest-fixture [--signal logs|traces|metrics] FILE
   tailapp mcp
 

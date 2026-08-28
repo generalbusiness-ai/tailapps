@@ -38,6 +38,14 @@ type Frontier struct {
 type Result struct {
 	AlreadyApplied bool
 	Frontier       Frontier
+	Ineffective    bool
+	EmittedEvents  int
+}
+
+type Stats struct {
+	ConsumedRecords    int64 `json:"consumed_records"`
+	IneffectiveRecords int64 `json:"ineffective_records"`
+	EmittedEvents      int64 `json:"emitted_events"`
 }
 
 type Identity struct {
@@ -363,7 +371,18 @@ func (p *Projection) Process(ctx context.Context, delivery inbox.Delivery) (resu
 	}
 	frontier.InterpretedPosition = delivery.Position
 	frontier.LastEventID = delivery.EventID
-	return Result{Frontier: frontier}, nil
+	return Result{Frontier: frontier, Ineffective: ineffective == 1, EmittedEvents: len(emitted)}, nil
+}
+
+func (p *Projection) Stats(ctx context.Context) (Stats, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	var result Stats
+	if err := p.db.QueryRowContext(ctx, `SELECT consumed_records,ineffective_records,emitted_events FROM tailapp_stats WHERE singleton=1`).Scan(
+		&result.ConsumedRecords, &result.IneffectiveRecords, &result.EmittedEvents); err != nil {
+		return Stats{}, err
+	}
+	return result, nil
 }
 
 func deliveryEvent(delivery inbox.Delivery) (map[string]any, error) {

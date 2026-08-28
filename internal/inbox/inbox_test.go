@@ -52,8 +52,8 @@ func TestQueuePersistsOrdersAndDeletesSettledContent(t *testing.T) {
 	if stats, _ := queue.Stats(context.Background()); stats.Records != 1 {
 		t.Fatalf("settled content retained: %#v", stats)
 	}
-	if err := queue.DetachAll(context.Background(), "guard", "test_gap"); err != nil {
-		t.Fatal(err)
+	if detached, err := queue.DetachAll(context.Background(), "guard", "test_gap"); err != nil || detached != 1 {
+		t.Fatalf("detached = %d, err = %v", detached, err)
 	}
 	if err := queue.Complete(context.Background(), "cost", 2); err != nil {
 		t.Fatal(err)

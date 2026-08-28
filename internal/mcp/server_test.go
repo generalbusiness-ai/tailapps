@@ -44,6 +44,18 @@ func TestInstallToolRequiresExactlyOneCompleteSourceKind(t *testing.T) {
 	t.Fatal("tailapp_install tool not found")
 }
 
+func TestMetricsToolIsExposedWithoutArguments(t *testing.T) {
+	for _, item := range tools() {
+		if item.Name == "tailapp_metrics" {
+			if operation := operations[item.Name]; operation != "metrics" {
+				t.Fatalf("metrics operation = %q", operation)
+			}
+			return
+		}
+	}
+	t.Fatal("tailapp_metrics tool not found")
+}
+
 func contains(values []string, wanted string) bool {
 	for _, value := range values {
 		if value == wanted {

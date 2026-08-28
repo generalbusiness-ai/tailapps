@@ -93,7 +93,7 @@ func (server *Server) handle(ctx context.Context, request message) response {
 	return reply
 }
 
-var operations = map[string]string{"tailapps_list": "apps_list", "tailapp_get": "app_get", "tailapp_create": "app_create", "tailapp_install": "app_install", "tailapp_delete": "app_delete", "tailapp_put_element": "element_put", "tailapp_delete_element": "element_delete", "tailapp_validate": "validate", "tailapp_activate": "activate", "tailapp_status": "status", "tailapp_schema": "schema", "tailapp_query": "query"}
+var operations = map[string]string{"tailapps_list": "apps_list", "tailapp_get": "app_get", "tailapp_create": "app_create", "tailapp_install": "app_install", "tailapp_delete": "app_delete", "tailapp_put_element": "element_put", "tailapp_delete_element": "element_delete", "tailapp_validate": "validate", "tailapp_activate": "activate", "tailapp_status": "status", "tailapp_metrics": "metrics", "tailapp_schema": "schema", "tailapp_query": "query"}
 
 func tools() []tool {
 	object := func(properties map[string]any, required ...string) map[string]any {
@@ -124,6 +124,7 @@ func tools() []tool {
 		{"tailapp_validate", "Compile the exact draft without changing live behavior.", object(map[string]any{"name": text, "expected_revision": text}, "name", "expected_revision")},
 		{"tailapp_activate", "Activate a validated draft at a delivery boundary. Reset discards prior materialized state and requires acknowledgement.", object(map[string]any{"name": text, "expected_revision": text, "mode": map[string]any{"type": "string", "enum": []string{"continue", "reset"}}, "acknowledge_reset": boolean, "idempotency_key": idempotencyKey}, "name", "expected_revision", "mode", "idempotency_key")},
 		{"tailapp_status", "Read engine readiness, inbox bounds, exact projection frontiers and gaps.", object(nil)},
+		{"tailapp_metrics", "Read the versioned, payload-free active-use performance snapshot: intake, queueing, per-Tailapp processing, query/control latency, durable totals, backlog gauges, and Go runtime gauges.", object(nil)},
 		{"tailapp_schema", "Read one active Tailapp's private schema, writers, event and explicit exports.", object(map[string]any{"name": text}, "name")},
 		{"tailapp_query", "Run bounded read-only SQL. Mounted aliases expose only explicit exports; this is detective observation, not inline prevention.", object(map[string]any{"name": text, "sql": text, "parameters": map[string]any{"type": "array", "maxItems": 64}, "mounts": map[string]any{"type": "object", "additionalProperties": text}, "expected_revision": text, "expected_position": map[string]any{"type": "integer"}, "row_limit": map[string]any{"type": "integer", "minimum": 1, "maximum": 1000}}, "name", "sql")},
 	}

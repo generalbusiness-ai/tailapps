@@ -64,6 +64,7 @@ perform a tool call, then inspect what arrived:
 
 ```sh
 ./tailapp health
+./tailapp metrics --json
 ./tailapp query \
   --sql 'SELECT harness, capability, state, reason FROM telemetry_coverage ORDER BY harness, capability' \
   agent-guard
@@ -102,7 +103,8 @@ in the [authoring guide](docs/authoring.md).
 - [Five-minute signal-counts example](examples/signal-counts/README.md)
 - References: [CLI](docs/reference/cli.md), [MCP](docs/reference/mcp.md),
   [DDL/JSONata](docs/reference/ddl-jsonata.md), and
-  [query SQL](docs/reference/query-sql.md)
+  [query SQL](docs/reference/query-sql.md), plus
+  [runtime metrics](docs/reference/metrics.md)
 - Examples shipped with this release:
   [`agent-guard`](tailapps/agent-guard/README.md) and
   [`session-cost`](tailapps/session-cost/README.md)

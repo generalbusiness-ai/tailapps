@@ -277,6 +277,7 @@ Result:
     "delivery_head": 57,
     "oldest_position": null,
     "newest_position": null,
+    "oldest_received_at_unix_nano": null,
     "pending_obligations": 0
   },
   "apps": {"event-counts": {"revision": "sha256:..."}},
@@ -287,6 +288,17 @@ Result:
 Each `apps` value is a full [Frontier](#frontier). `unavailable` is omitted
 when empty. `ingestion_ready = false` means the receiver is fail-closed pending
 operator action.
+
+### `tailapp_metrics`
+
+Arguments: `{}`
+
+Returns the same versioned, payload-free operational snapshot as
+`tailapp metrics --json`. It includes intake and backpressure, active-Tailapp
+processing and durable progress, queries, control requests, and Go runtime
+gauges. Process counters reset on resident restart; durable projection totals
+do not. See the [runtime metrics reference](metrics.md) for the complete schema,
+timing boundaries, reset semantics, and cardinality limits.
 
 ### `tailapp_schema`
 
@@ -357,6 +369,7 @@ Result:
   "complete": true,
   "columns": [{"name": "session_id", "type": "TEXT"}],
   "rows": [["session-1", 123]],
+  "result_bytes": 19,
   "truncated": false
 }
 ```

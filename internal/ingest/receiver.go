@@ -22,6 +22,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/generalbusiness-ai/tailapp/internal/inbox"
+	operationalmetrics "github.com/generalbusiness-ai/tailapp/internal/metrics"
 )
 
 type ConsumerSource func(context.Context) ([]inbox.Consumer, error)
@@ -62,6 +63,7 @@ type Receiver struct {
 	requests   chan struct{}
 	onAccepted func()
 	accept     func(context.Context, []inbox.Record) ([]int64, error)
+	metrics    *operationalmetrics.Registry
 }
 
 func NewReceiver(queue *inbox.Queue, consumers ConsumerSource, limits ReceiverLimits) *Receiver {
@@ -73,6 +75,9 @@ func NewReceiver(queue *inbox.Queue, consumers ConsumerSource, limits ReceiverLi
 }
 
 func (receiver *Receiver) SetAcceptedHook(hook func()) { receiver.onAccepted = hook }
+func (receiver *Receiver) SetMetrics(registry *operationalmetrics.Registry) {
+	receiver.metrics = registry
+}
 func (receiver *Receiver) SetAcceptor(accept func(context.Context, []inbox.Record) ([]int64, error)) {
 	receiver.accept = accept
 }
@@ -90,26 +95,41 @@ func ValidateLoopbackAddress(address string) error {
 }
 
 func (receiver *Receiver) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	started := time.Now()
+	signal := requestSignal(request.URL.Path)
+	outcome := "error"
+	acceptedRecords := 0
+	var canonicalBytes int64
+	var durableAcceptDuration *time.Duration
+	defer func() {
+		if receiver.metrics != nil {
+			receiver.metrics.ObserveIntake(signal, acceptedRecords, canonicalBytes, outcome, time.Since(started), durableAcceptDuration)
+		}
+	}()
 	select {
 	case receiver.requests <- struct{}{}:
 		defer func() { <-receiver.requests }()
 	default:
+		outcome = "busy"
 		writeError(writer, http.StatusServiceUnavailable, "receiver_busy", "OTLP concurrency limit reached")
 		return
 	}
 	ctx, cancel := context.WithTimeout(request.Context(), receiver.limits.Deadline)
 	defer cancel()
 	if request.Method != http.MethodPost {
+		outcome = "invalid"
 		writeError(writer, http.StatusMethodNotAllowed, "method_not_allowed", "only POST is accepted")
 		return
 	}
 	mediaType, _, err := mime.ParseMediaType(request.Header.Get("Content-Type"))
 	if err != nil || (mediaType != "application/x-protobuf" && mediaType != "application/json") {
+		outcome = "invalid"
 		writeError(writer, http.StatusUnsupportedMediaType, "unsupported_content_type", "use application/x-protobuf or application/json")
 		return
 	}
 	body, err := receiver.readBody(request)
 	if err != nil {
+		outcome = "limit"
 		writeError(writer, http.StatusRequestEntityTooLarge, "request_too_large", err.Error())
 		return
 	}
@@ -120,6 +140,7 @@ func (receiver *Receiver) ServeHTTP(writer http.ResponseWriter, request *http.Re
 		if err := decodeOTLP(body, mediaType, message); err == nil {
 			records, err = flattenLogs(message.GetResourceLogs())
 		} else {
+			outcome = "invalid"
 			writeError(writer, http.StatusBadRequest, "invalid_otlp", err.Error())
 			return
 		}
@@ -128,6 +149,7 @@ func (receiver *Receiver) ServeHTTP(writer http.ResponseWriter, request *http.Re
 		if err := decodeOTLP(body, mediaType, message); err == nil {
 			records, err = flattenTraces(message.GetResourceSpans())
 		} else {
+			outcome = "invalid"
 			writeError(writer, http.StatusBadRequest, "invalid_otlp", err.Error())
 			return
 		}
@@ -136,22 +158,31 @@ func (receiver *Receiver) ServeHTTP(writer http.ResponseWriter, request *http.Re
 		if err := decodeOTLP(body, mediaType, message); err == nil {
 			records, err = flattenMetrics(message.GetResourceMetrics())
 		} else {
+			outcome = "invalid"
 			writeError(writer, http.StatusBadRequest, "invalid_otlp", err.Error())
 			return
 		}
 	default:
+		outcome = "invalid"
 		writeError(writer, http.StatusNotFound, "not_found", "unknown OTLP endpoint")
 		return
 	}
 	if err != nil {
+		outcome = "invalid"
 		writeError(writer, http.StatusBadRequest, "invalid_record", err.Error())
 		return
 	}
 	if len(records) > receiver.limits.Records {
+		outcome = "limit"
 		writeError(writer, http.StatusRequestEntityTooLarge, "too_many_records", "OTLP record limit exceeded")
 		return
 	}
+	acceptedRecords = len(records)
+	for _, record := range records {
+		canonicalBytes += int64(len(record.JSON))
+	}
 	var positions []int64
+	acceptStarted := time.Now()
 	if receiver.accept != nil {
 		positions, err = receiver.accept(ctx, records)
 	} else {
@@ -161,23 +192,29 @@ func (receiver *Receiver) ServeHTTP(writer http.ResponseWriter, request *http.Re
 			positions, err = receiver.queue.Enqueue(ctx, records, consumers)
 		}
 	}
+	acceptElapsed := time.Since(acceptStarted)
+	durableAcceptDuration = &acceptElapsed
 	if errors.Is(err, inbox.ErrFull) {
+		outcome = "backpressure"
 		writer.Header().Set("Retry-After", "1")
 		writeError(writer, http.StatusServiceUnavailable, "inbox_full", "durable inbox capacity exceeded")
 		return
 	}
 	if errors.Is(err, ErrNotReady) {
+		outcome = "not_ready"
 		writer.Header().Set("Retry-After", "1")
 		writeError(writer, http.StatusServiceUnavailable, "ingestion_not_ready", "OTLP ingestion is held closed pending operator action")
 		return
 	}
 	if err != nil {
+		outcome = "error"
 		writeError(writer, http.StatusInternalServerError, "persist_failed", "durable acceptance failed")
 		return
 	}
 	if receiver.onAccepted != nil {
 		receiver.onAccepted()
 	}
+	outcome = "ok"
 	writer.Header().Set("X-Tailapp-Records", fmt.Sprint(len(positions)))
 	if len(positions) > 0 {
 		writer.Header().Set("X-Tailapp-Position-First", fmt.Sprint(positions[0]))
@@ -191,6 +228,19 @@ func (receiver *Receiver) ServeHTTP(writer http.ResponseWriter, request *http.Re
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusOK)
 	_, _ = writer.Write([]byte("{}"))
+}
+
+func requestSignal(path string) string {
+	switch path {
+	case "/v1/logs":
+		return "log"
+	case "/v1/traces":
+		return "span"
+	case "/v1/metrics":
+		return "metric"
+	default:
+		return "unknown"
+	}
 }
 
 func (receiver *Receiver) readBody(request *http.Request) ([]byte, error) {

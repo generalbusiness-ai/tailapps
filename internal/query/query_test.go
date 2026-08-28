@@ -68,6 +68,9 @@ ORDER BY progress.session_id`, ExpectedRevision: guardProfile.Revision, Expected
 	if len(result.Rows) != 1 || fmt.Sprint(result.Rows[0]) != "[s1 1 100 7]" || len(result.Schemas) != 1 || result.Schemas[0].Contract != costProfile.ExportContractDigest || result.DeliveryHead != 5 || result.InterpretedPosition != 2 {
 		t.Fatalf("joined result = %#v", result)
 	}
+	if result.ResultBytes == 0 {
+		t.Fatal("query did not report encoded result bytes")
+	}
 
 	for name, sql := range map[string]string{
 		"write":                  `DELETE FROM session_progress`,

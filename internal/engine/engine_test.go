@@ -89,6 +89,19 @@ func TestEngineLifecycleIngestionProjectionQueryAndIsolation(t *testing.T) {
 	if len(joined.Rows) != 1 || joined.Rows[0][0] != "s1" {
 		t.Fatalf("joined = %#v", joined)
 	}
+	performance, err := engine.Metrics(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if performance.Version != "tailapp.metrics/v1" || performance.Intake.RecordsTotal["log"] != 2 || performance.Intake.ObligationsTotal != 4 || performance.Intake.UnroutedRecordsTotal != 0 {
+		t.Fatalf("intake performance = %#v", performance.Intake)
+	}
+	if performance.Processing["agent-guard"].AttemptsTotal != 2 || performance.Tailapps["agent-guard"].Durable.ConsumedRecords != 2 || performance.Tailapps["agent-guard"].LagPositions != 0 {
+		t.Fatalf("guard performance = processing %#v gauges %#v", performance.Processing["agent-guard"], performance.Tailapps["agent-guard"])
+	}
+	if performance.Queries.RequestsTotal != 1 || performance.Queries.RowsTotal != 1 || performance.Queries.ResultBytesTotal == 0 || performance.OldestInboxAgeMilliseconds != nil {
+		t.Fatalf("query/backlog performance = %#v / %#v", performance.Queries, performance.Inbox)
+	}
 
 	// Program-only continue preserves rows while switching the exact revision.
 	app, sources, err := engine.App(ctx, "agent-guard")
@@ -147,6 +160,13 @@ func TestEngineLifecycleIngestionProjectionQueryAndIsolation(t *testing.T) {
 	}
 	if err := engine.Delete(ctx, "agent-guard"); err != nil {
 		t.Fatal(err)
+	}
+	performance, err = engine.Metrics(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, exists := performance.Processing["agent-guard"]; exists {
+		t.Fatal("deleted Tailapp left a metrics tombstone")
 	}
 	if _, err := engine.Query(ctx, "agent-guard", query.Request{SQL: `SELECT 1`}, nil); err == nil {
 		t.Fatal("deleted tailapp remained queryable")

@@ -65,15 +65,17 @@ type Delivery struct {
 	ContentDigest    string
 	JSON             []byte
 	Revision         string
+	ReceivedAt       time.Time
 }
 
 type Stats struct {
-	Records            int64  `json:"records"`
-	CanonicalBytes     int64  `json:"canonical_bytes"`
-	DeliveryHead       int64  `json:"delivery_head"`
-	OldestPosition     *int64 `json:"oldest_position"`
-	NewestPosition     *int64 `json:"newest_position"`
-	PendingObligations int64  `json:"pending_obligations"`
+	Records                  int64  `json:"records"`
+	CanonicalBytes           int64  `json:"canonical_bytes"`
+	DeliveryHead             int64  `json:"delivery_head"`
+	OldestPosition           *int64 `json:"oldest_position"`
+	NewestPosition           *int64 `json:"newest_position"`
+	OldestReceivedAtUnixNano *int64 `json:"oldest_received_at_unix_nano"`
+	PendingObligations       int64  `json:"pending_obligations"`
 }
 
 type Queue struct {
@@ -246,7 +248,7 @@ func (q *Queue) Pending(ctx context.Context, tailapp string, limit int) ([]Deliv
 		return nil, errors.New("pending limit must be between 1 and 1024")
 	}
 	rows, err := q.db.QueryContext(ctx, `SELECT e.position,e.event_id,e.signal,e.name,e.source,e.time_unix_nano,
- e.observed_unix_nano,e.trace_id,e.span_id,e.content_digest,e.record_json,o.revision
+	 e.observed_unix_nano,e.trace_id,e.span_id,e.content_digest,e.record_json,o.revision,e.received_at
  FROM inbox_obligations o JOIN inbox_events e ON e.position=o.position
  WHERE o.tailapp=? AND o.state='pending' ORDER BY e.position LIMIT ?`, tailapp, limit)
 	if err != nil {
@@ -257,10 +259,12 @@ func (q *Queue) Pending(ctx context.Context, tailapp string, limit int) ([]Deliv
 	for rows.Next() {
 		var delivery Delivery
 		var eventTime, observed, traceID, spanID sql.NullString
+		var receivedAt int64
 		if err := rows.Scan(&delivery.Position, &delivery.EventID, &delivery.Signal, &delivery.Name, &delivery.Source,
-			&eventTime, &observed, &traceID, &spanID, &delivery.ContentDigest, &delivery.JSON, &delivery.Revision); err != nil {
+			&eventTime, &observed, &traceID, &spanID, &delivery.ContentDigest, &delivery.JSON, &delivery.Revision, &receivedAt); err != nil {
 			return nil, err
 		}
+		delivery.ReceivedAt = time.Unix(0, receivedAt)
 		delivery.TimeUnixNano = nullableString(eventTime)
 		delivery.ObservedUnixNano = nullableString(observed)
 		delivery.TraceID = nullableString(traceID)
@@ -328,38 +332,46 @@ func (q *Queue) settle(ctx context.Context, tailapp string, position int64, stat
 
 // DetachAll relinquishes every pending obligation for one unavailable app and
 // deletes records whose remaining consumers have all settled.
-func (q *Queue) DetachAll(ctx context.Context, tailapp, code string) error {
+func (q *Queue) DetachAll(ctx context.Context, tailapp, code string) (int64, error) {
 	tx, err := q.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer tx.Rollback()
-	if _, err := tx.ExecContext(ctx, `UPDATE inbox_obligations SET state='detached', error_code=? WHERE tailapp=? AND state='pending'`, code, tailapp); err != nil {
-		return err
+	result, err := tx.ExecContext(ctx, `UPDATE inbox_obligations SET state='detached', error_code=? WHERE tailapp=? AND state='pending'`, code, tailapp)
+	if err != nil {
+		return 0, err
+	}
+	detached, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
 	}
 	var removedRecords, removedBytes int64
 	if err := tx.QueryRowContext(ctx, `SELECT COUNT(*),COALESCE(SUM(canonical_bytes),0) FROM inbox_events WHERE NOT EXISTS (
  SELECT 1 FROM inbox_obligations WHERE inbox_obligations.position=inbox_events.position AND state='pending')`).Scan(&removedRecords, &removedBytes); err != nil {
-		return err
+		return 0, err
 	}
 	if _, err := tx.ExecContext(ctx, `DELETE FROM inbox_events WHERE NOT EXISTS (
  SELECT 1 FROM inbox_obligations WHERE inbox_obligations.position=inbox_events.position AND state='pending')`); err != nil {
-		return err
+		return 0, err
 	}
 	if _, err := tx.ExecContext(ctx, `UPDATE inbox_state SET queued_records=queued_records-?,queued_bytes=queued_bytes-? WHERE singleton=1`, removedRecords, removedBytes); err != nil {
-		return err
+		return 0, err
 	}
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+	return detached, nil
 }
 
 func (q *Queue) Stats(ctx context.Context) (Stats, error) {
 	var result Stats
-	var oldest, newest sql.NullInt64
+	var oldest, newest, oldestReceived sql.NullInt64
 	if err := q.db.QueryRowContext(ctx, `SELECT queued_records,queued_bytes,delivery_head FROM inbox_state WHERE singleton=1`).Scan(
 		&result.Records, &result.CanonicalBytes, &result.DeliveryHead); err != nil {
 		return Stats{}, err
 	}
-	if err := q.db.QueryRowContext(ctx, `SELECT MIN(position),MAX(position) FROM inbox_events`).Scan(&oldest, &newest); err != nil {
+	if err := q.db.QueryRowContext(ctx, `SELECT MIN(position),MAX(position),MIN(received_at) FROM inbox_events`).Scan(&oldest, &newest, &oldestReceived); err != nil {
 		return Stats{}, err
 	}
 	if oldest.Valid {
@@ -367,6 +379,9 @@ func (q *Queue) Stats(ctx context.Context) (Stats, error) {
 	}
 	if newest.Valid {
 		result.NewestPosition = &newest.Int64
+	}
+	if oldestReceived.Valid {
+		result.OldestReceivedAtUnixNano = &oldestReceived.Int64
 	}
 	if err := q.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM inbox_obligations WHERE state='pending'`).Scan(&result.PendingObligations); err != nil {
 		return Stats{}, err

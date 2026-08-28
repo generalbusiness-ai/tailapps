@@ -14,10 +14,18 @@ func TestHelpLeadsWithProductAndInstallPath(t *testing.T) {
 	if err := Run(context.Background(), []string{"--help"}, &stdout, &stderr); err != nil {
 		t.Fatal(err)
 	}
-	for _, wanted := range []string{"simple, local micro-apps", "apps install", "tailapp serve"} {
+	for _, wanted := range []string{"simple, local micro-apps", "apps install", "tailapp serve", "tailapp metrics"} {
 		if !strings.Contains(stdout.String(), wanted) {
 			t.Fatalf("help omitted %q:\n%s", wanted, stdout.String())
 		}
+	}
+}
+
+func TestMetricsRejectsDisablingItsOnlyOutputFormat(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	err := Run(context.Background(), []string{"metrics", "--json=false"}, &stdout, &stderr)
+	if err == nil || !strings.Contains(err.Error(), "JSON output only") {
+		t.Fatalf("metrics --json=false error = %v", err)
 	}
 }
 
