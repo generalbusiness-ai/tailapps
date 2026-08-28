@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Bundle tests verify DEVtheOPS tool and usage normalization, microdollar conversion, and duplicate-span exclusion.","body":{"commit":"6addc40309be622de85c4a1862f4749a8712e104","path":"tailapps/embed_test.go"}}
+{"kind":"artifact","text":"Session-cost normalizer maps DEVtheOPS unprefixed API logs, aliases, and dollar units.","body":{"commit":"6addc40309be622de85c4a1862f4749a8712e104","path":"tailapps/session-cost/folds/normalize.jsonata"}}
