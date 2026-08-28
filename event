@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Re-anchored the unchanged metrics CLI implementation at the corrected exact head.","body":{"commit":"0e3df616530546eb160ad5a1758847b323a5f2ba","path":"internal/cli/cli.go"}}
+{"kind":"artifact","text":"Re-anchored the unchanged metrics CLI tests at the corrected exact head.","body":{"commit":"0e3df616530546eb160ad5a1758847b323a5f2ba","path":"internal/cli/cli_test.go"}}
