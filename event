@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Current pre-effectiveness branch candidate at exact head 3b08654 for scripts/demo.sh.","body":{"commit":"3b086547b200a330ea3af2f764dc548856df4ffe","path":"scripts/demo.sh"}}
+{"kind":"artifact","text":"Current pre-effectiveness branch candidate at exact head 3b08654 for docs/harnesses/README.md.","body":{"commit":"3b086547b200a330ea3af2f764dc548856df4ffe","dead_basis_override":"true","path":"docs/harnesses/README.md"}}
