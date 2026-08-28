@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:c7d279f1bc807b8e3358008feefbab3a4b27a105","text":"Merge retired a covered predecessor; the successor is at docs/reference/query-sql.md."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:d873734f2c07339d80b3a20976e1e4512313f75c","text":"Merge retired a covered predecessor; the successor is at testdata/otlp/cross-harness.json."}
