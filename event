@@ -1,1 +1,1 @@
-{"kind":"assert","text":"Blocked on checker for priority-1 MCP array-envelope delivery: review request #1165 remains open and unclaimed for exact head 4c0ee022e8a42ab283348e895535f138b6ffb6c4, with no live checker session or guarded verdict. Builder will not ratify, merge, or publish this candidate without checker approval for the exact three-artifact head."}
+{"kind":"artifact","text":"Agent-guard coverage-aware analytics at exact head ff05efa005d285e7987809068d8f82ed36cbb4e9","body":{"commit":"ff05efa005d285e7987809068d8f82ed36cbb4e9","path":"tailapps/agent-guard"}}
