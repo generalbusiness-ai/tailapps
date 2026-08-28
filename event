@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:f1639dd99bef9c8eacff6c7d1bc6be32649ce520","text":"Replaced by the exact-head persistent Claude Code telemetry settings guide."}
+{"kind":"artifact","text":"Claude Code guide with validated persistent OTLP settings, scopes, precedence, privacy, reload, and verification guidance.","body":{"commit":"a3be0d259e9464702e80d0026823e537bcbace8f","path":"docs/harnesses/claude-code.md"}}
