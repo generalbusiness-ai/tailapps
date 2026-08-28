@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Milestone A Tailapp profile compiler and evaluator boundary at 699c206","body":{"commit":"699c206ac35a8f0be73b2f7e073f5f64e5c65a2f","path":"internal/profile"}}
+{"kind":"artifact","text":"Executable bundled agent-guard and session-cost Tailapp source sets at 699c206","body":{"commit":"699c206ac35a8f0be73b2f7e073f5f64e5c65a2f","path":"tailapps"}}
