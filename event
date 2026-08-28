@@ -1,1 +1,1 @@
-{"kind":"report","text":"Completed the unblock: published an exact-path successor for notes/2026-08-28-tailapp-initial-implementation.md at merge head 6672621 and retired broad notes artifact 79605f, so checker retains authority to merge the independently approved disk-ingestion note.","body":{"dead_basis_override":"true"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:4b6e2b99f91c7bdd459ec3e8ddd7cdde29fb5f8a"}
