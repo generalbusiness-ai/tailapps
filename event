@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Re-anchored the unchanged CLI metrics reference at the corrected exact head.","body":{"commit":"0e3df616530546eb160ad5a1758847b323a5f2ba","path":"docs/reference/cli.md"}}
+{"kind":"artifact","text":"Re-anchored the unchanged MCP metrics reference at the corrected exact head.","body":{"commit":"0e3df616530546eb160ad5a1758847b323a5f2ba","path":"docs/reference/mcp.md"}}
