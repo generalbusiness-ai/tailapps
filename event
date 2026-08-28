@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Verified MCP metrics tool exposure and operation routing.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"internal/mcp/server_test.go"}}
+{"kind":"artifact","text":"Documented the complete versioned runtime metrics schema, timing, reset, privacy, and cardinality contract.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"docs/reference/metrics.md"}}
