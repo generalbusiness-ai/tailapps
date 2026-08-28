@@ -6,8 +6,56 @@ tool-result, tool-decision, and API-request event names.
 
 ## Send telemetry
 
-Start Claude Code with this environment, or put equivalent values in the
-Claude Code settings used by your organization:
+### Persistent settings
+
+For normal use, put the exporter variables in a Claude Code settings file.
+Choose one scope:
+
+- `~/.claude/settings.json`: your user settings, applied in every project on
+  this machine;
+- `.claude/settings.json`: shared project settings, normally committed for the
+  team;
+- `.claude/settings.local.json`: your settings for one project, kept out of
+  version control; or
+- managed settings: organization policy delivered by the claude.ai admin
+  console, MDM, or `managed-settings.json`. File-based managed settings live at
+  `/Library/Application Support/ClaudeCode/managed-settings.json` on macOS,
+  `/etc/claude-code/managed-settings.json` on Linux and WSL, and
+  `C:\Program Files\ClaudeCode\managed-settings.json` on Windows.
+
+Add this `env` object to the selected file, preserving any other keys already
+there. Settings files are strict JSON, and every `env` value is a string:
+
+```json
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "OTEL_LOGS_EXPORTER": "otlp",
+    "OTEL_EXPORTER_OTLP_LOGS_PROTOCOL": "http/protobuf",
+    "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT": "http://127.0.0.1:4318/v1/logs",
+    "OTEL_LOG_TOOL_DETAILS": "1"
+  }
+}
+```
+
+Claude Code applies an `env` value over the same variable inherited from your
+shell. Between files, managed settings have highest precedence, followed by
+command-line `--settings`, project-local, shared-project, and user settings.
+Managed OTLP destination settings can also remove conflicting developer-set
+per-signal endpoints and protocols. Run `/status` inside Claude Code to confirm
+which settings sources loaded, and `claude doctor` to find invalid or rejected
+entries.
+
+Claude Code watches settings files and reapplies telemetry `env` changes to a
+running session. Starting a new session after the edit is still the clearest
+setup test because it establishes a clean exporter lifecycle. A value exported
+directly by your shell is read only when the next `claude` process starts.
+
+### One-session shell configuration
+
+For a temporary setup or troubleshooting, start Claude Code from a shell with
+the same values:
 
 ```sh
 export CLAUDE_CODE_ENABLE_TELEMETRY=1
@@ -26,8 +74,26 @@ sensitive code, paths, commands, or identifiers, so enable them only under an
 appropriate data policy.
 
 Claude Code emits logs in batches. For a setup check, perform a tool call, wait
-for the export interval, and query `telemetry_coverage`. If no events arrive,
-run `claude --debug` and inspect its OpenTelemetry exporter errors.
+for the default five-second log export interval, and run:
+
+```sh
+./tailapp health
+./tailapp metrics --json
+./tailapp query \
+  --sql "SELECT harness, event_family, SUM(event_count) AS events FROM event_inventory WHERE harness = 'claude-code' GROUP BY harness, event_family ORDER BY event_family" \
+  activity-stats
+./tailapp query \
+  --sql "SELECT harness, capability, state, reason FROM telemetry_coverage WHERE harness = 'claude-code' ORDER BY capability" \
+  agent-guard
+```
+
+An increase in the metrics intake counters proves transport independently of
+whether a shipped Tailapp recognizes the record. Rows in `event_inventory`
+prove the activity bundle recognized Claude Code's event family; the coverage
+query distinguishes observed policy fields from fields Claude Code did not
+provide. If no records arrive, run `claude --debug` and inspect its
+OpenTelemetry exporter errors. If intake rises but no rows appear, inspect
+`./tailapp ineffective activity-stats` for an adapter-shape mismatch.
 
 ## Give Claude access to Tailapp MCP
 
@@ -51,10 +117,11 @@ Inside Claude Code, `/mcp` shows connection status. A useful first prompt is:
 
 ## Current bundle fit
 
-`activity-stats`, `agent-guard`, and `session-cost` are shipped examples, not the available set of
-Tailapp applications. Users and agents are encouraged to fork, extend, replace,
-or supplement them with analytics and policy specific to their environment;
-the [authoring guide](../authoring.md) covers installation over CLI and MCP.
+`activity-stats`, `agent-guard`, and `session-cost` are shipped examples, not
+the available set of Tailapp applications. Users and agents are encouraged to
+fork, extend, replace, or supplement them with analytics and policy specific
+to their environment; the [authoring guide](../authoring.md) covers
+installation over CLI and MCP.
 
 `agent-guard` recognizes `claude_code.tool_result` and
 `claude_code.tool_decision`. Current Claude Code records carry a short
