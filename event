@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Ineffective-diagnostics candidate at exact head a242296 for scripts/demo.sh.","body":{"commit":"a24229663c518d72adfe856106d798b615a8a9ef","path":"scripts/demo.sh"}}
+{"kind":"artifact","text":"Ineffective-diagnostics candidate at exact head a242296 for docs/harnesses/README.md.","body":{"commit":"a24229663c518d72adfe856106d798b615a8a9ef","dead_basis_override":"true","path":"docs/harnesses/README.md"}}
