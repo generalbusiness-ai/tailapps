@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:d12289ad31f421099f5465dfb0571a3e7e8a9509","text":"Merge retired a covered predecessor; the successor is at tailapps/testdata/opencode-adapter.json."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:d63aff71fb76ee368696ad77c673d936bf428fa2","text":"Merge retired a covered predecessor; the successor is at internal/projection/projection_test.go."}
