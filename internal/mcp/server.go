@@ -104,16 +104,17 @@ func tools() []tool {
 		return schema
 	}
 	text := map[string]any{"type": "string"}
+	idempotencyKey := map[string]any{"type": "string", "minLength": 1, "maxLength": 128, "pattern": `^[!-~]+$`}
 	boolean := map[string]any{"type": "boolean"}
 	return []tool{
 		{"tailapps_list", "List local Tailapps and their draft/active revisions.", object(nil)},
 		{"tailapp_get", "Read one Tailapp draft and exact source revision. Draft edits are not live until activation.", object(map[string]any{"name": text}, "name")},
-		{"tailapp_create", "Create a Tailapp draft, optionally from a bundled source set.", object(map[string]any{"name": text, "bundle": text}, "name")},
-		{"tailapp_delete", "Delete one Tailapp definition and detach only its projection.", object(map[string]any{"name": text}, "name")},
-		{"tailapp_put_element", "Put a bounded source element using optimistic draft revision control; this does not activate it.", object(map[string]any{"name": text, "path": text, "content": map[string]any{"type": "string", "contentEncoding": "base64"}, "expected_revision": text}, "name", "path", "content", "expected_revision")},
-		{"tailapp_delete_element", "Delete a draft element using optimistic revision control; this does not activate it.", object(map[string]any{"name": text, "path": text, "expected_revision": text}, "name", "path", "expected_revision")},
+		{"tailapp_create", "Create a Tailapp draft, optionally from a bundled source set. Reusing the same idempotency key replays the original outcome.", object(map[string]any{"name": text, "bundle": text, "idempotency_key": idempotencyKey}, "name", "idempotency_key")},
+		{"tailapp_delete", "Delete one Tailapp definition and detach only its projection. Reusing the same idempotency key replays the original outcome.", object(map[string]any{"name": text, "idempotency_key": idempotencyKey}, "name", "idempotency_key")},
+		{"tailapp_put_element", "Put a bounded source element using optimistic draft revision control; this does not activate it.", object(map[string]any{"name": text, "path": text, "content": map[string]any{"type": "string", "contentEncoding": "base64"}, "expected_revision": text, "idempotency_key": idempotencyKey}, "name", "path", "content", "expected_revision", "idempotency_key")},
+		{"tailapp_delete_element", "Delete a draft element using optimistic revision control; this does not activate it.", object(map[string]any{"name": text, "path": text, "expected_revision": text, "idempotency_key": idempotencyKey}, "name", "path", "expected_revision", "idempotency_key")},
 		{"tailapp_validate", "Compile the exact draft without changing live behavior.", object(map[string]any{"name": text, "expected_revision": text}, "name", "expected_revision")},
-		{"tailapp_activate", "Activate a validated draft at a delivery boundary. Reset discards prior materialized state and requires acknowledgement.", object(map[string]any{"name": text, "expected_revision": text, "mode": map[string]any{"type": "string", "enum": []string{"continue", "reset"}}, "acknowledge_reset": boolean}, "name", "expected_revision", "mode")},
+		{"tailapp_activate", "Activate a validated draft at a delivery boundary. Reset discards prior materialized state and requires acknowledgement.", object(map[string]any{"name": text, "expected_revision": text, "mode": map[string]any{"type": "string", "enum": []string{"continue", "reset"}}, "acknowledge_reset": boolean, "idempotency_key": idempotencyKey}, "name", "expected_revision", "mode", "idempotency_key")},
 		{"tailapp_status", "Read engine readiness, inbox bounds, exact projection frontiers and gaps.", object(nil)},
 		{"tailapp_schema", "Read one active Tailapp's private schema, writers, event and explicit exports.", object(map[string]any{"name": text}, "name")},
 		{"tailapp_query", "Run bounded read-only SQL. Mounted aliases expose only explicit exports; this is detective observation, not inline prevention.", object(map[string]any{"name": text, "sql": text, "parameters": map[string]any{"type": "array", "maxItems": 64}, "mounts": map[string]any{"type": "object", "additionalProperties": text}, "expected_revision": text, "expected_position": map[string]any{"type": "integer"}, "row_limit": map[string]any{"type": "integer", "minimum": 1, "maximum": 1000}}, "name", "sql")},

@@ -154,47 +154,55 @@ func apps(stdout io.Writer, home string, args []string) error {
 	case "create":
 		flags := flag.NewFlagSet("apps create", flag.ContinueOnError)
 		bundle := flags.String("bundle", "", "bundled source name")
+		idempotencyKey := flags.String("idempotency-key", "", "stable retry key")
 		if err := flags.Parse(args[1:]); err != nil {
 			return err
 		}
-		if flags.NArg() != 1 {
-			return errors.New("apps create requires NAME")
+		if flags.NArg() != 1 || *idempotencyKey == "" {
+			return errors.New("apps create requires NAME --idempotency-key KEY")
 		}
-		return clientCallOutput(ctx, stdout, client, "app_create", control.CreateArgs{Name: flags.Arg(0), Bundle: *bundle})
+		return clientCallOutput(ctx, stdout, client, "app_create", control.CreateArgs{Name: flags.Arg(0), Bundle: *bundle, IdempotencyKey: *idempotencyKey})
 	case "get":
 		if len(args) != 2 {
 			return errors.New("apps get requires NAME")
 		}
 		return clientCallOutput(ctx, stdout, client, "app_get", control.NameArgs{Name: args[1]})
 	case "delete":
-		if len(args) != 2 {
-			return errors.New("apps delete requires NAME")
-		}
-		return clientCallOutput(ctx, stdout, client, "app_delete", control.NameArgs{Name: args[1]})
-	case "put":
-		flags := flag.NewFlagSet("apps put", flag.ContinueOnError)
-		expected := flags.String("expected", "", "expected draft revision")
+		flags := flag.NewFlagSet("apps delete", flag.ContinueOnError)
+		idempotencyKey := flags.String("idempotency-key", "", "stable retry key")
 		if err := flags.Parse(args[1:]); err != nil {
 			return err
 		}
-		if flags.NArg() != 3 {
-			return errors.New("apps put requires NAME PATH FILE")
+		if flags.NArg() != 1 || *idempotencyKey == "" {
+			return errors.New("apps delete requires NAME --idempotency-key KEY")
+		}
+		return clientCallOutput(ctx, stdout, client, "app_delete", control.DeleteArgs{Name: flags.Arg(0), IdempotencyKey: *idempotencyKey})
+	case "put":
+		flags := flag.NewFlagSet("apps put", flag.ContinueOnError)
+		expected := flags.String("expected", "", "expected draft revision")
+		idempotencyKey := flags.String("idempotency-key", "", "stable retry key")
+		if err := flags.Parse(args[1:]); err != nil {
+			return err
+		}
+		if flags.NArg() != 3 || *idempotencyKey == "" {
+			return errors.New("apps put requires NAME PATH FILE --idempotency-key KEY")
 		}
 		content, err := os.ReadFile(flags.Arg(2))
 		if err != nil {
 			return err
 		}
-		return clientCallOutput(ctx, stdout, client, "element_put", control.PutArgs{Name: flags.Arg(0), Path: flags.Arg(1), Content: content, ExpectedRevision: *expected})
+		return clientCallOutput(ctx, stdout, client, "element_put", control.PutArgs{Name: flags.Arg(0), Path: flags.Arg(1), Content: content, ExpectedRevision: *expected, IdempotencyKey: *idempotencyKey})
 	case "rm":
 		flags := flag.NewFlagSet("apps rm", flag.ContinueOnError)
 		expected := flags.String("expected", "", "expected draft revision")
+		idempotencyKey := flags.String("idempotency-key", "", "stable retry key")
 		if err := flags.Parse(args[1:]); err != nil {
 			return err
 		}
-		if flags.NArg() != 2 {
-			return errors.New("apps rm requires NAME PATH")
+		if flags.NArg() != 2 || *idempotencyKey == "" {
+			return errors.New("apps rm requires NAME PATH --idempotency-key KEY")
 		}
-		return clientCallOutput(ctx, stdout, client, "element_delete", control.RemoveArgs{Name: flags.Arg(0), Path: flags.Arg(1), ExpectedRevision: *expected})
+		return clientCallOutput(ctx, stdout, client, "element_delete", control.RemoveArgs{Name: flags.Arg(0), Path: flags.Arg(1), ExpectedRevision: *expected, IdempotencyKey: *idempotencyKey})
 	case "validate":
 		flags := flag.NewFlagSet("apps validate", flag.ContinueOnError)
 		expected := flags.String("expected", "", "expected draft revision")
@@ -210,13 +218,14 @@ func apps(stdout io.Writer, home string, args []string) error {
 		expected := flags.String("expected", "", "expected draft revision")
 		mode := flags.String("mode", "continue", "continue or reset")
 		ack := flags.Bool("ack-reset", false, "acknowledge reset data loss")
+		idempotencyKey := flags.String("idempotency-key", "", "stable retry key")
 		if err := flags.Parse(args[1:]); err != nil {
 			return err
 		}
-		if flags.NArg() != 1 {
-			return errors.New("apps activate requires NAME")
+		if flags.NArg() != 1 || *idempotencyKey == "" {
+			return errors.New("apps activate requires NAME --idempotency-key KEY")
 		}
-		return clientCallOutput(ctx, stdout, client, "activate", control.ActivateArgs{Name: flags.Arg(0), ExpectedRevision: *expected, Mode: *mode, AcknowledgeReset: *ack})
+		return clientCallOutput(ctx, stdout, client, "activate", control.ActivateArgs{Name: flags.Arg(0), ExpectedRevision: *expected, Mode: *mode, AcknowledgeReset: *ack, IdempotencyKey: *idempotencyKey})
 	case "status":
 		return clientCallOutput(ctx, stdout, client, "status", nil)
 	case "schema":

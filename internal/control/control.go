@@ -5,7 +5,9 @@ package control
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,6 +16,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/generalbusiness-ai/tailapp/internal/definition"
@@ -38,22 +41,29 @@ type Response struct {
 }
 
 type CreateArgs struct {
-	Name   string `json:"name"`
-	Bundle string `json:"bundle,omitempty"`
+	Name           string `json:"name"`
+	Bundle         string `json:"bundle,omitempty"`
+	IdempotencyKey string `json:"idempotency_key"`
 }
 type NameArgs struct {
 	Name string `json:"name"`
+}
+type DeleteArgs struct {
+	Name           string `json:"name"`
+	IdempotencyKey string `json:"idempotency_key"`
 }
 type PutArgs struct {
 	Name             string `json:"name"`
 	Path             string `json:"path"`
 	Content          []byte `json:"content"`
 	ExpectedRevision string `json:"expected_revision"`
+	IdempotencyKey   string `json:"idempotency_key"`
 }
 type RemoveArgs struct {
 	Name             string `json:"name"`
 	Path             string `json:"path"`
 	ExpectedRevision string `json:"expected_revision"`
+	IdempotencyKey   string `json:"idempotency_key"`
 }
 type ValidateArgs struct {
 	Name             string `json:"name"`
@@ -64,6 +74,7 @@ type ActivateArgs struct {
 	ExpectedRevision string `json:"expected_revision"`
 	Mode             string `json:"mode"`
 	AcknowledgeReset bool   `json:"acknowledge_reset"`
+	IdempotencyKey   string `json:"idempotency_key"`
 }
 type QueryArgs struct {
 	Name             string            `json:"name"`
@@ -75,7 +86,10 @@ type QueryArgs struct {
 	RowLimit         int               `json:"row_limit,omitempty"`
 }
 
-type Server struct{ Engine *engine.Engine }
+type Server struct {
+	Engine     *engine.Engine
+	mutationMu sync.Mutex
+}
 
 func (server *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost || request.URL.Path != "/v1/control" {
@@ -115,7 +129,9 @@ func (server *Server) dispatch(ctx context.Context, request Request) (any, error
 		if err := decode(&args); err != nil {
 			return nil, err
 		}
-		return server.Engine.Create(ctx, args.Name, args.Bundle)
+		return server.idempotent(ctx, request.Operation, args.IdempotencyKey, args, func() (any, error) {
+			return server.Engine.Create(ctx, args.Name, args.Bundle)
+		})
 	case "app_get":
 		var args NameArgs
 		if err := decode(&args); err != nil {
@@ -127,23 +143,29 @@ func (server *Server) dispatch(ctx context.Context, request Request) (any, error
 		}
 		return map[string]any{"app": app, "sources": sources}, nil
 	case "app_delete":
-		var args NameArgs
+		var args DeleteArgs
 		if err := decode(&args); err != nil {
 			return nil, err
 		}
-		return map[string]bool{"deleted": true}, server.Engine.Delete(ctx, args.Name)
+		return server.idempotent(ctx, request.Operation, args.IdempotencyKey, args, func() (any, error) {
+			return map[string]bool{"deleted": true}, server.Engine.Delete(ctx, args.Name)
+		})
 	case "element_put":
 		var args PutArgs
 		if err := decode(&args); err != nil {
 			return nil, err
 		}
-		return server.Engine.Put(ctx, args.Name, args.Path, args.Content, args.ExpectedRevision)
+		return server.idempotent(ctx, request.Operation, args.IdempotencyKey, args, func() (any, error) {
+			return server.Engine.Put(ctx, args.Name, args.Path, args.Content, args.ExpectedRevision)
+		})
 	case "element_delete":
 		var args RemoveArgs
 		if err := decode(&args); err != nil {
 			return nil, err
 		}
-		return server.Engine.RemoveElement(ctx, args.Name, args.Path, args.ExpectedRevision)
+		return server.idempotent(ctx, request.Operation, args.IdempotencyKey, args, func() (any, error) {
+			return server.Engine.RemoveElement(ctx, args.Name, args.Path, args.ExpectedRevision)
+		})
 	case "validate":
 		var args ValidateArgs
 		if err := decode(&args); err != nil {
@@ -155,7 +177,9 @@ func (server *Server) dispatch(ctx context.Context, request Request) (any, error
 		if err := decode(&args); err != nil {
 			return nil, err
 		}
-		return server.Engine.Activate(ctx, args.Name, args.ExpectedRevision, args.Mode, args.AcknowledgeReset)
+		return server.idempotent(ctx, request.Operation, args.IdempotencyKey, args, func() (any, error) {
+			return server.Engine.Activate(ctx, args.Name, args.ExpectedRevision, args.Mode, args.AcknowledgeReset)
+		})
 	case "schema":
 		var args NameArgs
 		if err := decode(&args); err != nil {
@@ -173,6 +197,72 @@ func (server *Server) dispatch(ctx context.Context, request Request) (any, error
 	}
 }
 
+type replayedError struct {
+	code    string
+	message string
+}
+
+func (err *replayedError) Error() string { return err.message }
+
+func (server *Server) idempotent(ctx context.Context, operation, key string, args any, action func() (any, error)) (any, error) {
+	if err := validateIdempotencyKey(key); err != nil {
+		return nil, err
+	}
+	encoded, err := json.Marshal(args)
+	if err != nil {
+		return nil, err
+	}
+	hash := sha256.New()
+	_, _ = hash.Write([]byte(operation))
+	_, _ = hash.Write([]byte{0})
+	_, _ = hash.Write(encoded)
+	digest := "sha256:" + hex.EncodeToString(hash.Sum(nil))
+
+	server.mutationMu.Lock()
+	defer server.mutationMu.Unlock()
+	record, replay, err := server.Engine.BeginMutation(ctx, key, operation, digest)
+	if err != nil {
+		return nil, err
+	}
+	if replay {
+		if record.ErrorCode != "" {
+			return nil, &replayedError{code: record.ErrorCode, message: record.ErrorMessage}
+		}
+		return json.RawMessage(record.Response), nil
+	}
+	result, actionErr := action()
+	var response []byte
+	if actionErr == nil {
+		response, err = json.Marshal(result)
+		if err != nil {
+			actionErr = err
+		}
+	}
+	completed := definition.MutationRecord{Response: response}
+	if actionErr != nil {
+		completed.ErrorCode = errorCode(actionErr)
+		completed.ErrorMessage = actionErr.Error()
+	}
+	completeCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	defer cancel()
+	if err := server.Engine.CompleteMutation(completeCtx, key, operation, digest, completed); err != nil {
+		return nil, fmt.Errorf("%w: could not durably record mutation outcome: %v", definition.ErrIdempotencyInDoubt, err)
+	}
+	return result, actionErr
+}
+
+func validateIdempotencyKey(key string) error {
+	if len(key) == 0 || len(key) > 128 || strings.TrimSpace(key) != key {
+		return errors.New("idempotency_key must contain 1 to 128 non-space-bounded printable ASCII characters")
+	}
+	for _, character := range key {
+		if character < 0x21 || character > 0x7e {
+			return errors.New("idempotency_key must contain 1 to 128 non-space-bounded printable ASCII characters")
+		}
+	}
+	return nil
+}
+
 func write(writer http.ResponseWriter, result any, err error) {
 	writer.Header().Set("Content-Type", "application/json")
 	response := Response{OK: err == nil}
@@ -185,11 +275,18 @@ func write(writer http.ResponseWriter, result any, err error) {
 	_ = json.NewEncoder(writer).Encode(response)
 }
 func errorCode(err error) string {
+	var replayed *replayedError
 	switch {
+	case errors.As(err, &replayed):
+		return replayed.code
 	case errors.Is(err, sql.ErrNoRows):
 		return "not_found"
 	case errors.Is(err, definition.ErrRevisionChanged):
 		return "revision_changed"
+	case errors.Is(err, definition.ErrIdempotencyConflict):
+		return "idempotency_conflict"
+	case errors.Is(err, definition.ErrIdempotencyInDoubt):
+		return "idempotency_in_doubt"
 	case errors.Is(err, engine.ErrProjectionUnavailable):
 		return "projection_unavailable"
 	case errors.Is(err, context.DeadlineExceeded):

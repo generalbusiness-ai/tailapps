@@ -346,6 +346,18 @@ func (e *Engine) drainPassLocked(ctx context.Context, waveLimit int) (bool, erro
 }
 
 func (e *Engine) Apps(ctx context.Context) ([]definition.App, error) { return e.registry.List(ctx) }
+
+// BeginMutation and CompleteMutation expose the control database's durable
+// idempotency ledger. The control server serializes the bind/effect/complete
+// sequence; engine mutation methods retain their own lifecycle lock.
+func (e *Engine) BeginMutation(ctx context.Context, key, operation, requestDigest string) (definition.MutationRecord, bool, error) {
+	return e.registry.BeginMutation(ctx, key, operation, requestDigest)
+}
+
+func (e *Engine) CompleteMutation(ctx context.Context, key, operation, requestDigest string, record definition.MutationRecord) error {
+	return e.registry.CompleteMutation(ctx, key, operation, requestDigest, record)
+}
+
 func (e *Engine) App(ctx context.Context, name string) (definition.App, map[string][]byte, error) {
 	app, err := e.registry.Get(ctx, name)
 	if err != nil {
@@ -452,6 +464,16 @@ func (e *Engine) Activate(ctx context.Context, name, expected, mode string, ackR
 		}
 		if err := profile.ContinueCompatible(current.Profile(), compiled); err != nil {
 			return projection.Frontier{}, err
+		}
+		frontier, err := current.Frontier(ctx)
+		if err != nil {
+			return projection.Frontier{}, err
+		}
+		// A healthy current revision must have reached the activation barrier:
+		// drainLocked ran under this same engine lock. Gapped revisions and
+		// runtime upgrades are explicit skip/repair paths and may trail it.
+		if frontier.GapPosition == nil && !e.upgradePending[name] && frontier.InterpretedPosition != boundary {
+			return projection.Frontier{}, errors.New("activation boundary is not fully drained")
 		}
 	case "reset":
 		if !ackReset {

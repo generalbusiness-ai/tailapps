@@ -36,17 +36,17 @@ while [ ! -S "$TAILAPP_HOME/engine.sock" ]; do
   sleep 0.05
 done
 
-guard_create=$("$binary" apps create --bundle agent-guard agent-guard)
+guard_create=$("$binary" apps create --bundle agent-guard --idempotency-key demo-create-agent-guard agent-guard)
 guard_draft=$(printf '%s\n' "$guard_create" | sed -n 's/.*"draft_revision": "\([^"]*\)".*/\1/p')
-cost_create=$("$binary" apps create --bundle session-cost session-cost)
+cost_create=$("$binary" apps create --bundle session-cost --idempotency-key demo-create-session-cost session-cost)
 cost_draft=$(printf '%s\n' "$cost_create" | sed -n 's/.*"draft_revision": "\([^"]*\)".*/\1/p')
 test -n "$guard_draft"
 test -n "$cost_draft"
 
 "$binary" apps validate --expected "$guard_draft" agent-guard >/dev/null
 "$binary" apps validate --expected "$cost_draft" session-cost >/dev/null
-"$binary" apps activate --expected "$guard_draft" --mode reset --ack-reset agent-guard >/dev/null
-"$binary" apps activate --expected "$cost_draft" --mode reset --ack-reset session-cost >/dev/null
+"$binary" apps activate --expected "$guard_draft" --mode reset --ack-reset --idempotency-key demo-activate-agent-guard agent-guard >/dev/null
+"$binary" apps activate --expected "$cost_draft" --mode reset --ack-reset --idempotency-key demo-activate-session-cost session-cost >/dev/null
 
 "$binary" ingest-fixture --signal logs --content-type application/json testdata/otlp/cross-harness.json >/dev/null
 

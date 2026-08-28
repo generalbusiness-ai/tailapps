@@ -42,14 +42,18 @@ refused. Point harness OTLP/HTTP exporters at the address in
 `$TAILAPP_HOME/engine.json`, then install the bundles:
 
 ```sh
-./tailapp apps create --bundle agent-guard agent-guard
-./tailapp apps create --bundle session-cost session-cost
+./tailapp apps create --bundle agent-guard --idempotency-key install-agent-guard-v1 agent-guard
+./tailapp apps create --bundle session-cost --idempotency-key install-session-cost-v1 session-cost
 ```
 
 Creation returns a draft revision. Validate and reset-activate each exact draft
-with `apps validate --expected REV APP` and
-`apps activate --expected REV --mode reset --ack-reset APP`. Draft edits never
-change live behavior until activation.
+with `apps validate --expected REV APP` and `apps activate --expected REV
+--mode reset --ack-reset --idempotency-key KEY APP`. Create, delete, element
+mutation, and activation keys are durably bound to the exact request; retrying
+a completed key replays its original success or error. Reusing it for another
+request is refused. A key left pending by a crash is reported as in doubt
+instead of risking a duplicate destructive effect. Draft edits never change
+live behavior until activation.
 
 ## Boundaries
 

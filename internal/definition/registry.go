@@ -19,6 +19,14 @@ import (
 )
 
 var ErrRevisionChanged = errors.New("draft revision changed")
+var ErrIdempotencyConflict = errors.New("idempotency key is already bound to a different mutation")
+var ErrIdempotencyInDoubt = errors.New("idempotency key has an incomplete prior mutation")
+
+type MutationRecord struct {
+	Response     []byte
+	ErrorCode    string
+	ErrorMessage string
+}
 
 type App struct {
 	Name           string  `json:"name"`
@@ -81,6 +89,7 @@ func (r *Registry) initialize(ctx context.Context) error {
 		`CREATE TABLE IF NOT EXISTS definition_elements (tailapp TEXT NOT NULL REFERENCES definition_tailapps(name) ON DELETE CASCADE,path TEXT NOT NULL,content BLOB NOT NULL,digest TEXT NOT NULL,PRIMARY KEY(tailapp,path))`,
 		`CREATE TABLE IF NOT EXISTS definition_revisions (digest TEXT PRIMARY KEY,tailapp TEXT NOT NULL,runtime_profile TEXT NOT NULL,source_json BLOB NOT NULL,created_at INTEGER NOT NULL)`,
 		`CREATE TABLE IF NOT EXISTS definition_activation_journal (tailapp TEXT PRIMARY KEY,new_revision TEXT NOT NULL,runtime_profile TEXT NOT NULL,mode TEXT NOT NULL,boundary_position INTEGER NOT NULL,expected_draft TEXT NOT NULL,old_revision TEXT,created_at INTEGER NOT NULL)`,
+		`CREATE TABLE IF NOT EXISTS definition_mutation_idempotency (idempotency_key TEXT PRIMARY KEY,operation TEXT NOT NULL,request_digest TEXT NOT NULL,state TEXT NOT NULL CHECK(state IN ('pending','complete')),response_json BLOB,error_code TEXT,error_message TEXT,created_at INTEGER NOT NULL,updated_at INTEGER NOT NULL)`,
 	}
 	for _, statement := range statements {
 		if _, err := r.db.ExecContext(ctx, statement); err != nil {
@@ -91,6 +100,66 @@ func (r *Registry) initialize(ctx context.Context) error {
 }
 
 func (r *Registry) Close() error { return r.db.Close() }
+
+// BeginMutation durably binds a caller-provided key to one exact mutation.
+// A complete prior call is replayed. A pending record can only survive a
+// process/storage failure between binding and completion, so it is reported as
+// indeterminate instead of risking a duplicate destructive effect.
+func (r *Registry) BeginMutation(ctx context.Context, key, operation, requestDigest string) (MutationRecord, bool, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return MutationRecord{}, false, err
+	}
+	defer tx.Rollback()
+	var storedOperation, storedDigest, state string
+	var response []byte
+	var errorCode, errorMessage sql.NullString
+	err = tx.QueryRowContext(ctx, `SELECT operation,request_digest,state,response_json,error_code,error_message FROM definition_mutation_idempotency WHERE idempotency_key=?`, key).
+		Scan(&storedOperation, &storedDigest, &state, &response, &errorCode, &errorMessage)
+	if err == nil {
+		if storedOperation != operation || storedDigest != requestDigest {
+			return MutationRecord{}, false, ErrIdempotencyConflict
+		}
+		if state != "complete" {
+			return MutationRecord{}, false, ErrIdempotencyInDoubt
+		}
+		return MutationRecord{Response: append([]byte(nil), response...), ErrorCode: errorCode.String, ErrorMessage: errorMessage.String}, true, nil
+	}
+	if !errors.Is(err, sql.ErrNoRows) {
+		return MutationRecord{}, false, err
+	}
+	now := time.Now().UnixNano()
+	if _, err := tx.ExecContext(ctx, `INSERT INTO definition_mutation_idempotency(idempotency_key,operation,request_digest,state,created_at,updated_at) VALUES(?,?,?,'pending',?,?)`, key, operation, requestDigest, now, now); err != nil {
+		return MutationRecord{}, false, err
+	}
+	if err := tx.Commit(); err != nil {
+		return MutationRecord{}, false, err
+	}
+	return MutationRecord{}, false, nil
+}
+
+func (r *Registry) CompleteMutation(ctx context.Context, key, operation, requestDigest string, record MutationRecord) error {
+	result, err := r.db.ExecContext(ctx, `UPDATE definition_mutation_idempotency SET state='complete',response_json=?,error_code=?,error_message=?,updated_at=? WHERE idempotency_key=? AND operation=? AND request_digest=? AND state='pending'`,
+		record.Response, nullableString(record.ErrorCode), nullableString(record.ErrorMessage), time.Now().UnixNano(), key, operation, requestDigest)
+	if err != nil {
+		return err
+	}
+	changed, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if changed != 1 {
+		return ErrIdempotencyConflict
+	}
+	return nil
+}
+
+func nullableString(value string) any {
+	if value == "" {
+		return nil
+	}
+	return value
+}
 
 func (r *Registry) Create(ctx context.Context, name string, sources map[string][]byte) (App, error) {
 	revision := draftDigest(sources)
