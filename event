@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Ineffective-diagnostics candidate at exact head a242296 for internal/engine/engine_test.go.","body":{"commit":"a24229663c518d72adfe856106d798b615a8a9ef","path":"internal/engine/engine_test.go"}}
+{"kind":"artifact","text":"Ineffective-diagnostics candidate at exact head a242296 for internal/mcp/server.go.","body":{"commit":"a24229663c518d72adfe856106d798b615a8a9ef","path":"internal/mcp/server.go"}}
