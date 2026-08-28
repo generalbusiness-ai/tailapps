@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"MCP array-result regression test at exact head 4c0ee022e8a42ab283348e895535f138b6ffb6c4","body":{"commit":"4c0ee022e8a42ab283348e895535f138b6ffb6c4","path":"internal/mcp/server_test.go"}}
+{"kind":"artifact","text":"MCP structuredContent contract documentation at exact head 4c0ee022e8a42ab283348e895535f138b6ffb6c4","body":{"commit":"4c0ee022e8a42ab283348e895535f138b6ffb6c4","path":"docs/reference/mcp.md"}}
