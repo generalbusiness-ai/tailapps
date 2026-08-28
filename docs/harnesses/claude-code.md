@@ -71,10 +71,12 @@ The shipped analytics do not require prompt text, assistant-response text, or
 tool content. Leave `OTEL_LOG_USER_PROMPTS`,
 `OTEL_LOG_ASSISTANT_RESPONSES`, and `OTEL_LOG_TOOL_CONTENT` unset to keep
 that content redacted; prompt and response length analytics still work.
-`OTEL_LOG_TOOL_DETAILS=1` additionally exposes tool parameters and inputs,
-including paths and full shell commands. The shipped guard deliberately does
-not parse those raw structures, so enable detailed logging only for a trusted
-custom Tailapp or downstream collector with an appropriate data policy.
+`OTEL_LOG_TOOL_DETAILS=1` additionally exposes identifying details such as
+file paths and full shell commands. With tracing enabled,
+`OTEL_LOG_TOOL_CONTENT=1` can expose tool input and output content. The shipped
+guard deliberately does not parse raw tool structures, so enable either gate
+only for a trusted custom Tailapp or downstream collector with an appropriate
+data policy.
 
 Claude Code emits logs in batches. For a setup check, perform a tool call, wait
 for the default five-second log export interval, and run:
