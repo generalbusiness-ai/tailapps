@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"First-time install and onboarding successor at scripts/demo.sh on exact head e249f58e80ff8a7a5b196e62ff0b7518e26e7d71","body":{"commit":"e249f58e80ff8a7a5b196e62ff0b7518e26e7d71","path":"scripts/demo.sh"}}
+{"kind":"artifact","text":"First-time install and onboarding successor at testdata/otlp/one-metric.json on exact head e249f58e80ff8a7a5b196e62ff0b7518e26e7d71","body":{"commit":"e249f58e80ff8a7a5b196e62ff0b7518e26e7d71","path":"testdata/otlp/one-metric.json"}}
