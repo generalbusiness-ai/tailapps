@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"OpenCode setup documents the named DEVtheOPS profile, log-only mapping, and trace privacy boundary.","body":{"commit":"6addc40309be622de85c4a1862f4749a8712e104","path":"docs/harnesses/opencode.md"}}
+{"kind":"artifact","text":"Scrubbed OpenCode fixture now represents DEVtheOPS 1.5.1 logs and a duplicate content-bearing span.","body":{"commit":"6addc40309be622de85c4a1862f4749a8712e104","path":"tailapps/testdata/opencode-adapter.json"}}
