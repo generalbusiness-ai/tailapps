@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Bundled Tailapp native-cost regression coverage at the exact documentation head","body":{"commit":"373fe18ef5a410317fc0a41b5dc7bb7f258b1701","path":"tailapps/embed_test.go"}}
+{"kind":"artifact","text":"Cross-harness fixture using the native Claude Code cost field at the exact documentation head","body":{"commit":"373fe18ef5a410317fc0a41b5dc7bb7f258b1701","path":"testdata/otlp/cross-harness.json"}}
