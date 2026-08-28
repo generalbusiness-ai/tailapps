@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at notes/2026-08-28-disk-session-ingestion.md","body":{"commit":"33fa043b5d7ca696c8ab205b3d7ef8009c15016a","dead_basis_override":"true","path":"notes/2026-08-28-disk-session-ingestion.md"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:2be1f002aef73a304c53749625cd6662c0151b3e","text":"Merge retired a covered predecessor; the successor is at notes/2026-08-28-disk-session-ingestion.md."}
