@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:40f599d39abe00573597bf4a74da7e42c10174ae","text":"Merge retired a covered predecessor; the successor is at tailapps/testdata/codex-cli-0.150.1.json."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:42e82687cbea38241279aaf4243b039335748038","text":"Merge retired a covered predecessor; the successor is at tailapps/agent-guard/folds/normalize.jsonata."}
