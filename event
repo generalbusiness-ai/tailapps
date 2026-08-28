@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Claude Code privacy-gate clarification at exact head a498991db9ef1d36e1392e039109dfeec84f35d5; official monitoring docs distinguish OTEL_LOG_TOOL_DETAILS identifying details from OTEL_LOG_TOOL_CONTENT input/output content.","body":{"commit":"a498991db9ef1d36e1392e039109dfeec84f35d5","path":"docs/harnesses/claude-code.md"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:16221915e8fe3c3c0927daa2b9a285804ab86939","text":"Successor README clarification is published at exact head a498991db9ef1d36e1392e039109dfeec84f35d5."}
