@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:849569784982b89d10b773b7fdb8976e2439a86c","text":"Merge retired a covered predecessor; the successor is at internal/control/control_test.go."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:8643a6892cc828036d294c141cb25e72f6ce723d","text":"Merge retired a covered predecessor; the successor is at examples/signal-counts/folds/normalize.jsonata."}
