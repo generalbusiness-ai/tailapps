@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Made active-use performance inspection visible in the first-time path and reference map.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"README.md"}}
+{"kind":"artifact","text":"Exercised runtime metrics over both CLI and MCP in the end-to-end demo.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"scripts/demo.sh"}}
