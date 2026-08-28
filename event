@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:d99ba15671c9f1273fad0ff990c20b520bf20f0d","text":"Merge retired a covered predecessor; the successor is at tailapps/testdata/claude-code-2.1.250.json."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:d9d3340bdd84d85d3ef01a0b7585ef6be67d91e1","text":"Merge retired a covered predecessor; the successor is at scripts/demo.sh."}
