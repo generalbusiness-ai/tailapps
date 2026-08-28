@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:306e4096c3ef568f0fa98897e2f0049dac780bfc","text":"Merge retired a covered predecessor; the successor is at docs/harnesses/claude-code.md."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:31d71a63aff186ecf793918f6f13e42d12e148bb","text":"Merge retired a covered predecessor; the successor is at testdata/otlp/cross-harness.json."}
