@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Current scrubbed DEVtheOPS OpenCode fixture at the rebased exact head, after retiring predecessor worlds.","body":{"commit":"2242bcdab72328eb6adcf5dcbb4302c80242e558","path":"tailapps/testdata/opencode-adapter.json"}}
+{"kind":"artifact","text":"Current OpenCode bundle mapping and deduplication tests at the rebased exact head, after retiring predecessor worlds.","body":{"commit":"2242bcdab72328eb6adcf5dcbb4302c80242e558","path":"tailapps/embed_test.go"}}
