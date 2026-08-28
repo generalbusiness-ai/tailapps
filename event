@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at testdata/otlp/cross-harness.json","body":{"commit":"095841ffed8bb1998943c1f20503bf485a3b595a","path":"testdata/otlp/cross-harness.json"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:c03d8bf975bd200a871754faa4229e60295cc3d3","text":"Merge retired a covered predecessor; the successor is at README.md."}
