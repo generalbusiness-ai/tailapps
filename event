@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Re-anchored the unchanged durable projection totals at the corrected exact head.","body":{"commit":"0e3df616530546eb160ad5a1758847b323a5f2ba","path":"internal/projection/projection.go"}}
+{"kind":"artifact","text":"Re-anchored the unchanged query result-byte accounting at the corrected exact head.","body":{"commit":"0e3df616530546eb160ad5a1758847b323a5f2ba","path":"internal/query/query.go"}}
