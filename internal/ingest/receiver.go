@@ -26,6 +26,8 @@ import (
 
 type ConsumerSource func(context.Context) ([]inbox.Consumer, error)
 
+var ErrNotReady = errors.New("OTLP ingestion is not ready")
+
 type ReceiverLimits struct {
 	CompressedBytes   int64
 	DecompressedBytes int64
@@ -162,6 +164,11 @@ func (receiver *Receiver) ServeHTTP(writer http.ResponseWriter, request *http.Re
 	if errors.Is(err, inbox.ErrFull) {
 		writer.Header().Set("Retry-After", "1")
 		writeError(writer, http.StatusServiceUnavailable, "inbox_full", "durable inbox capacity exceeded")
+		return
+	}
+	if errors.Is(err, ErrNotReady) {
+		writer.Header().Set("Retry-After", "1")
+		writeError(writer, http.StatusServiceUnavailable, "ingestion_not_ready", "OTLP ingestion is held closed pending operator action")
 		return
 	}
 	if err != nil {

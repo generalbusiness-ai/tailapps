@@ -166,7 +166,7 @@ func (e *Engine) consumers(ctx context.Context) ([]inbox.Consumer, error) {
 
 func (e *Engine) consumersLocked(ctx context.Context) ([]inbox.Consumer, error) {
 	if len(e.upgradePending) != 0 {
-		return nil, errors.New("runtime profile upgrade requires activation")
+		return nil, ingest.ErrNotReady
 	}
 	names := sortedProjectionKeys(e.active)
 	result := make([]inbox.Consumer, 0, len(names))

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ncruces/go-sqlite3"
 	collectorlogsv1 "go.opentelemetry.io/proto/otlp/collector/logs/v1"
 	commonv1 "go.opentelemetry.io/proto/otlp/common/v1"
 	logsv1 "go.opentelemetry.io/proto/otlp/logs/v1"
@@ -275,6 +276,93 @@ CREATE EXPORT bad AS SELECT id, status FROM bad;`)
 	}
 	if len(nextConsumers) != 1 || nextConsumers[0].Tailapp != "session-cost" {
 		t.Fatalf("gapped consumer remained enrolled: %#v", nextConsumers)
+	}
+}
+
+func TestRuntimeProfileUpgradeKeepsQueryAndControlButClosesIngestion(t *testing.T) {
+	ctx := context.Background()
+	home := filepath.Join(t.TempDir(), "home")
+	first, err := Open(ctx, home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	app, err := first.Create(ctx, "agent-guard", "agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := first.Validate(ctx, "agent-guard", app.DraftRevision); err != nil {
+		t.Fatal(err)
+	}
+	active, err := first.Activate(ctx, "agent-guard", app.DraftRevision, "reset", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := first.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	// Simulate an older binary's durable identity without changing its source
+	// or materialized data. Recovery must not reinterpret that identity under
+	// the current profile.
+	controlDB, err := sqlite3.Open(filepath.Join(home, "control.sqlite"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := controlDB.Exec(`UPDATE definition_tailapps SET runtime_profile='legacy-profile'; UPDATE definition_revisions SET runtime_profile='legacy-profile' WHERE digest='` + active.Revision + `'`); err != nil {
+		t.Fatal(err)
+	}
+	if err := controlDB.Close(); err != nil {
+		t.Fatal(err)
+	}
+	projectionDB, err := sqlite3.Open(filepath.Join(home, "projections", "agent-guard", "state.sqlite"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := projectionDB.Exec(`UPDATE tailapp_projection_identity SET runtime_profile='legacy-profile'`); err != nil {
+		t.Fatal(err)
+	}
+	if err := projectionDB.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	upgraded, err := Open(ctx, home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer upgraded.Close()
+	status, err := upgraded.Status(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status.IngestionReady {
+		t.Fatal("profile-mismatched engine reported ingestion ready")
+	}
+	if _, err := upgraded.Query(ctx, "agent-guard", query.Request{SQL: `SELECT COUNT(*) FROM session_progress`}, nil); err != nil {
+		t.Fatalf("query during upgrade: %v", err)
+	}
+
+	body, _ := proto.Marshal(otlpRequest())
+	request := httptest.NewRequest(http.MethodPost, "/v1/logs", bytes.NewReader(body))
+	request.Header.Set("Content-Type", "application/x-protobuf")
+	response := httptest.NewRecorder()
+	upgraded.Receiver().ServeHTTP(response, request)
+	if response.Code != http.StatusServiceUnavailable || !strings.Contains(response.Body.String(), "ingestion_not_ready") {
+		t.Fatalf("upgrade OTLP response %d: %s", response.Code, response.Body.String())
+	}
+
+	current, _, err := upgraded.App(ctx, "agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := upgraded.Activate(ctx, "agent-guard", current.DraftRevision, "continue", false); err != nil {
+		t.Fatal(err)
+	}
+	status, err = upgraded.Status(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !status.IngestionReady {
+		t.Fatal("current-profile activation did not reopen ingestion")
 	}
 }
 

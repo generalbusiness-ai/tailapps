@@ -100,6 +100,37 @@ func TestMountRewriteDoesNotTouchQuotedText(t *testing.T) {
 	}
 }
 
+func TestQueryHasDeterministicRuntimeBudget(t *testing.T) {
+	guardProfile, err := tailapps.Load("agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(t.TempDir(), "guard.sqlite")
+	guard, err := projection.Create(context.Background(), path, guardProfile, 0, "reset")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer guard.Close()
+	frontier, err := guard.Frontier(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	sandbox, err := Open(Namespace{Path: path, Profile: guardProfile, Frontier: frontier}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sandbox.Close()
+
+	_, err = sandbox.Query(context.Background(), Request{SQL: `
+WITH RECURSIVE sequence(value) AS (
+  VALUES(1) UNION ALL SELECT value + 1 FROM sequence WHERE value < 100000000
+)
+SELECT sum(value) FROM sequence`})
+	if err == nil || !strings.Contains(err.Error(), "query_budget_exceeded") {
+		t.Fatalf("unbounded query error = %v", err)
+	}
+}
+
 var stubProfile = func() (result profile.Profile) {
 	result.Exports = map[string]profile.Export{"session_cost": {Name: "session_cost"}}
 	return result

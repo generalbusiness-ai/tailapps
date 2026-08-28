@@ -61,9 +61,11 @@ sensitive prompts, commands, paths, and identifiers.
 Tailapp source cannot use filesystem, network, clock, randomness, extensions,
 dynamic evaluation, wildcards, multiplication, or generated ranges. Since
 unquoted `*` is excluded, JSONata block comments are unavailable too.
-Wall-clock evaluator and query deadlines are outer safety nets, not claims of
-deterministic semantics. The runtime profile pins OTLP canonicalization,
-JSONata, SQLite, numeric rules, and admitted limits.
+The JSONata wall deadline is an outer safety net, not a claim of deterministic
+semantics; the admitted JSONata subset excludes its known unbounded extension
+points. SQL additionally has a runtime-profile-fixed SQLite VM progress budget,
+with its wall deadline retained as secondary safety. The runtime profile pins
+OTLP canonicalization, JSONata, SQLite, numeric rules, and admitted limits.
 
 Consumed OTLP content is not retained as an event log. The bounded inbox keeps
 a record only until every captured consumer commits or detaches. A projection

@@ -8,7 +8,7 @@ import jsonata "github.com/jsonata-go/jsonata/v206"
 const (
 	// RuntimeID binds the evaluator, DDL grammar, numeric rules and limits that
 	// give a revision its meaning. Change it whenever any of those change.
-	RuntimeID = "tailapp-otlp-1.8-json-v1-ddl-jsonata-v206-sqlite-3.53.4@2"
+	RuntimeID = "tailapp-otlp-1.8-json-v1-ddl-jsonata-v206-sqlite-3.53.4@3"
 
 	MaxElementBytes = 64 << 10
 	MaxSourceBytes  = 512 << 10

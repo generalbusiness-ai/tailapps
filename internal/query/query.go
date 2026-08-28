@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 	"unicode"
 
@@ -32,7 +33,46 @@ const (
 	MaxResultBytes = 1 << 20
 	maxSQLiteValue = 256 << 10
 	queryTimeout   = 5 * time.Second
+	// ncruces installs SQLite's progress callback every 1,000 virtual-machine
+	// instructions. The interrupt context below admits this many callback and
+	// statement-boundary checks before returning a stable budget error. The
+	// value is part of the runtime profile; the deadline remains only a
+	// secondary safety net for work outside SQLite's virtual machine.
+	queryProgressChecks = 10_000
 )
+
+var errQueryBudgetExceeded = errors.New("query_budget_exceeded: SQLite opcode budget exhausted")
+
+type budgetContext struct {
+	context.Context
+	remaining atomic.Int64
+	exceeded  atomic.Bool
+}
+
+func newBudgetContext(parent context.Context, checks int64) *budgetContext {
+	result := &budgetContext{Context: parent}
+	result.remaining.Store(checks)
+	return result
+}
+
+// Err is called by ncruces at every statement boundary and by its SQLite
+// progress handler every 1,000 VM instructions. Counting those fixed checks
+// gives the query a deterministic runtime ceiling without modifying the
+// pinned driver. Done and Deadline continue to describe the wall safety
+// deadline supplied by the embedded parent context.
+func (ctx *budgetContext) Err() error {
+	if err := ctx.Context.Err(); err != nil {
+		return err
+	}
+	if ctx.exceeded.Load() {
+		return errQueryBudgetExceeded
+	}
+	if ctx.remaining.Add(-1) < 0 {
+		ctx.exceeded.Store(true)
+		return errQueryBudgetExceeded
+	}
+	return nil
+}
 
 type Namespace struct {
 	Path     string
@@ -189,8 +229,9 @@ func (sandbox *Sandbox) Query(ctx context.Context, request Request) (Result, err
 	if err != nil {
 		return Result{}, err
 	}
-	queryContext, cancel := context.WithTimeout(ctx, queryTimeout)
+	deadlineContext, cancel := context.WithTimeout(ctx, queryTimeout)
 	defer cancel()
+	queryContext := newBudgetContext(deadlineContext, queryProgressChecks)
 	oldInterrupt := sandbox.connection.SetInterrupt(queryContext)
 	defer sandbox.connection.SetInterrupt(oldInterrupt)
 	statement, tail, err := sandbox.connection.Prepare(rewritten)
@@ -462,9 +503,12 @@ func columnValue(statement *sqlite3.Stmt, index int, declared string) (any, erro
 	}
 }
 
-func queryError(ctx context.Context, err error) error {
-	if ctx.Err() != nil {
-		return fmt.Errorf("query_cancelled: %w", ctx.Err())
+func queryError(ctx *budgetContext, err error) error {
+	if ctx.exceeded.Load() {
+		return errQueryBudgetExceeded
+	}
+	if ctx.Context.Err() != nil {
+		return fmt.Errorf("query_cancelled: %w", ctx.Context.Err())
 	}
 	return err
 }

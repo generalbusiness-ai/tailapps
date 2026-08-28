@@ -194,6 +194,8 @@ func errorCode(err error) string {
 		return "deadline_exceeded"
 	case strings.Contains(err.Error(), "frontier_changed"):
 		return "frontier_changed"
+	case strings.Contains(err.Error(), "query_budget_exceeded"):
+		return "query_budget_exceeded"
 	default:
 		return "operation_failed"
 	}
