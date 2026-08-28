@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at internal/query/query.go","body":{"commit":"095841ffed8bb1998943c1f20503bf485a3b595a","path":"internal/query/query.go"}}
+{"kind":"artifact","text":"Merge published the current artifact at internal/query/query_test.go","body":{"commit":"095841ffed8bb1998943c1f20503bf485a3b595a","path":"internal/query/query_test.go"}}
