@@ -15,8 +15,22 @@
     $exists($lookup($attrs, "cached_input_token_count")) or
     $exists($lookup($attrs, "reasoning_output_token_count"))
   );
+  $counter_present :=
+    $exists($lookup($attrs, "input_tokens")) or
+    $exists($lookup($attrs, "input_token_count")) or
+    $exists($lookup($attrs, "output_tokens")) or
+    $exists($lookup($attrs, "output_token_count")) or
+    $exists($lookup($attrs, "cached_input_tokens")) or
+    $exists($lookup($attrs, "cache_read_tokens")) or
+    $exists($lookup($attrs, "cached_input_token_count")) or
+    $exists($lookup($attrs, "cached_token_count")) or
+    $exists($lookup($attrs, "reasoning_output_tokens")) or
+    $exists($lookup($attrs, "reasoning_output_token_count")) or
+    $exists($lookup($attrs, "reasoning_token_count")) or
+    $exists($lookup($attrs, "cost_microusd")) or
+    $exists($lookup($attrs, "cost_usd_micros"));
   $usage := ($event_name = "claude_code.api_request" or $event_name = "codex.api_request" or
-    $event_name = "opencode.api_request" or $codex_stream) and $event_time;
+    $event_name = "opencode.api_request" or $codex_stream) and $counter_present and $event_time;
   $session_raw := $lookup($attrs, "session.id") ? $lookup($attrs, "session.id") :
     ($lookup($attrs, "conversation.id") ? $lookup($attrs, "conversation.id") :
     ($lookup($attrs, "session_id") ? $lookup($attrs, "session_id") : $lookup($resource, "service.instance.id")));

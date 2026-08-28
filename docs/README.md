@@ -20,7 +20,7 @@ custom Tailapp installed in one request and fed all three OTLP signal types.
 - [DDL and JSONata reference](reference/ddl-jsonata.md)
 - [Query SQL reference](reference/query-sql.md)
 
-Tailapp is not limited to the two examples compiled into this release. A
+Tailapp is not limited to the three examples compiled into this release. A
 custom Tailapp is an ordinary source set containing `application.sql` and one
 or more `folds/*.jsonata` programs. Users and agents are encouraged to create
 new applications, fork or extend the examples, substitute different policies,
@@ -39,6 +39,7 @@ other, but never alter live projections until activation.
 
 ## Examples shipped with this release
 
+- [`activity-stats`](../tailapps/activity-stats/README.md)
 - [`agent-guard`](../tailapps/agent-guard/README.md)
 - [`session-cost`](../tailapps/session-cost/README.md)
 

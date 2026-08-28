@@ -37,6 +37,7 @@ while [ ! -S "$TAILAPP_HOME/engine.sock" ]; do
 done
 
 "$binary" apps install --bundle agent-guard --idempotency-key demo-install-agent-guard agent-guard >/dev/null
+"$binary" apps install --bundle activity-stats --idempotency-key demo-install-activity-stats activity-stats >/dev/null
 "$binary" apps install --idempotency-key demo-install-signal-counts signal-counts examples/signal-counts >/dev/null
 mcp_install=$(printf '%s\n' \
   '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
@@ -72,6 +73,7 @@ joined=$("$binary" query --mount cost=session-cost --sql "SELECT progress.harnes
 signals=$("$binary" query --sql "SELECT source, signal, event_name, event_count FROM signal_counts WHERE source='demo-agent' ORDER BY signal" signal-counts)
 ineffective=$("$binary" ineffective agent-guard)
 runtime_metrics=$("$binary" metrics --json)
+activity=$("$binary" query --sql "SELECT harness, SUM(event_count) AS events FROM event_inventory GROUP BY harness ORDER BY harness" activity-stats)
 
 printf '%s\n' "$violations" | grep -q 'violation-claude'
 printf '%s\n' "$violations" | grep -q 'violation-codex'
@@ -94,6 +96,10 @@ printf '%s\n' "$ineffective" | grep -q 'agent.tokens'
 printf '%s\n' "$runtime_metrics" | grep -q 'tailapp.metrics/v1'
 printf '%s\n' "$runtime_metrics" | grep -q 'unrouted_records_total'
 printf '%s\n' "$runtime_metrics" | grep -q 'agent-guard'
+printf '%s\n' "$runtime_metrics" | grep -q 'activity-stats'
+printf '%s\n' "$activity" | grep -q 'claude-code'
+printf '%s\n' "$activity" | grep -q 'codex'
+printf '%s\n' "$activity" | grep -q 'opencode'
 
 mcp_output=$(printf '%s\n' \
   '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
@@ -102,13 +108,15 @@ mcp_output=$(printf '%s\n' \
   '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"tailapp_query","arguments":{"name":"agent-guard","mounts":{"cost":"session-cost"},"sql":"SELECT progress.harness, progress.session_id, costrow.input_tokens, costrow.output_tokens FROM session_progress progress JOIN cost.session_cost costrow ON costrow.harness=progress.harness AND costrow.session_id=progress.session_id ORDER BY progress.harness"}}}' \
   '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"tailapp_metrics","arguments":{}}}' \
   '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"tailapp_ineffective","arguments":{"name":"agent-guard"}}}' \
+  '{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"tailapp_query","arguments":{"name":"activity-stats","sql":"SELECT harness, SUM(event_count) AS events FROM event_inventory GROUP BY harness ORDER BY harness"}}}' \
   | "$binary" mcp)
 printf '%s\n' "$mcp_output" | grep -q 'tailapp_query'
 printf '%s\n' "$mcp_output" | grep -q 'shared-opencode'
 printf '%s\n' "$mcp_output" | grep -q 'tailapp.metrics/v1'
 printf '%s\n' "$mcp_output" | grep -q 'tailapp_ineffective'
 printf '%s\n' "$mcp_output" | grep -q 'agent.tokens'
+printf '%s\n' "$mcp_output" | grep -q 'activity-stats'
 
 echo "Example projection: OTLP span and metric-point counts"
 printf '%s\n' "$signals"
-echo "Tailapp demo passed: three OTLP signals, one-shot installs, cross-harness guard and cost analytics, joined exports, ineffective diagnostics, runtime metrics, CLI, and MCP."
+echo "Tailapp demo passed: three OTLP signals, one-shot installs, cross-harness guard, cost, and privacy-preserving activity analytics, joined exports, ineffective diagnostics, runtime metrics, CLI, and MCP."

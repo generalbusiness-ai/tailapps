@@ -1,7 +1,7 @@
 # Codex
 
 Codex can send native structured log events directly to Tailapp over
-OTLP/HTTP. The two examples shipped with this release recognize its tool and
+OTLP/HTTP. The three examples shipped with this release recognize its tool and
 API-request event names.
 
 ## Send telemetry
@@ -41,7 +41,7 @@ A useful first prompt is:
 
 ## Current bundle fit
 
-`agent-guard` and `session-cost` are shipped examples, not the available set of
+`activity-stats`, `agent-guard`, and `session-cost` are shipped examples, not the available set of
 Tailapp applications. Users and agents are encouraged to fork, extend, replace,
 or supplement them with analytics and policy specific to their environment;
 the [authoring guide](../authoring.md) covers installation over CLI and MCP.
@@ -70,6 +70,12 @@ ineffective rather than creating zero-valued usage rows. The bundle also
 retains its generic `codex.api_request` mapping for adapters. Native Codex events do not currently
 provide a cost attribute, so `cost_microusd` remains zero unless an adapter
 adds one.
+
+`activity-stats` additionally recognizes Codex prompt-length, TTFT,
+latency/status-only API request, and websocket event families. Counterless
+`codex.api_request` records remain ineffective for `session-cost` while
+contributing request performance to `activity-stats`; ineffectiveness is
+per-Tailapp, not a receiver-wide drop.
 
 The checked-in compatibility fixture is a structurally representative,
 scrubbed capture from Codex CLI 0.150.1. Vendor fields may change; the official

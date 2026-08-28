@@ -33,13 +33,17 @@ Generic numeric attributes are `input_tokens`, `output_tokens`,
 accepted for compatibility. Claude Code's native `cache_read_tokens` maps to
 `cached_input_tokens`. Cost may arrive
 as the generic `cost_microusd` or Claude Code's native `cost_usd_micros`; the
-generic name takes precedence when both are present. Missing values become
-zero; this Tailapp does not record an `unknown` coverage state for individual
-counters. A zero can therefore mean either a real zero or an absent field.
+generic name takes precedence when both are present. Missing individual values
+become zero only after at least one supported token or cost counter is present.
+A counterless API-request record remains ineffective, so native
+latency/status-only `codex.api_request` events do not create zero-valued
+unknown-session rows. This Tailapp does not record an `unknown` coverage state
+for individual counters; within an effective row, a zero can therefore mean
+either a real zero or an absent sibling field.
 
 Codex documents token counts on `response.completed` SSE events. Other
-`codex.sse_event` records remain ineffective unless a supported counter is
-present, avoiding a stream of meaningless zero-valued rows. The checked-in
+`codex.sse_event` and API-request records remain ineffective unless a supported
+counter is present, avoiding a stream of meaningless zero-valued rows. The checked-in
 fixture is a structurally representative, scrubbed Codex CLI 0.150.1 capture;
 vendor fields remain a tested compatibility profile, not an engine contract.
 

@@ -22,13 +22,19 @@ harness activity. Tailapp does not block a tool call, terminate an agent, or
 prove that an unobserved operation did not happen. Inline prevention requires a
 harness control adapter, which is outside this release.
 
+The complementary `activity-stats` example materializes privacy-preserving
+event inventory, session activity, cache/token totals, bounded tool frequency,
+and request/TTFT distributions across Claude Code, Codex, and OpenCode adapter
+telemetry. It retains no prompt, response, command, tool-input, or path content
+and reports missing fields as unknown coverage rather than observed zeros.
+
 ## Quick demo
 
 ```sh
 ./scripts/demo.sh
 ```
 
-The demo builds the binary, starts an ephemeral resident, installs two shipped
+The demo builds the binary, starts an ephemeral resident, installs three shipped
 examples and one custom Tailapp in one request each, sends logs, a span, and a
 metric point, and prints a real projection before checking CLI and MCP access.
 
@@ -49,10 +55,12 @@ as `localhost` and non-loopback interfaces are deliberately refused. The
 actual receiver URL is also written to `$TAILAPP_HOME/engine.json`.
 
 In another terminal, export the same `TAILAPP_HOME`, then install and
-first-activate the two examples shipped with this release:
+first-activate the three examples shipped with this release:
 
 ```sh
 export TAILAPP_HOME="$HOME/.local/share/tailapp"
+./tailapp apps install --bundle activity-stats \
+  --idempotency-key install-activity-stats-v1 activity-stats
 ./tailapp apps install --bundle agent-guard \
   --idempotency-key install-agent-guard-v1 agent-guard
 ./tailapp apps install --bundle session-cost \
@@ -110,12 +118,13 @@ in the [authoring guide](docs/authoring.md).
   [query SQL](docs/reference/query-sql.md), plus
   [runtime metrics](docs/reference/metrics.md)
 - Examples shipped with this release:
-  [`agent-guard`](tailapps/agent-guard/README.md) and
+  [`activity-stats`](tailapps/activity-stats/README.md),
+  [`agent-guard`](tailapps/agent-guard/README.md), and
   [`session-cost`](tailapps/session-cost/README.md)
 
 The built-in source sets are examples, not a closed catalog. Operators and
 agents are encouraged to create new Tailapps, fork or extend these examples,
-or substitute different analytics and policy. Custom source sets and the two
+or substitute different analytics and policy. Custom source sets and the three
 shipped examples use the same compiler, install boundary, and runtime.
 
 ## Boundaries

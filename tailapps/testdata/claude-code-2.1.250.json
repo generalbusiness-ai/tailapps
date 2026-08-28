@@ -52,5 +52,29 @@
       }
     },
     "rows": {}
+  },
+  "assistant_response": {
+    "meta": {"position": 53, "event_id": "local:53", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:53",
+      "signal": "log",
+      "name": "assistant_response",
+      "source": "claude-code",
+      "time_unix_nano": "1787937900000000053",
+      "observed_unix_nano": "1787937900000000053",
+      "trace_id": null,
+      "span_id": null,
+      "content_digest": "sha256:scrubbed-claude-assistant-response",
+      "record": {
+        "attributes": {
+          "event.name": "assistant_response",
+          "session.id": "session-scrubbed",
+          "response_length": 640
+        },
+        "body": "claude_code.assistant_response",
+        "resource": {"attributes": {"service.name": "claude-code"}}
+      }
+    },
+    "rows": {}
   }
 }

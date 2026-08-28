@@ -1,0 +1,29 @@
+(
+  $old := rows.prior;
+  {
+    "decision": "effective",
+    "facts": [],
+    "tables": {"event_inventory": {"upsert": [{
+      "harness": event.harness,
+      "event_family": event.event_family,
+      "tool_bucket": event.tool_bucket,
+      "endpoint_bucket": event.endpoint_bucket,
+      "event_count": ($old ? $old.event_count : 0) + 1,
+      "first_seen_unix_nano": $old ? $old.first_seen_unix_nano : event.event_time_unix_nano,
+      "last_seen_unix_nano": event.event_time_unix_nano,
+      "reported_length_total": ($old ? $old.reported_length_total : 0) + event.reported_length,
+      "length_observed_count": ($old ? $old.length_observed_count : 0) + (event.length_coverage = "observed" ? 1 : 0),
+      "length_unknown_count": ($old ? $old.length_unknown_count : 0) + (event.length_coverage = "unknown" ? 1 : 0),
+      "duration_milliseconds_total": ($old ? $old.duration_milliseconds_total : 0) + event.duration_milliseconds,
+      "duration_observed_count": ($old ? $old.duration_observed_count : 0) + (event.duration_coverage = "observed" ? 1 : 0),
+      "duration_unknown_count": ($old ? $old.duration_unknown_count : 0) + (event.duration_coverage = "unknown" ? 1 : 0),
+      "success_count": ($old ? $old.success_count : 0) + (event.success_state = "success" ? 1 : 0),
+      "failure_count": ($old ? $old.failure_count : 0) + (event.success_state = "failure" ? 1 : 0),
+      "outcome_unknown_count": ($old ? $old.outcome_unknown_count : 0) + (event.success_state = "unknown" ? 1 : 0),
+      "session_unknown_count": ($old ? $old.session_unknown_count : 0) + (event.session_coverage = "unknown" ? 1 : 0),
+      "token_observed_count": ($old ? $old.token_observed_count : 0) + (event.token_coverage = "observed" ? 1 : 0),
+      "token_unknown_count": ($old ? $old.token_unknown_count : 0) + (event.token_coverage = "unknown" ? 1 : 0),
+      "last_source_position": event.source_position
+    }]}}
+  }
+)

@@ -30,13 +30,15 @@ example in one validated, first-activated request:
 
 ```sh
 export TAILAPP_HOME="$HOME/.local/share/tailapp"
+"$TAILAPP_BIN" apps install --bundle activity-stats \
+  --idempotency-key setup-install-activity-stats-v1 activity-stats
 "$TAILAPP_BIN" apps install --bundle agent-guard \
   --idempotency-key setup-install-agent-guard-v1 agent-guard
 "$TAILAPP_BIN" apps install --bundle session-cost \
   --idempotency-key setup-install-session-cost-v1 session-cost
 ```
 
-These commands install the two examples shipped with this release. They are a
+These commands install the three examples shipped with this release. They are a
 starting kit, not a fixed application catalog. Users and agents are encouraged
 to create additional Tailapps, fork or extend an example, or replace either
 example with policy- and harness-specific analytics. Custom Tailapps use the
@@ -68,6 +70,9 @@ that the resident is healthy and its inbox has drained:
 "$TAILAPP_BIN" query \
   --sql 'SELECT harness, session_id, input_tokens, cached_input_tokens, output_tokens, reasoning_output_tokens, cost_microusd FROM session_cost ORDER BY harness, session_id' \
   session-cost
+"$TAILAPP_BIN" query \
+  --sql 'SELECT harness, event_family, SUM(event_count) AS events, SUM(duration_unknown_count) AS duration_unknown FROM event_inventory GROUP BY harness, event_family ORDER BY harness, event_family' \
+  activity-stats
 ```
 
 An increase in `intake.records_total` proves OTLP delivery independently of
@@ -76,7 +81,8 @@ count, and `ineffective` exposes up to 16 recent rejected records from resident
 memory for shape diagnosis. An empty table means no recognized event reached
 that bundle. An `unknown` coverage row means the event was recognized but
 lacked a field needed by the guard. See the
-[`agent-guard`](../../tailapps/agent-guard/README.md) and
+[`activity-stats`](../../tailapps/activity-stats/README.md),
+[`agent-guard`](../../tailapps/agent-guard/README.md), and
 [`session-cost`](../../tailapps/session-cost/README.md) models before treating
 results as policy or billing evidence.
 

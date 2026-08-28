@@ -1,0 +1,22 @@
+{
+  "tool_result": {
+    "meta": {"position": 61, "event_id": "local:61", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:61", "signal": "log", "name": "opencode.tool.execute.after",
+      "source": "opencode", "time_unix_nano": "1787939000000000061", "observed_unix_nano": "1787939000000000061",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:scrubbed-opencode-tool",
+      "record": {"attributes": {"session_id": "session-scrubbed", "tool_name": "bash", "success": true, "duration_ms": 32}, "resource": {"attributes": {"service.name": "opencode"}}}
+    },
+    "rows": {}
+  },
+  "api_request": {
+    "meta": {"position": 62, "event_id": "local:62", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:62", "signal": "log", "name": "opencode.api_request",
+      "source": "opencode", "time_unix_nano": "1787939000000000062", "observed_unix_nano": "1787939000000000062",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:scrubbed-opencode-request",
+      "record": {"attributes": {"session_id": "session-scrubbed", "endpoint": "/v1/chat/completions", "latency_ms": 610, "status_code": 200, "input_tokens": 80, "output_tokens": 20, "cached_input_tokens": 16}, "resource": {"attributes": {"service.name": "opencode"}}}
+    },
+    "rows": {}
+  }
+}

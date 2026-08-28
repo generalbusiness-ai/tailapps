@@ -1,0 +1,35 @@
+(
+  $old := rows.prior;
+  $unknowns := (event.session_coverage = "unknown" ? 1 : 0) +
+    (event.length_coverage = "unknown" ? 1 : 0) +
+    (event.duration_coverage = "unknown" ? 1 : 0) +
+    (event.success_state = "unknown" ? 1 : 0) +
+    (event.token_coverage = "unknown" ? 1 : 0);
+  {
+    "decision": "effective",
+    "facts": [],
+    "tables": {"session_activity": {"upsert": [{
+      "harness": event.harness,
+      "session_id": event.session_id,
+      "event_count": ($old ? $old.event_count : 0) + 1,
+      "first_seen_unix_nano": $old ? $old.first_seen_unix_nano : event.event_time_unix_nano,
+      "last_seen_unix_nano": event.event_time_unix_nano,
+      "tool_event_count": ($old ? $old.tool_event_count : 0) + (event.event_family = "tool" ? 1 : 0),
+      "shell_command_count": ($old ? $old.shell_command_count : 0) + (event.event_family = "tool" and event.tool_bucket = "shell" ? 1 : 0),
+      "prompt_count": ($old ? $old.prompt_count : 0) + (event.event_family = "user-prompt" ? 1 : 0),
+      "response_count": ($old ? $old.response_count : 0) + (event.event_family = "assistant-response" ? 1 : 0),
+      "request_count": ($old ? $old.request_count : 0) + ((event.event_family = "api-request" or event.event_family = "websocket-request") ? 1 : 0),
+      "success_count": ($old ? $old.success_count : 0) + (event.success_state = "success" ? 1 : 0),
+      "failure_count": ($old ? $old.failure_count : 0) + (event.success_state = "failure" ? 1 : 0),
+      "outcome_unknown_count": ($old ? $old.outcome_unknown_count : 0) + (event.success_state = "unknown" ? 1 : 0),
+      "reported_length_total": ($old ? $old.reported_length_total : 0) + event.reported_length,
+      "input_tokens": ($old ? $old.input_tokens : 0) + event.input_tokens,
+      "output_tokens": ($old ? $old.output_tokens : 0) + event.output_tokens,
+      "cached_input_tokens": ($old ? $old.cached_input_tokens : 0) + event.cached_input_tokens,
+      "reasoning_output_tokens": ($old ? $old.reasoning_output_tokens : 0) + event.reasoning_output_tokens,
+      "cost_microusd": ($old ? $old.cost_microusd : 0) + event.cost_microusd,
+      "unknown_field_observations": ($old ? $old.unknown_field_observations : 0) + $unknowns,
+      "last_source_position": event.source_position
+    }]}}
+  }
+)

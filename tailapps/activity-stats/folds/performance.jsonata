@@ -1,0 +1,34 @@
+(
+  $old := rows.prior;
+  $observed := event.duration_coverage = "observed";
+  $duration := event.duration_milliseconds;
+  event.performance_event ? {
+    "decision": "effective",
+    "facts": [],
+    "tables": {"request_performance": {"upsert": [{
+      "harness": event.harness,
+      "session_id": event.session_id,
+      "event_family": event.event_family,
+      "endpoint_bucket": event.endpoint_bucket,
+      "request_count": ($old ? $old.request_count : 0) + 1,
+      "first_seen_unix_nano": $old ? $old.first_seen_unix_nano : event.event_time_unix_nano,
+      "last_seen_unix_nano": event.event_time_unix_nano,
+      "success_count": ($old ? $old.success_count : 0) + (event.success_state = "success" ? 1 : 0),
+      "failure_count": ($old ? $old.failure_count : 0) + (event.success_state = "failure" ? 1 : 0),
+      "outcome_unknown_count": ($old ? $old.outcome_unknown_count : 0) + (event.success_state = "unknown" ? 1 : 0),
+      "duration_observed_count": ($old ? $old.duration_observed_count : 0) + ($observed ? 1 : 0),
+      "duration_unknown_count": ($old ? $old.duration_unknown_count : 0) + ($observed ? 0 : 1),
+      "duration_milliseconds_total": ($old ? $old.duration_milliseconds_total : 0) + ($observed ? $duration : 0),
+      "duration_le_100ms": ($old ? $old.duration_le_100ms : 0) + ($observed and $duration <= 100 ? 1 : 0),
+      "duration_le_500ms": ($old ? $old.duration_le_500ms : 0) + ($observed and $duration <= 500 ? 1 : 0),
+      "duration_le_1000ms": ($old ? $old.duration_le_1000ms : 0) + ($observed and $duration <= 1000 ? 1 : 0),
+      "duration_le_5000ms": ($old ? $old.duration_le_5000ms : 0) + ($observed and $duration <= 5000 ? 1 : 0),
+      "duration_gt_5000ms": ($old ? $old.duration_gt_5000ms : 0) + ($observed and $duration > 5000 ? 1 : 0),
+      "last_source_position": event.source_position
+    }]}}
+  } : {
+    "decision": "effective",
+    "facts": [],
+    "tables": {"request_performance": {"upsert": []}}
+  }
+)
