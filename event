@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Activity analytics corrected for the observed DEVtheOPS OpenCode OTLP profile, with log-only normalization and duplicate-span suppression.","body":{"commit":"2242bcdab72328eb6adcf5dcbb4302c80242e558","path":"tailapps/activity-stats"}}
+{"kind":"artifact","text":"OpenCode setup corrected for the observed DEVtheOPS 1.5.1 profile, privacy controls, mapping, and deduplication policy.","body":{"commit":"2242bcdab72328eb6adcf5dcbb4302c80242e558","path":"docs/harnesses/opencode.md"}}
