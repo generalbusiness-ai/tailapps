@@ -1,1 +1,1 @@
-{"kind":"assert","text":"Runtime-metrics publication is blocked on checker fulfilling promise #372 with a live guarded verdict directly against review request #360. The corrected candidate remains exact head 0e3df616530546eb160ad5a1758847b323a5f2ba; the stale ordinary approval report #368 is not ratifiable and does not authorize merge."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:61f05b0594e9b9d7b5dc6abc3c9244043147a013"}
