@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Verified encoded query result byte accounting.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"internal/query/query_test.go"}}
+{"kind":"artifact","text":"Added the metrics control operation and bounded per-operation outcome and latency instrumentation.","body":{"commit":"ecf2ef1e5f717439f3463f23b301b95d2f1e2612","path":"internal/control/control.go"}}
