@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"AST-based bounded-JSONata callable and lambda validation at the exact tested security-fix head.","body":{"commit":"014296c5035768d57bcac47faa1cf4a72f29735d","path":"internal/profile/compiler.go"}}
+{"kind":"artifact","text":"Regression coverage for apply-operator bypasses, dynamic call targets, Unicode lambda, and allowlisted apply at the exact tested head.","body":{"commit":"014296c5035768d57bcac47faa1cf4a72f29735d","path":"internal/profile/compiler_test.go"}}
