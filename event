@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:9807cb43fc36f2d4090220dde24365c4e640bdbf","text":"Merge retired a covered predecessor; the successor is at tailapps/embed_test.go."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:9e8b531e5e35cb534ed0a230df682498cc6af523","text":"Merge retired a covered predecessor; the successor is at tailapps/agent-guard."}
