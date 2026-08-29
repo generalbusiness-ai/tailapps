@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at tailapps/session-cost/folds/normalize.jsonata","body":{"commit":"c0d7952781a5c64e0ae579f1e2797db895a67eab","path":"tailapps/session-cost/folds/normalize.jsonata"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:56bdbf6147e259f7e723f73ce169eecbef5708c9","text":"Merge retired a covered predecessor; the successor is at tailapps/session-cost/folds/normalize.jsonata."}
