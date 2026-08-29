@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at docs/reference/mcp.md","body":{"commit":"140185696b6676ac69baf4b62ab01442c4ae5832","path":"docs/reference/mcp.md"}}
+{"kind":"artifact","text":"Merge published the current artifact at internal/mcp/server.go","body":{"commit":"140185696b6676ac69baf4b62ab01442c4ae5832","path":"internal/mcp/server.go"}}
