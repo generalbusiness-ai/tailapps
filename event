@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at internal/mcp/server_test.go","body":{"commit":"140185696b6676ac69baf4b62ab01442c4ae5832","path":"internal/mcp/server_test.go"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:0a954cd196711cb144fae64d25411025eb42c35b","text":"Merge retired a covered predecessor; the successor is at internal/mcp/server_test.go."}
