@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:95de1a98aa1b7cf0eb3c346b2894d61516986a26","text":"Merge retired a covered predecessor; the successor is at internal/mcp/server.go."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:cbe969af6e478bb95fd918a88eaa08ac5806155b","text":"Merge retired a covered predecessor; the successor is at docs/reference/mcp.md."}
