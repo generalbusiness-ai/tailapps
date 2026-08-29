@@ -15,8 +15,9 @@ management.
 The process is only an adapter. Start `tailapp serve` first and give the MCP
 process the same `TAILAPP_HOME` so it can reach `engine.sock`.
 
-Successful tool calls return the value twice: as JSON text in `content` and as
-the native JSON value in `structuredContent`:
+Successful tool calls always return the complete value as JSON text in
+`content`. When the value is a JSON object, they also return it as the native
+JSON value in `structuredContent`:
 
 ```json
 {
@@ -24,6 +25,12 @@ the native JSON value in `structuredContent`:
   "structuredContent": {"ok": true}
 }
 ```
+
+MCP constrains `structuredContent` to a JSON object. Array or scalar results
+therefore omit that optional field while retaining the complete value in the
+text content block. This preserves the engine operation's native result shape;
+in particular, `tailapps_list` remains an array rather than being wrapped in a
+new object contract.
 
 Engine/application errors are MCP tool results, not JSON-RPC failures:
 

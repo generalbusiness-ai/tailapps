@@ -86,7 +86,11 @@ func (server *Server) handle(ctx context.Context, request message) response {
 			break
 		}
 		encoded, _ := json.Marshal(result)
-		reply.Result = map[string]any{"content": []map[string]string{{"type": "text", "text": string(encoded)}}, "structuredContent": result}
+		toolResult := map[string]any{"content": []map[string]string{{"type": "text", "text": string(encoded)}}}
+		if _, object := result.(map[string]any); object {
+			toolResult["structuredContent"] = result
+		}
+		reply.Result = toolResult
 	default:
 		reply.Error = &rpcError{Code: -32601, Message: "method not found"}
 	}
