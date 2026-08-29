@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"session-cost empty-session identity guard at exact head 4e0f3676fc164a9dfa07e2ebe82c915bedaeb30d","body":{"commit":"4e0f3676fc164a9dfa07e2ebe82c915bedaeb30d","path":"tailapps/session-cost/folds/normalize.jsonata"}}
+{"kind":"artifact","text":"activity-stats empty-session identity guard at exact head 4e0f3676fc164a9dfa07e2ebe82c915bedaeb30d","body":{"commit":"4e0f3676fc164a9dfa07e2ebe82c915bedaeb30d","path":"tailapps/activity-stats"}}
