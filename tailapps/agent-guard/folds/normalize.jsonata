@@ -19,7 +19,7 @@
   $session_raw := $lookup($attrs, "session.id") ? $lookup($attrs, "session.id") :
     ($lookup($attrs, "conversation.id") ? $lookup($attrs, "conversation.id") :
     ($lookup($attrs, "session_id") ? $lookup($attrs, "session_id") : $lookup($resource, "service.instance.id")));
-  $session_known := $exists($session_raw) and $session_raw != "";
+  $session_known := $exists($session_raw) and $string($session_raw) != "";
   $session := $session_known ? $string($session_raw) : "unknown:" & $harness;
   $tool_raw := $lookup($attrs, "tool_name") ? $lookup($attrs, "tool_name") : $lookup($attrs, "tool");
   $tool_known := $exists($tool_raw) and $string($tool_raw) != "";
