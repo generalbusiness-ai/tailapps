@@ -37,7 +37,8 @@
   $session_raw := $lookup($attrs, "session.id") ? $lookup($attrs, "session.id") :
     ($lookup($attrs, "conversation.id") ? $lookup($attrs, "conversation.id") :
     ($lookup($attrs, "session_id") ? $lookup($attrs, "session_id") : $lookup($resource, "service.instance.id")));
-  $session := $exists($session_raw) ? $string($session_raw) : "unknown:" & $harness;
+  $session_known := $exists($session_raw) and $session_raw != "";
+  $session := $session_known ? $string($session_raw) : "unknown:" & $harness;
   $input_raw := $exists($lookup($attrs, "input_tokens")) ? $lookup($attrs, "input_tokens") : $lookup($attrs, "input_token_count");
   $output_raw := $exists($lookup($attrs, "output_tokens")) ? $lookup($attrs, "output_tokens") : $lookup($attrs, "output_token_count");
   $cached_raw := $exists($lookup($attrs, "cached_input_tokens")) ? $lookup($attrs, "cached_input_tokens") :

@@ -315,6 +315,46 @@ func TestCodexServiceIdentitiesNormalizeAcrossBundles(t *testing.T) {
 	}
 }
 
+func TestEmptySessionIdentitiesNormalizeAcrossBundles(t *testing.T) {
+	tests := []struct {
+		name       string
+		tailapp    string
+		fold       string
+		eventName  string
+		attributes map[string]any
+	}{
+		{name: "agent-guard", tailapp: "agent-guard", fold: "normalize_harness_event", eventName: "codex.tool_result", attributes: map[string]any{"tool_name": "read", "success": true}},
+		{name: "session-cost", tailapp: "session-cost", fold: "normalize_usage", eventName: "codex.api_request", attributes: map[string]any{"input_tokens": 1}},
+		{name: "activity-stats", tailapp: "activity-stats", fold: "normalize_activity", eventName: "codex.tool_result", attributes: map[string]any{"tool_name": "read", "success": true}},
+	}
+	for position, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, field := range []string{"session.id", "conversation.id", "session_id"} {
+				tc.attributes[field] = ""
+			}
+			input := harnessInput(position+1, "codex", tc.eventName, tc.attributes)
+			resource := input.Event["record"].(map[string]any)["resource"].(map[string]any)
+			resource["attributes"].(map[string]any)["service.instance.id"] = ""
+
+			bundle, err := Load(tc.tailapp)
+			if err != nil {
+				t.Fatal(err)
+			}
+			normalized, err := bundle.Evaluate(tc.fold, input)
+			if err != nil {
+				t.Fatal(err)
+			}
+			events := normalized.Events["otel_event"]
+			if normalized.Decision != "effective" || len(events) != 1 {
+				t.Fatalf("normalized = %#v", normalized)
+			}
+			if got := events[0]["session_id"]; got != "unknown:codex" {
+				t.Fatalf("session_id = %#v, want unknown:codex; event = %#v", got, events[0])
+			}
+		})
+	}
+}
+
 func TestSessionCostMapsObservedCodexSSEUsage(t *testing.T) {
 	cost, err := Load("session-cost")
 	if err != nil {
