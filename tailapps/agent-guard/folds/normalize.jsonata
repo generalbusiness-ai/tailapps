@@ -38,9 +38,12 @@
 	$progress_known := $exists($progress_raw) and $string($progress_raw) != "" and $string($progress_raw) != "<redacted>";
   $tool_coverage := $session_known and $tool_known ? "observed" : "unknown";
   $target_coverage := $target_known ? "observed" : "unknown";
-  $reason := $not($session_known) ? "session identity absent" :
-    ($not($tool_known) ? "tool identity absent" :
-    ($not($target_known) ? "tool target absent, gated, or redacted" : "required fields observed"));
+	$tool_reason := $not($session_known) ? "session identity absent" :
+		($tool_known ? "session and tool identity observed" : "tool identity absent, gated, or redacted");
+	$target_reason := $target_known ? "tool target observed" : "tool target absent, gated, or redacted";
+	$progress_reason := $progress_known ? "progress fingerprint observed" : "progress fingerprint absent, gated, or redacted";
+	$coverage_reason := $tool_coverage != "observed" ? $tool_reason :
+		($target_coverage != "observed" ? $target_reason : "required policy fields observed");
 	$action_fingerprint := $harness & "|" & $session & "|" & $operation & "|" & ($tool_known ? $tool : "unknown") & "|" & ($target_known ? $target : "unknown");
 	$progress_fingerprint := $progress_known ? $string($progress_raw) : "unknown";
   $recognized ? {
@@ -63,7 +66,7 @@
         "source_position": meta.position,
         "tool_coverage": $tool_coverage,
         "target_coverage": $target_coverage,
-        "coverage_reason": $reason
+        "coverage_reason": $coverage_reason
       }]
     },
     "tables": {
@@ -72,21 +75,21 @@
           "harness": $harness,
           "capability": "tool-observation",
           "state": $tool_coverage,
-          "reason": $reason,
+          "reason": $tool_reason,
           "last_source_position": meta.position
         },
         {
           "harness": $harness,
           "capability": "target-detail",
           "state": $target_coverage,
-          "reason": $reason,
+          "reason": $target_reason,
           "last_source_position": meta.position
 		},
 		{
 		  "harness": $harness,
 		  "capability": "progress-detail",
 		  "state": $progress_known ? "observed" : "unknown",
-		  "reason": $progress_known ? "progress fingerprint observed" : "progress fingerprint absent, gated, or redacted",
+		  "reason": $progress_reason,
 		  "last_source_position": meta.position
         }
       ]}

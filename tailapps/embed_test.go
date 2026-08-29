@@ -44,6 +44,12 @@ func TestAgentGuardProducesViolationUnknownAndLoopEvidence(t *testing.T) {
 	if got := len(normalized.Tables["telemetry_coverage"].Upsert); got != 3 {
 		t.Fatalf("coverage rows = %d", got)
 	}
+	coverage := normalized.Tables["telemetry_coverage"].Upsert
+	if coverage[0]["reason"] != "session and tool identity observed" ||
+		coverage[1]["reason"] != "tool target observed" ||
+		coverage[2]["reason"] != "progress fingerprint absent, gated, or redacted" {
+		t.Fatalf("coverage reasons = %#v", coverage)
+	}
 
 	prior := any(nil)
 	var analytic profile.EvaluationResult
@@ -88,6 +94,38 @@ func TestAgentGuardProducesViolationUnknownAndLoopEvidence(t *testing.T) {
 	progress := unknownAnalytic.Tables["session_progress"].Upsert[0]
 	if fmt.Sprint(progress["no_progress_count"]) != "0" {
 		t.Fatalf("missing progress telemetry counted as no progress: %#v", progress)
+	}
+	unknownCoverage := unknown.Tables["telemetry_coverage"].Upsert
+	if unknownCoverage[0]["state"] != "observed" || unknownCoverage[0]["reason"] != "session and tool identity observed" {
+		t.Fatalf("tool coverage explains a different capability: %#v", unknownCoverage)
+	}
+	if unknownCoverage[1]["state"] != "unknown" || unknownCoverage[1]["reason"] != "tool target absent, gated, or redacted" {
+		t.Fatalf("target coverage = %#v", unknownCoverage)
+	}
+
+	prior = nil
+	for position := 10; position <= 12; position++ {
+		event := cloneMap(unknown.Events["otel_event"][0])
+		event["source_position"] = position
+		unknownAnalytic, err = guard.Evaluate("update_guard_analytics", profile.EvaluationInput{
+			Meta:  map[string]any{"position": position, "event_id": "local", "event_type": "otel_event", "emission_ordinal": 0},
+			Event: event,
+			Rows:  map[string]any{"prior": prior},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		prior = unknownAnalytic.Tables["session_progress"].Upsert[0]
+	}
+	loops := unknownAnalytic.Tables["loop_findings"].Upsert
+	if len(loops) != 1 || loops[0]["finding_kind"] != "repeated-action" {
+		t.Fatalf("degraded repeated-action finding = %#v", loops)
+	}
+	evidence, ok := loops[0]["evidence"].(map[string]any)
+	if !ok || evidence["action_fingerprint_coverage"] != "degraded" ||
+		evidence["action_fingerprint_reason"] != "tool target absent, gated, or redacted" ||
+		evidence["progress_coverage"] != "unknown" {
+		t.Fatalf("degraded repeated-action evidence = %#v", loops[0]["evidence"])
 	}
 }
 

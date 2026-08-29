@@ -17,6 +17,7 @@
   $denied_operation := event.operation_kind = "destructive" or event.operation_kind = "network_external";
   $outside_target := event.target_coverage = "observed" and $substring(event.target, 0, 9) = "/outside/";
   $unknown := event.tool_coverage != "observed" or event.target_coverage != "observed";
+	$action_fingerprint_coverage := $unknown ? "degraded" : "observed";
   $rule := $denied_tool ? "denied-tool" : ($denied_operation ? "denied-operation" : ($outside_target ? "target-boundary" : ($unknown ? "insufficient-telemetry" : "")));
   $severity := $unknown and $rule = "insufficient-telemetry" ? "unknown" : "high";
   $summary := $rule = "denied-tool" ? "Observed a denied tool" :
@@ -55,7 +56,10 @@
     "no_progress_count": $no_progress,
     "evidence": {
 	  "action_fingerprint": event.action_fingerprint,
+	  "action_fingerprint_coverage": $action_fingerprint_coverage,
+	  "action_fingerprint_reason": event.coverage_reason,
 	  "progress_fingerprint": event.progress_fingerprint,
+	  "progress_coverage": event.progress_coverage,
       "last_distinct_progress_unix_nano": $distinct
     }
   }] : [];
