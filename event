@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Package documentation updated to the stage-4 contents, including the previously undocumented stage-3 value codec.","body":{"commit":"8c6d5e21ec5ae7f80ac1653a0a1d8047e45cbf23","path":"jsonataddl/README.md"}}
+{"kind":"artifact","text":"Corpus format documentation for the projection section and the coverage it moves from planned to current.","body":{"commit":"8c6d5e21ec5ae7f80ac1653a0a1d8047e45cbf23","path":"jsonataddl/corpus/README.md"}}
