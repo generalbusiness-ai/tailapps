@@ -10,19 +10,21 @@ import (
 	"github.com/generalbusiness-ai/tailapps/internal/profile"
 )
 
-//go:embed activity-stats/application.sql activity-stats/folds/*.jsonata agent-guard/application.sql agent-guard/folds/*.jsonata session-cost/application.sql session-cost/folds/*.jsonata
+//go:embed activity-stats/application.sql activity-stats/folds/*.jsonata agent-guard/application.sql agent-guard/folds/*.jsonata session-cost/application.sql session-cost/folds/*.jsonata signal-counts/application.sql signal-counts/folds/*.jsonata
 var sources embed.FS
 
 func Load(name string) (*profile.Profile, error) {
 	switch name {
-	case "activity-stats", "agent-guard", "session-cost":
+	case "activity-stats", "agent-guard", "session-cost", "signal-counts":
 		return profile.Load(sources, name, name)
 	default:
 		return nil, fmt.Errorf("unknown bundled tailapp %q", name)
 	}
 }
 
-func Names() []string { return []string{"activity-stats", "agent-guard", "session-cost"} }
+func Names() []string {
+	return []string{"activity-stats", "agent-guard", "session-cost", "signal-counts"}
+}
 
 // Source returns a private copy of a bundled Tailapp's ordinary source set.
 // Bundles still travel through the public registry/compiler/activation path;

@@ -17,7 +17,7 @@ without changing that sequence.
 ## Build Tailapps
 
 - [Author, install, and update a Tailapp](authoring.md)
-- [Five-minute `signal-counts` example](../examples/signal-counts/README.md)
+- [Five-minute `signal-counts` example](../tailapps/signal-counts/README.md)
 - [Canonical OTLP record shapes](reference/otel-records.md)
 - [DDL and JSONata](reference/ddl-jsonata.md)
 - [Query SQL](reference/query-sql.md)
