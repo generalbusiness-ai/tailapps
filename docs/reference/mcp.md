@@ -20,8 +20,26 @@ management.
 - The `initialize` reply carries server-wide `instructions`: a
   self-contained orientation whose first paragraph fits harness truncation
   budgets.
-- Capability: tools
+- Capabilities: tools and resources (the resource catalog is immutable per
+  build: no `subscribe`, no `listChanged`)
 - Maximum input line: 1 MiB
+
+## Documentation resources
+
+`resources/list` returns a finite embedded catalog under the stable
+`tailapp://docs/` scheme: an overview (carrying this build's version and
+source provenance), authoring, query-SQL, canonical-record, and harness
+pages, plus one reference page per tool at `tailapp://docs/tools/NAME`.
+Every entry is `text/markdown` with assistant-audience annotations;
+listing order is deterministic and the complete catalog always fits one
+page. Tool pages are rendered from the live tool metadata — title,
+description, arguments, result fields, and a worked example — so they
+cannot drift from `tools/list`. Pages stand alone: no repository-relative
+links. `resources/read` on an unknown URI returns invalid params
+(`-32602`) echoing the URI in `data` and pointing at
+`tailapp://docs/overview`; it never probes paths and never returns empty
+contents. No tool behavior depends on a client reading resources — the
+`docs:` pointers in tool descriptions degrade to inert strings.
 
 The process is only an adapter. Start `tailapp serve` first and give the MCP
 process the same `TAILAPP_HOME` so it can reach `engine.sock`.
