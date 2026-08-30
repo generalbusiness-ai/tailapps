@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"The real-engine conformance lifecycle at the stage-4 head, driven over the wire against the SDK-served surface.","body":{"commit":"73710bebb91a7af8bbf7a044a099b400b0837f34","path":"internal/mcp/conformance_test.go"}}
+{"kind":"artifact","text":"MCP reference at the stage-4 head: documents dual-era negotiation, the SDK capability shape, and the changed unknown-tool, unknown-resource, and framing-corruption contracts.","body":{"commit":"73710bebb91a7af8bbf7a044a099b400b0837f34","path":"docs/reference/mcp.md"}}
