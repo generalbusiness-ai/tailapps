@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Resource tests at the stage-4 head, ported to the wire: catalog completeness and determinism, standalone reads, provenance, metadata-derived pages, and the SDK unknown-URI contract.","body":{"commit":"73710bebb91a7af8bbf7a044a099b400b0837f34","path":"internal/mcp/resources_test.go"}}
+{"kind":"artifact","text":"The real-engine conformance lifecycle at the stage-4 head, driven over the wire against the SDK-served surface.","body":{"commit":"73710bebb91a7af8bbf7a044a099b400b0837f34","path":"internal/mcp/conformance_test.go"}}
