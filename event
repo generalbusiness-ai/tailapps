@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at internal/ingest/canonical.go","body":{"commit":"2f46c98dd286dfe71fb6b19fe2477c1d9c590fc5","path":"internal/ingest/canonical.go"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:265140b28e0cc346b56f2d35ff57a3814560d3a2","text":"Merge retired a covered predecessor; the successor is at internal/ingest/canonical.go."}
