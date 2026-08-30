@@ -10,7 +10,7 @@ copy of the OTLP stream.
 
 ## What you can install
 
-All five included Tailapps are built-in bundles:
+There are five built-in bundles:
 
 | Tailapp | Questions it answers |
 | --- | --- |
@@ -20,8 +20,8 @@ All five included Tailapps are built-in bundles:
 | [`session-cost`](tailapps/session-cost/README.md) | How many input, cached, output, and reasoning tokens—and how much reported cost—has each session accumulated? |
 | [`signal-counts`](tailapps/signal-counts/README.md) | Are logs, spans, and metric points arriving from each source, and which event names are present? |
 
-The linked pages document each bundle's inputs, retained fields, privacy model,
-and ready-to-run queries.
+Agents and people can easily build new tailapps or customize these included
+bundles.
 
 ## What the results look like
 
