@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:66521d7b650bdb4ee7bea4be9a13b0fe9b78b741","text":"Merge retired a covered predecessor; the successor is at docs/reference/cli.md."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:6e1faf66a60fc95e7cbc874c57f61023a047a254","text":"Merge retired a covered predecessor; the successor is at internal/cli/cli.go."}
