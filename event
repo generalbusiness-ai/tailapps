@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:47a40594ab35dfbbe7f59d2a081cd6d7510ef514","text":"Merge retired a covered predecessor; the successor is at docs/README.md."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:67c1dce114c79f7eb2a906558750ef8a923535ec","text":"Merge retired a covered predecessor; the successor is at tailapps/embed.go."}
