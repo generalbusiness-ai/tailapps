@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:983c7f71641fa55511dde61f991c5f4eb18f116b"}
+{"kind":"request","text":"Repair the promote-examples review basis so checker can file the prepared guarded approval.","body":{"conditions":"Replace request f0e9cc6f with a request whose required artifact citations all stand at exact head 3aba33fbaad0bb95870f09a3150d9db83436c482; preserve README.md as primary and the intended nine-path coverage.","to":"00721374a520eabbbd4ded64dd018110f47545ff20112bee83c75f478e15f818"}}
