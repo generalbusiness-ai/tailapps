@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Skill tests at the placement-corrected stage-5 head, unchanged in this delta.","body":{"commit":"bc2e7c4a33b0425c5349ad465b10351b254b9bee","path":"internal/mcp/skill_test.go"}}
+{"kind":"artifact","text":"CLI at the placement-corrected stage-5 head, unchanged in this delta.","body":{"commit":"bc2e7c4a33b0425c5349ad465b10351b254b9bee","path":"internal/cli/cli.go"}}
