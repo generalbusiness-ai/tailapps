@@ -1,19 +1,24 @@
-// Package profile compiles the deliberately small DDL/JSONata language used
-// by Tailapp applications. A compiled Profile is immutable and safe to share
-// between the projection and query subsystems.
+// Package profile is the Tailapp host façade over the extracted jsonataddl
+// core: it selects the Tailapp dialect, assembles the composed runtime
+// identity, and presents compiled applications as immutable Profile values
+// whose evaluation delegates to the core handle. The compile-and-evaluate
+// behavior itself lives in the core; since migration stage 6 this package
+// carries no duplicate of it.
 package profile
 
-import (
-	jsonata "github.com/jsonata-go/jsonata/v206"
-
-	"github.com/generalbusiness-ai/tailapps/jsonataddl"
-)
+import "github.com/generalbusiness-ai/tailapps/jsonataddl"
 
 const (
-	// RuntimeID binds the evaluator, DDL grammar, numeric rules and limits that
-	// give a revision its meaning. Change it whenever any of those change.
+	// RuntimeID is the legacy runtime identity: the repository-global
+	// string every pre-switchover revision and projection recorded. It
+	// remains only so those projections stay recognizable and queryable
+	// through the retained legacy resolver (Load) until their explicit
+	// continue-or-reset upgrade; new identity is CurrentRuntimeID.
 	RuntimeID = "tailapp-otlp-1.8-json-v1-ddl-jsonata-v206-sqlite-3.53.4@5"
 
+	// The evaluation and source bounds, mirrored from the Tailapp dialect
+	// (jsonataddl.Tailapp); the consistency tests bind them to the values
+	// the runtime enforces.
 	MaxElementBytes = 64 << 10
 	MaxSourceBytes  = 512 << 10
 	MaxProgramBytes = 64 << 10
@@ -26,10 +31,9 @@ const (
 	MaxRowChanges   = 1024
 	MaxManyRows     = 1024
 
-	// EvaluationWallTimeMilliseconds is only an outer process-safety net. It
-	// is deliberately part of RuntimeID, but active programs are also confined
-	// to the statically admitted profile; wall time is not a deterministic
-	// evaluation budget.
+	// EvaluationWallTimeMilliseconds is only an outer process-safety net,
+	// enforced by the core evaluator. It is deliberately part of runtime
+	// identity; wall time is not a deterministic evaluation budget.
 	EvaluationWallTimeMilliseconds = 250
 )
 
@@ -99,8 +103,6 @@ type Program struct {
 	Writes     []string `json:"writes"`
 	Emits      string   `json:"emits,omitempty"`
 	Normalizer bool     `json:"normalizer"`
-
-	expression *jsonata.Expression
 }
 
 type ExportColumn struct {
@@ -116,8 +118,8 @@ type Export struct {
 }
 
 type Profile struct {
-	// core is set only on adapter-loaded profiles (LoadViaCore); evaluation
-	// then delegates to the immutable extracted-core handle.
+	// core is the compiled application handle every Profile is backed by;
+	// evaluation and the read authorizer delegate to it.
 	core *jsonataddl.Application
 
 	Name                 string            `json:"name"`
@@ -136,14 +138,12 @@ type Profile struct {
 	Sources              map[string][]byte `json:"-"`
 }
 
-func (p *Profile) Expression(program string) (*jsonata.Expression, bool) {
-	if p.Normalizer.Name == program {
-		return p.Normalizer.expression, true
+// ReadAuthorizer is the default-deny SQLite authorizer for executing the
+// named program's compiled read plan, derived by the core from the plan
+// and schema.
+func (p *Profile) ReadAuthorizer(program string) (jsonataddl.Authorizer, bool) {
+	if p.core == nil {
+		return nil, false
 	}
-	for i := range p.Folds {
-		if p.Folds[i].Name == program {
-			return p.Folds[i].expression, true
-		}
-	}
-	return nil, false
+	return p.core.ReadAuthorizer(program)
 }

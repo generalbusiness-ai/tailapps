@@ -2,19 +2,19 @@ package profile
 
 import (
 	"io/fs"
+	"sort"
 
 	"github.com/generalbusiness-ai/tailapps/jsonataddl"
 )
 
-// LoadViaCore compiles a source set through the extracted jsonataddl core
-// under the Tailapp dialect and the current legacy runtime identity. The
-// returned Profile carries the same inspection data and identity digests as
-// Load produces, and its Evaluate delegates to the immutable core handle.
-// This is the narrow adapter of migration stage 4: the conformance corpus
-// runs against both implementations differentially through it, and later
-// stages move callers onto core handles before the duplicate rules are
-// removed.
-func LoadViaCore(files fs.FS, root, name string) (*Profile, error) {
+// Load is the retained legacy resolver: the core compiler under the
+// Tailapp dialect seeded with the legacy RuntimeID, so a pre-switchover
+// revision compiles to its original digest, diagnostics, and semantics.
+// The stage-4 differential corpus proved the core identical to the removed
+// legacy implementation over the frozen goldens; that freeze is what
+// justifies this resolver standing in for the old code. Live compilation
+// is LoadCurrent.
+func Load(files fs.FS, root, name string) (*Profile, error) {
 	if err := ValidateName(name); err != nil {
 		return nil, err
 	}
@@ -119,4 +119,13 @@ func evaluateViaCore(application *jsonataddl.Application, programName string, in
 		result.Tables[name] = TableChanges{Insert: changes.Insert, Upsert: changes.Upsert, Delete: changes.Delete}
 	}
 	return result, nil
+}
+
+func sortedKeys[V any](values map[string]V) []string {
+	result := make([]string, 0, len(values))
+	for key := range values {
+		result = append(result, key)
+	}
+	sort.Strings(result)
+	return result
 }

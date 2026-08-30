@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,6 +16,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"github.com/ncruces/go-sqlite3"
 	sqlitedriver "github.com/ncruces/go-sqlite3/driver"
@@ -61,8 +61,28 @@ type Projection struct {
 	path    string
 	profile *profile.Profile
 	db      *sql.DB
+	guard   *readGuard
 	mu      sync.Mutex
 }
+
+// readGuard is the connection-level authorizer seat. The connection is
+// opened with its callback installed once; host operations (schema,
+// mutations, metadata) run with no deny function seated and are
+// unrestricted, while executing a program's compiled read plan seats that
+// program's default-deny core authorizer for the duration of the reads.
+type readGuard struct {
+	deny atomic.Pointer[jsonataddl.Authorizer]
+}
+
+func (guard *readGuard) callback(action sqlite3.AuthorizerActionCode, name3rd, name4th, schema, inner string) sqlite3.AuthorizerReturnCode {
+	if seated := guard.deny.Load(); seated != nil {
+		return (*seated)(action, name3rd, name4th, schema, inner)
+	}
+	return sqlite3.AUTH_OK
+}
+
+func (guard *readGuard) seat(authorizer jsonataddl.Authorizer) { guard.deny.Store(&authorizer) }
+func (guard *readGuard) release()                              { guard.deny.Store(nil) }
 
 func Create(ctx context.Context, path string, compiled *profile.Profile, activationBoundary int64, mode string) (*Projection, error) {
 	if compiled == nil {
@@ -79,11 +99,12 @@ func Create(ctx context.Context, path string, compiled *profile.Profile, activat
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return nil, fmt.Errorf("inspect projection path: %w", err)
 	}
-	database, err := openDatabase(path)
+	guard := &readGuard{}
+	database, err := openDatabase(path, guard)
 	if err != nil {
 		return nil, err
 	}
-	projection := &Projection{name: compiled.Name, path: path, profile: compiled, db: database}
+	projection := &Projection{name: compiled.Name, path: path, profile: compiled, db: database, guard: guard}
 	if err := projection.initialize(ctx, activationBoundary, mode); err != nil {
 		database.Close()
 		return nil, err
@@ -114,7 +135,7 @@ func InspectIdentity(ctx context.Context, path string) (Identity, error) {
 	if info.Mode()&os.ModeSymlink != 0 {
 		return Identity{}, errors.New("projection database may not be a symlink")
 	}
-	database, err := openDatabase(path)
+	database, err := openDatabase(path, &readGuard{})
 	if err != nil {
 		return Identity{}, err
 	}
@@ -135,11 +156,12 @@ func openExisting(ctx context.Context, path string, compiled *profile.Profile, e
 	if info.Mode()&os.ModeSymlink != 0 {
 		return nil, errors.New("projection database may not be a symlink")
 	}
-	database, err := openDatabase(path)
+	guard := &readGuard{}
+	database, err := openDatabase(path, guard)
 	if err != nil {
 		return nil, err
 	}
-	projection := &Projection{name: compiled.Name, path: path, profile: compiled, db: database}
+	projection := &Projection{name: compiled.Name, path: path, profile: compiled, db: database, guard: guard}
 	var name, revision, runtime string
 	if err := database.QueryRowContext(ctx, `SELECT tailapp,revision,runtime_profile FROM tailapp_projection_identity WHERE singleton=1`).Scan(&name, &revision, &runtime); err != nil {
 		database.Close()
@@ -152,7 +174,7 @@ func openExisting(ctx context.Context, path string, compiled *profile.Profile, e
 	return projection, nil
 }
 
-func openDatabase(path string) (*sql.DB, error) {
+func openDatabase(path string, guard *readGuard) (*sql.DB, error) {
 	dsn := (&url.URL{Scheme: "file", Path: path}).String()
 	database, err := sqlitedriver.Open(dsn, func(connection *sqlite3.Conn) error {
 		if _, err := connection.Config(sqlite3.DBCONFIG_DEFENSIVE, true); err != nil {
@@ -164,7 +186,7 @@ func openDatabase(path string) (*sql.DB, error) {
 		if _, err := connection.Config(sqlite3.DBCONFIG_ENABLE_LOAD_EXTENSION, false); err != nil {
 			return err
 		}
-		return nil
+		return connection.SetAuthorizer(guard.callback)
 	})
 	if err != nil {
 		return nil, fmt.Errorf("open projection database: %w", err)
@@ -411,6 +433,19 @@ func pointerValue(value *string) any {
 
 func (p *Projection) evaluationInput(ctx context.Context, tx *sql.Tx, program profile.Program, position int64, eventID, eventType string, event map[string]any) (profile.EvaluationInput, error) {
 	readValues := make(map[string]any, len(program.Reads))
+	if len(program.Reads) > 0 {
+		// The compiled read plan executes under the core's default-deny
+		// authorizer: only the relations the plan names (and their base
+		// tables through declared views) are readable while these reads
+		// run, enforcing the fold-read policy at execution time rather
+		// than only as a compile-time check.
+		authorizer, ok := p.profile.ReadAuthorizer(program.Name)
+		if !ok {
+			return profile.EvaluationInput{}, fmt.Errorf("program %q has no read authorizer", program.Name)
+		}
+		p.guard.seat(authorizer)
+		defer p.guard.release()
+	}
 	for _, read := range program.Reads {
 		value, err := executeRead(ctx, tx, read, event)
 		if err != nil {
@@ -483,46 +518,10 @@ func executeRead(ctx context.Context, tx *sql.Tx, read profile.Read, event map[s
 	}
 }
 
+// fromSQLite delegates the fold-input read conversion to the core codec,
+// which owns the legacy-compatible fold-input shape.
 func fromSQLite(value any, databaseType string) (any, error) {
-	if value == nil {
-		return nil, nil
-	}
-	switch strings.ToUpper(databaseType) {
-	case "BOOLEAN":
-		integer, ok := value.(int64)
-		if !ok {
-			return nil, errors.New("invalid BOOLEAN storage")
-		}
-		return integer != 0, nil
-	case "JSON":
-		var encoded []byte
-		switch typed := value.(type) {
-		case string:
-			encoded = []byte(typed)
-		case []byte:
-			encoded = typed
-		default:
-			return nil, errors.New("invalid JSON storage")
-		}
-		var result any
-		decoder := json.NewDecoder(bytes.NewReader(encoded))
-		decoder.UseNumber()
-		if err := decoder.Decode(&result); err != nil {
-			return nil, err
-		}
-		return result, nil
-	case "BLOB":
-		bytesValue, ok := value.([]byte)
-		if !ok {
-			return nil, errors.New("invalid BLOB storage")
-		}
-		return base64.StdEncoding.EncodeToString(bytesValue), nil
-	default:
-		if bytesValue, ok := value.([]byte); ok {
-			return string(bytesValue), nil
-		}
-		return value, nil
-	}
+	return jsonataddl.ReadRowValue(value, jsonataddl.LogicalType(databaseType))
 }
 
 func (p *Projection) applyChanges(ctx context.Context, tx *sql.Tx, changes map[string]profile.TableChanges) error {

@@ -266,25 +266,6 @@ func TestExportThroughApplicationViewIsRefused(t *testing.T) {
 	}
 }
 
-func TestStatementSplitterHandlesQuotesAndComments(t *testing.T) {
-	source := `-- lead ;
-CREATE TABLE example (id TEXT PRIMARY KEY, note TEXT CHECK(note <> ';'));
-/* between ; */ CREATE VIEW example_view AS SELECT id, note FROM example;
-`
-	statements, err := splitStatements(source)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(statements) != 2 || !strings.Contains(statements[0], "';'") {
-		t.Fatalf("statements = %#v", statements)
-	}
-	for _, invalid := range []string{"CREATE TABLE x (id TEXT);", "CREATE TABLE x (id TEXT PRIMARY KEY)", "CREATE TABLE x (id TEXT CHECK(id <> 'x));"} {
-		if _, err := splitStatements(invalid); invalid != "CREATE TABLE x (id TEXT);" && err == nil {
-			t.Fatalf("invalid SQL %q accepted", invalid)
-		}
-	}
-}
-
 func TestEvaluateValidatesProgramAuthorityAndTypes(t *testing.T) {
 	compiled, err := Load(validFS(validDDL), ".", "agent-guard")
 	if err != nil {
@@ -303,24 +284,16 @@ func TestEvaluateValidatesProgramAuthorityAndTypes(t *testing.T) {
 		t.Fatalf("result = %#v", result)
 	}
 
-	program := compiled.Normalizer
-	for name, output := range map[string]string{
-		"extra event field": `{"decision":"effective","facts":[],"events":{"otel_event":[{"kind":"x","session_id":"s","tool":"t","success":true,"source_position":1,"extra":1}]},"tables":{}}`,
-		"wrong type":        `{"decision":"effective","facts":[],"events":{"otel_event":[{"kind":"x","session_id":"s","tool":"t","success":"yes","source_position":1}]},"tables":{}}`,
-		"undeclared table":  `{"decision":"effective","facts":[],"events":{},"tables":{"sessions":{"upsert":[]}}}`,
-		"ineffective write": `{"decision":"ineffective","facts":[],"events":{},"tables":{"coverage":{"upsert":[{"harness":"x","capability":"x","state":"x","last_position":1}]}}}`,
-	} {
-		t.Run(name, func(t *testing.T) {
-			if _, err := compiled.validateOutput(program, []byte(output)); err == nil {
-				t.Fatal("invalid output accepted")
-			}
-		})
-	}
+	// Invalid-output authority and shape rules (undeclared columns and
+	// tables, wrong types, ineffective decisions carrying outputs) are
+	// frozen through real programs by the conformance corpus misbehavior
+	// cases; the direct raw-output probe went with the removed duplicate
+	// validator.
 }
 
 func TestSourcePathsAndBounds(t *testing.T) {
 	for _, name := range []string{"../fold.jsonata", "/fold.jsonata", "folds//x.jsonata", `folds\\x.jsonata`} {
-		if err := validateSourcePath(name); err == nil {
+		if err := ValidateSourceElement(name, []byte("x")); err == nil {
 			t.Fatalf("invalid path %q accepted", name)
 		}
 	}
@@ -366,7 +339,9 @@ func TestJSONataSubsetAllowsApplyOperatorForAllowlistedFunction(t *testing.T) {
 }
 
 func TestJSONataAsteriskInsideStringIsAllowed(t *testing.T) {
-	if err := validateJSONataSource([]byte(`{"pattern":"*"}`)); err != nil {
-		t.Fatal(err)
+	files := validFS(validDDL)
+	files["folds/observe.jsonata"] = &fstest.MapFile{Data: []byte(`{"decision": "effective", "facts": [], "tables": {}, "note": "*"}`)}
+	if _, err := Load(files, ".", "agent-guard"); err != nil {
+		t.Fatalf("asterisk inside a string literal rejected: %v", err)
 	}
 }
