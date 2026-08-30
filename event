@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Programs are compiled into the locked compiledExpression wrapper; everything else unchanged in this delta.","body":{"commit":"f934363d4c5b3f740c9d8be6266fdb399e370606","path":"jsonataddl/compile.go"}}
+{"kind":"artifact","text":"Evaluate goes through the program's serialized evaluate method instead of touching the shared jsonata expression directly; diagnostics unchanged.","body":{"commit":"f934363d4c5b3f740c9d8be6266fdb399e370606","path":"jsonataddl/evaluate.go"}}
