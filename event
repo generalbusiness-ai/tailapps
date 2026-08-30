@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:4c6c9c95627539a784e98eb0c2da8977d441e216"}
+{"kind":"artifact","text":"MCP adapter at the assertion-pinned stage-2 head, unchanged in this delta.","body":{"commit":"e5c774fc3cac1271e21b135659f7afb0773ba7d8","path":"internal/mcp/server.go"}}
