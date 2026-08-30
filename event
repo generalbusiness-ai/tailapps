@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at internal/profile/evaluate.go","body":{"commit":"0085ce734f10c74564603d94ffabf671a3d4ce2c","path":"internal/profile/evaluate.go"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:1b13f114ff33ffac0c4187b5549eb88ae1c79b73","text":"Merge retired a covered predecessor; the successor is at internal/profile/evaluate.go."}
