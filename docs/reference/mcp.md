@@ -41,6 +41,19 @@ links. `resources/read` on an unknown URI returns invalid params
 contents. No tool behavior depends on a client reading resources — the
 `docs:` pointers in tool descriptions degrade to inert strings.
 
+## Optional skill packaging
+
+`tailapp mcp emit-skill DIRECTORY` writes `DIRECTORY/tailapp/SKILL.md`, a
+compact cross-harness skill whose body byte-derives from the overview
+resource (the two cannot drift) with frontmatter fitting every harness's
+bounds. It is optional progressive disclosure, never required for correct
+MCP orientation, and nothing installs it as a side effect — only this
+explicit command writes it. Placement: Claude Code reads `.claude/skills/`
+(user or project), Codex reads `.agents/skills/` (project, walking up to
+the repository root, or `$HOME/.agents/skills`), and OpenCode reads its
+own directories plus both of the others — so one directory reachable as
+either name covers all three.
+
 The process is only an adapter. Start `tailapp serve` first and give the MCP
 process the same `TAILAPP_HOME` so it can reach `engine.sock`.
 

@@ -60,6 +60,16 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	case "serve":
 		return serve(ctx, home, args[1:], stdout, stderr)
 	case "mcp":
+		if len(args) > 1 && args[1] == "emit-skill" {
+			if len(args) != 3 {
+				return errors.New("usage: tailapp mcp emit-skill DIRECTORY")
+			}
+			path, err := mcp.EmitSkill(args[2])
+			if err != nil {
+				return err
+			}
+			return output(stdout, map[string]any{"skill": path})
+		}
 		client := control.NewClient(filepath.Join(home, "engine.sock"))
 		return (&mcp.Server{Client: client, Home: home}).Serve(ctx, os.Stdin, os.Stdout)
 	case "health":
