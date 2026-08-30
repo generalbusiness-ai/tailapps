@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Unchanged in this delta: the optional core handle on Profile.","body":{"commit":"f934363d4c5b3f740c9d8be6266fdb399e370606","path":"internal/profile/types.go"}}
+{"kind":"artifact","text":"Unchanged in this delta: adapter-loaded profiles delegate evaluation to the core.","body":{"commit":"f934363d4c5b3f740c9d8be6266fdb399e370606","path":"internal/profile/evaluate.go"}}
