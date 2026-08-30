@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:a8494350cb3ac647363407f52ce04253fb79e67b","text":"Merge retired a covered predecessor; the successor is at internal/ingest/receiver_test.go."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:a9f13b42538310f162e44d22f2e65101d21ba4ef","text":"Merge retired a covered predecessor; the successor is at notes/2026-08-28-jsonata-ddl-core-extraction.md."}
