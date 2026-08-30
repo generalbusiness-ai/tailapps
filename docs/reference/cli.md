@@ -99,8 +99,8 @@ Lists definitions with draft and optional active revision metadata.
 ### `tailapp apps create [--bundle NAME] --idempotency-key KEY APP`
 
 Creates a draft. Omit `--bundle` for an empty custom Tailapp. The only built-in
-bundle names in this release are `activity-stats`, `agent-guard`, and
-`session-cost`.
+bundle names in this release are `activity-stats`, `agent-guard`,
+`session-cost`, and `signal-counts`.
 
 ### `tailapp apps install [options] --idempotency-key KEY APP [DIRECTORY]`
 
@@ -112,13 +112,13 @@ Install custom source from a directory:
 ```sh
 tailapp apps install \
   --idempotency-key install-signal-counts-v1 \
-  signal-counts examples/signal-counts
+  signal-counts tailapps/signal-counts
 ```
 
 The directory may contain author documentation. Only `application.sql` and
 regular, non-symlink `folds/*.jsonata` files become executable source.
 
-Install a shipped example without a directory:
+Install a built-in bundle without a directory:
 
 ```sh
 tailapp apps install --bundle agent-guard \

@@ -25,6 +25,16 @@ func TestBundledTailappsCompile(t *testing.T) {
 	}
 }
 
+func TestSignalCountsExportsSignalCounts(t *testing.T) {
+	compiled, err := Load("signal-counts")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if compiled.Exports["signal_counts"].Name != "signal_counts" {
+		t.Fatalf("compiled profile = %#v", compiled)
+	}
+}
+
 func TestAgentGuardProducesViolationUnknownAndLoopEvidence(t *testing.T) {
 	guard, err := Load("agent-guard")
 	if err != nil {

@@ -6,7 +6,7 @@ record as `event`. This page describes the stable input shape authors can use
 without reading Go or protobuf definitions.
 
 For a working application that accepts every signal, see
-[`signal-counts`](../../examples/signal-counts/README.md).
+[`signal-counts`](../../tailapps/signal-counts/README.md).
 
 ## Common envelope
 

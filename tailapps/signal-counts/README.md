@@ -9,7 +9,7 @@ Install and first-activate it in one request:
 ```sh
 tailapp apps install \
   --idempotency-key install-signal-counts-v1 \
-  signal-counts examples/signal-counts
+  signal-counts tailapps/signal-counts
 ```
 
 Then query its exported table:

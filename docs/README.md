@@ -10,19 +10,20 @@ without changing that sequence.
 - Harness setup: [Claude Code](harnesses/claude-code.md),
   [Codex](harnesses/codex.md), [OpenCode](harnesses/opencode.md), and
   [Pi](harnesses/pi.md)
-- Shipped analytics: [activity stats](../tailapps/activity-stats/README.md),
-  [agent guard](../tailapps/agent-guard/README.md), and
-  [session cost](../tailapps/session-cost/README.md)
+- Shipped Tailapps: [activity stats](../tailapps/activity-stats/README.md),
+  [agent guard](../tailapps/agent-guard/README.md),
+  [session cost](../tailapps/session-cost/README.md), and
+  [signal counts](../tailapps/signal-counts/README.md)
 
 ## Build Tailapps
 
 - [Author, install, and update a Tailapp](authoring.md)
-- [Five-minute `signal-counts` example](../examples/signal-counts/README.md)
+- [Five-minute walkthrough with the shipped `signal-counts` Tailapp](../tailapps/signal-counts/README.md)
 - [Canonical OTLP record shapes](reference/otel-records.md)
 - [DDL and JSONata](reference/ddl-jsonata.md)
 - [Query SQL](reference/query-sql.md)
 
-The shipped analytics are examples, not a catalog. Custom Tailapps use the
+The shipped Tailapps are a starting kit, not a fixed catalog. Custom Tailapps use the
 same compiler, lifecycle, and runtime. Users and agents can create, validate,
 activate, query, update, and delete them through either public interface.
 

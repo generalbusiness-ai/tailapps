@@ -18,8 +18,8 @@ remains `tailapp`, and each installed source set is a **Tailapp**.
 ## Try it
 
 Prerequisites are macOS or Linux, Go 1.26.7 or later, and Git. The demo builds
-the binary, starts a temporary resident, installs the three shipped Tailapps
-and one custom Tailapp, sends all three OTLP signal types, and queries the
+the binary, starts a temporary resident, installs the four shipped Tailapps
+(signal-counts from its source directory), sends all three OTLP signal types, and queries the
 result through CLI and MCP:
 
 ```sh
@@ -40,7 +40,8 @@ export TAILAPP_HOME="$HOME/.local/share/tailapp"
 The receiver is deliberately loopback-only; use an explicit IP rather than
 `localhost`. Its actual URL is also written to `$TAILAPP_HOME/engine.json`.
 
-In another terminal, export the same `TAILAPP_HOME` and install the examples:
+In another terminal, export the same `TAILAPP_HOME` and install the shipped
+Tailapps:
 
 ```sh
 export TAILAPP_HOME="$HOME/.local/share/tailapp"
@@ -86,16 +87,18 @@ The included Tailapps are a starting kit, not a fixed catalog:
 | [`activity-stats`](tailapps/activity-stats/README.md) | Privacy-preserving event, activity, token/cache, tool-frequency, and latency analytics across Claude Code, Codex, and OpenCode |
 | [`agent-guard`](tailapps/agent-guard/README.md) | Observed out-of-bounds evidence, explicit unknown coverage, repetition/no-progress signals, and stalled-session queries |
 | [`session-cost`](tailapps/session-cost/README.md) | Cumulative token and reported-cost totals by harness and session |
+| [`signal-counts`](tailapps/signal-counts/README.md) | Deliberately small canonical-record counts by source, signal, and event name |
 
 You can create, fork, extend, replace, install, update, query, and delete your
 own Tailapps through the same CLI or MCP lifecycle. The
-[`signal-counts`](examples/signal-counts/README.md) example is a complete small
-source set. Install it in one request:
+[`signal-counts`](tailapps/signal-counts/README.md) source set is a complete
+small template for your own. Install any Tailapp from a source directory in one
+request:
 
 ```sh
 ./tailapp apps install \
   --idempotency-key install-signal-counts-v1 \
-  signal-counts examples/signal-counts
+  signal-counts tailapps/signal-counts
 ```
 
 An MCP agent can do the same with one `tailapp_install` call. See the
