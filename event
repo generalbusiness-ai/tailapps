@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at notes/2026-08-30-mcp-first-encounter.md","body":{"commit":"10b6b3249452fa3cd4ad14d8c28b9f645f6fa937","path":"notes/2026-08-30-mcp-first-encounter.md"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:e04d24786a1ef585f453ac2d52af7a8ba1029499","text":"Merge retired a covered predecessor; the successor is at notes/2026-08-30-mcp-first-encounter.md."}
