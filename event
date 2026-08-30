@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:c9fa3c83322caaaf366f7ca68e7d3914f1261342","text":"Merge retired a covered predecessor; the successor is at notes/2026-08-28-tailapp-initial-implementation.md."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:caeb38c2475c1bdb4873f1438a42491a9251e094","text":"Merge retired a covered predecessor; the successor is at internal/ingest/receiver.go."}
