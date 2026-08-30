@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Value-first README and consistent built-in Tailapp catalog at exact head 63a9232f00e0696d1868c9a1bf93c8efd69e0b23","body":{"commit":"63a9232f00e0696d1868c9a1bf93c8efd69e0b23","path":"."}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:d59d60120f06eccf9542ef26e56feac959fdec08","text":"Correct the artifact commit pointer to the actual exact head"}
