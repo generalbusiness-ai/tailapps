@@ -36,10 +36,18 @@ URLs are absent from the analytics by two deliberate layers:
 The shape splits cleanly across the existing trust boundary:
 
 **Capture** (operator policy). Either enable `OTEL_LOG_TOOL_DETAILS=1` —
-which also exposes file paths and full shell commands — or, preferably, a
-small adapter that promotes only the web-tool URL into the safe `target`
-attribute the guard vocabulary already understands. The narrower adapter
-avoids widening the telemetry surface for one use case.
+which also exposes file paths and full shell commands — or a small adapter
+that emits a **dedicated, already-minimized attribute** (the registrable
+domain, post-exclusion) that only the domains Tailapp consumes. An earlier
+draft of this note suggested promoting the full URL into the guard's
+existing `target` attribute; review showed that route is not safe as
+described: the shipped guard copies `target` verbatim into durable policy
+evidence and into `session_progress.action_fingerprint`, so every
+concurrently installed consumer of `target` would retain full URLs —
+internal names, tokens and all — defeating the domain-only retention
+promise. A dedicated minimized attribute keeps the guard's vocabulary
+untouched; any route that reuses a shared attribute must first account for
+every installed consumer of it.
 
 **Materialize** (a Tailapp). A new Tailapp (or a daily-review companion)
 whose normalizer recognizes web-tool events and upserts a per-UTC-day table
@@ -55,14 +63,33 @@ cron agent's instructions — no engine code, no fold logic, no new tooling —
 and the service is **either Google Safe Browsing or VirusTotal**. The
 instructions query the domain table, diff against a local seen-domain
 cache, apply the exclusion patterns, and submit only new external domains
-to the chosen service, reporting hits in the daily review. Between the
-two: Safe Browsing's Lookup API is free with an API key and purpose-built
-for exactly this question, and its Update API variant works over hashed
-prefixes (more private, more instruction complexity); VirusTotal's domain
-reports are richer (categories, resolutions, vendor verdicts) but
-rate-limited on the free tier and send the bare domain as a query. Either
-fits an instructions-only implementation; the choice is an operator call
-recorded when the cron instructions are written.
+to the chosen service, reporting hits in the daily review.
+
+Two constraints on that choice, from the services' own terms and protocol:
+
+- **Licensing is an explicit operator decision, not a default.** Safe
+  Browsing's free API is restricted to non-commercial use; commercial use
+  is directed to the paid Web Risk API
+  (https://developers.google.com/safe-browsing/reference/Appropriate.Usage).
+  VirusTotal's public API prohibits commercial use and business workflows
+  that only retrieve reports — which is a fair description of a routine
+  domain-enrichment cron
+  (https://docs.virustotal.com/reference/public-vs-premium-api). Depending
+  on the operator's context, the compliant options may be Web Risk or a VT
+  premium entitlement; the eligibility call is recorded when the cron
+  instructions are written.
+- **Safe Browsing checks canonical URLs, not domain reputation.** Its
+  Lookup API receives URLs, and the hash-prefix flow derives expressions
+  from host plus path and query
+  (https://developers.google.com/safe-browsing/v4/urls-hashing). A
+  registrable-domain-only table can at most check a synthesized root URL
+  (`https://<domain>/`), which misses path-specific threats — an accepted
+  loss under the domain-only retention posture, and it should be stated in
+  the review output. VirusTotal's domain reports match the domain-only
+  representation directly (categories, resolutions, vendor verdicts) but
+  carry the eligibility constraint above and free-tier rate limits.
+  Retaining more than the domain to close the Safe Browsing gap would
+  reopen the URL-retention privacy question and is not proposed here.
 
 ## Excluding internal URLs
 
@@ -104,9 +131,11 @@ domains) to a third-party reputation service. Directions discussed:
    derivation may belong in the adapter or the cron layer instead of the
    fold.
 3. Safe Browsing or VirusTotal (scoped to these two, instructions-only):
-   which one, how the API key is held for the cron agent, and whether Safe
-   Browsing's hashed-prefix Update API is worth the extra instruction
-   complexity over the plain Lookup API.
+   which one, given the eligibility constraints above (non-commercial-only
+   free tiers; Web Risk or VT premium for commercial contexts), how the API
+   key is held for the cron agent, whether the synthesized-root-URL loss
+   under Safe Browsing is acceptable, and whether its hashed-prefix flow is
+   worth the extra instruction complexity over the plain Lookup API.
 4. Retention: how many days of domain rows the review needs, and whether
    the table resets with the app's activation semantics suffices.
 5. Where the exclusion configuration lives (both layers, or egress only),
