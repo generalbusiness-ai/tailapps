@@ -35,6 +35,25 @@ type corpusManifest struct {
 		Expect  string `json:"expect"`
 		Repeat  int    `json:"repeat,omitempty"`
 	} `json:"evaluations,omitempty"`
+	// Projection cases run only against the extracted core: they exercise
+	// the compiled read plan and the default-deny read authorizer over real
+	// SQLite state, then apply the validated mutation plan and freeze the
+	// final state. See corpus_projection_test.go.
+	Projection []corpusProjectionCase `json:"projection,omitempty"`
+}
+
+type corpusProjectionCase struct {
+	Name    string         `json:"name"`
+	Program string         `json:"program"`
+	State   string         `json:"state,omitempty"`
+	Event   string         `json:"event,omitempty"`
+	Meta    map[string]any `json:"meta,omitempty"`
+	// SQL, when set, is attempted directly under the program's read
+	// authorizer instead of executing the compiled plan; the golden freezes
+	// the denial or the returned rows.
+	SQL        string `json:"sql,omitempty"`
+	Expect     string `json:"expect"`
+	FinalState string `json:"final_state,omitempty"`
 }
 
 type corpusIdentity struct {
@@ -51,6 +70,15 @@ type compileFunc func(files fs.FS, root, name string) (*Profile, error)
 
 func TestConformanceCorpus(t *testing.T) {
 	runConformanceCorpus(t, Load)
+}
+
+// TestConformanceCorpusAgainstCore is the migration's differential harness:
+// the identical corpus - the same applications, inputs, identity digests and
+// exact diagnostics - runs through the extracted core's adapter. Any drift
+// between the existing implementation and the core fails one of the two
+// runs against the shared goldens.
+func TestConformanceCorpusAgainstCore(t *testing.T) {
+	runConformanceCorpus(t, LoadViaCore)
 }
 
 func runConformanceCorpus(t *testing.T, compile compileFunc) {

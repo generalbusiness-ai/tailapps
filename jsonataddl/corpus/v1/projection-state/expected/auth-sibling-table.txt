@@ -1,0 +1,1 @@
+ERROR: sqlite3: authorization denied: access to shadow_notes.note is prohibited

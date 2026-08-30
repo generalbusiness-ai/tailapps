@@ -3,7 +3,11 @@
 // between the projection and query subsystems.
 package profile
 
-import jsonata "github.com/jsonata-go/jsonata/v206"
+import (
+	jsonata "github.com/jsonata-go/jsonata/v206"
+
+	"github.com/generalbusiness-ai/tailapps/jsonataddl"
+)
 
 const (
 	// RuntimeID binds the evaluator, DDL grammar, numeric rules and limits that
@@ -112,6 +116,10 @@ type Export struct {
 }
 
 type Profile struct {
+	// core is set only on adapter-loaded profiles (LoadViaCore); evaluation
+	// then delegates to the immutable extracted-core handle.
+	core *jsonataddl.Application
+
 	Name                 string            `json:"name"`
 	Revision             string            `json:"revision"`
 	RuntimeProfile       string            `json:"runtime_profile"`

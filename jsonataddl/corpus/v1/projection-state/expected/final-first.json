@@ -1,0 +1,15 @@
+{
+ "audit_marks": [
+  {
+   "key": "beta",
+   "mark": 3
+  }
+ ],
+ "ledger": [
+  {
+   "balance": 7,
+   "key": "beta"
+  }
+ ],
+ "shadow_notes": []
+}

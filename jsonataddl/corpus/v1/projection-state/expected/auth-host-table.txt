@@ -1,0 +1,1 @@
+ERROR: sqlite3: authorization denied: access to host_secrets.secret is prohibited
