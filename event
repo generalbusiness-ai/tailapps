@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Project terminology and canonical Tailapps identity at go.mod","body":{"commit":"70952f24f5901084f4eaefe9d2aa734e3cd3bf89","path":"go.mod"}}
+{"kind":"artifact","text":"Project terminology and canonical Tailapps identity at internal/cli/cli.go","body":{"commit":"70952f24f5901084f4eaefe9d2aa734e3cd3bf89","path":"internal/cli/cli.go"}}
