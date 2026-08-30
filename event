@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:abf6bc8e20e9868b524fd4a835e7172dfa444b98"}
+{"kind":"artifact","text":"The jsonataddl library at the corrected stage-2 head: the complete Dialect contract with typed envelope, cardinalities, and closed read/write/emission authority, mechanically bound to the composed identity through the canonical digest, with consistency tests exercising every load-bearing field against internal/profile behavior.","body":{"commit":"2792af71ccf8a4dcd7a4555619147264966f123b","path":"jsonataddl"}}
