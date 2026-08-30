@@ -338,7 +338,7 @@ func tools() []tool {
 			InputSchema:  object(nil),
 			OutputSchema: result(map[string]any{"profile": text, "ingestion_ready": boolean, "inbox": anyObject, "apps": anyObject, "unavailable": anyObject}, "profile", "ingestion_ready", "inbox", "apps")},
 		{Name: "tailapp_metrics", Title: "Runtime metrics", Annotations: readOnly,
-			Description:  "Read the versioned, payload-free performance snapshot. Returns a flat object of counters and gauges with per-Tailapp processing stats ({version, inbox, tailapps, ...}); an idle engine returns zero counts and an empty tailapps map, and no field ever carries telemetry content. Pair with tailapp_status for operational triage. docs: tailapp://docs/tools/tailapp_metrics",
+			Description:  "Read the versioned, payload-free performance snapshot. Returns a flat object of counters and gauges with per-Tailapp processing stats ({version, inbox, tailapps, ...}); counters are cumulative for the resident lifetime - a fresh never-used resident shows an empty tailapps map and zero intake activity while uptime and runtime gauges are already nonzero - and no field ever carries telemetry content. Pair with tailapp_status for operational triage. docs: tailapp://docs/tools/tailapp_metrics",
 			InputSchema:  object(nil),
 			OutputSchema: result(map[string]any{"version": text, "reset_semantics": text, "started_at": text, "generated_at": text, "uptime_seconds": number, "inbox": anyObject, "tailapps": anyObject, "active_tailapps": integer, "unavailable_tailapps": integer, "upgrade_pending_tailapps": integer, "omitted_tailapps": integer}, "version", "inbox", "tailapps")},
 		{Name: "tailapp_ineffective", Title: "Inspect rejected records", Annotations: readOnly,

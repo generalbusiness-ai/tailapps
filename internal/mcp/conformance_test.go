@@ -118,7 +118,27 @@ func TestRealToolResultsMatchDeclaredOutputSchemas(t *testing.T) {
 		t.Fatalf("fresh engine apps = %#v, want empty array", empty["apps"])
 	}
 	call("tailapp_status", `{}`)
-	call("tailapp_metrics", `{}`)
+	// The described fresh-resident shape: cumulative counters exist but the
+	// never-used resident shows an empty tailapps map and zero intake
+	// activity, while uptime is already nonzero.
+	metrics := call("tailapp_metrics", `{}`)
+	if tailapps, ok := metrics["tailapps"].(map[string]any); !ok || len(tailapps) != 0 {
+		t.Fatalf("fresh resident tailapps = %#v, want empty map", metrics["tailapps"])
+	}
+	intake, _ := metrics["intake"].(map[string]any)
+	if unrouted, ok := intake["unrouted_records_total"].(float64); !ok || unrouted != 0 {
+		t.Fatalf("fresh resident intake activity = %#v, want zero", intake["unrouted_records_total"])
+	}
+	if records, ok := intake["records_total"].(map[string]any); ok {
+		for signal, count := range records {
+			if count != float64(0) {
+				t.Fatalf("fresh resident records_total[%s] = %#v, want zero activity", signal, count)
+			}
+		}
+	}
+	if uptime, ok := metrics["uptime_seconds"].(float64); !ok || uptime <= 0 {
+		t.Fatalf("fresh resident uptime = %#v; cumulative gauges are nonzero even before use", metrics["uptime_seconds"])
+	}
 
 	// Full draft lifecycle on a probe app.
 	call("tailapp_create", `{"name":"probe","idempotency_key":"conf-create-1"}`)

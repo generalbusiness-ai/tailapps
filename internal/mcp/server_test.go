@@ -251,7 +251,7 @@ func TestEveryDescriptionStatesItsSemanticClauses(t *testing.T) {
 		"tailapp_validate":       {"Returns the full compiled profile", "never a partial profile", "before tailapp_activate"},
 		"tailapp_activate":       {"Returns the projection {frontier}", "complete true and no gap fields", "last step of the draft loop"},
 		"tailapp_status":         {"Returns {profile, ingestion_ready, inbox, apps, unavailable}", "with no Tailapps installed, apps is {}", "Start here when telemetry seems missing"},
-		"tailapp_metrics":        {"Returns a flat object of counters and gauges", "an idle engine returns zero counts and an empty tailapps map", "operational triage"},
+		"tailapp_metrics":        {"Returns a flat object of counters and gauges", "a fresh never-used resident shows an empty tailapps map and zero intake activity while uptime and runtime gauges are already nonzero", "operational triage"},
 		"tailapp_ineffective":    {"Returns {tailapp, revision, capacity, ineffective_records, records}", "no rejections returns records: []", "after tailapp_status shows intake"},
 		"tailapp_schema":         {"Returns the compiled profile object", "stable between activations", "before writing SQL for tailapp_query"},
 		"tailapp_query":          {"Returns {columns, rows, complete, truncated}", "an empty projection returns rows: []", "after tailapps_list"},
