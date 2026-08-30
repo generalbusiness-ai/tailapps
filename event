@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:991279a68e370418d80e98e013a4bd4777133d82","text":"Merge retired a covered predecessor; the successor is at internal/mcp/conformance_test.go."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:997f8cb0e4190298fc766fa7c716d2e5f52f23af","text":"Merge retired a covered predecessor; the successor is at go.mod."}
