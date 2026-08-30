@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:0989fcd4f74f53fde64840a734c6835666ecf252"}
+{"kind":"artifact","text":"The conformance corpus at the corrected freeze head: one golden mechanism for evaluation successes and exact failure diagnostics, regenerated together by -update-corpus, with the README documenting the unified contract.","body":{"commit":"5f6b9d4917862c3650c30a5357022de7d2190a27","path":"jsonataddl/corpus"}}
