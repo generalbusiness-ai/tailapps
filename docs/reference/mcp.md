@@ -7,9 +7,12 @@ management.
 ## Transport and protocol
 
 - Transport: newline-delimited JSON-RPC 2.0 over stdin/stdout
-- MCP protocol versions: `2024-11-05`, `2025-03-26`, and `2025-06-18`. The
-  `initialize` reply echoes the client's requested version when it is one of
-  these, and answers `2025-06-18` otherwise.
+- Protocol machine: the official MCP Go SDK (v1.7.0), serving both eras.
+  Legacy `initialize` clients negotiate `2024-11-05` through `2025-11-25`
+  (a supported requested version is echoed; an unknown one gets the newest
+  legacy revision, `2025-11-25`), and 2026-07-28 stateless clients use
+  `server/discover`, which advertises the supported versions and carries
+  the same instructions and identity.
 - Server identity: `serverInfo` carries `name` (`tailapp`), `title`
   (`Tailapp`), a one-line `description`, a build-derived `version` (the
   module release tag when one names the build, otherwise the base version
@@ -20,9 +23,10 @@ management.
 - The `initialize` reply carries server-wide `instructions`: a
   self-contained orientation whose first paragraph fits harness truncation
   budgets.
-- Capabilities: tools and resources (the resource catalog is immutable per
-  build: no `subscribe`, no `listChanged`)
-- Maximum input line: 1 MiB
+- Capabilities: tools and resources (plus the SDK's logging machinery).
+  The SDK declares `listChanged` on both; the catalog and tool set are
+  immutable per build, so no change notification ever fires. Resources
+  declare no `subscribe`.
 
 ## Documentation resources
 
@@ -36,9 +40,8 @@ page. Tool pages are rendered from the live tool metadata — title,
 description, arguments, result fields, and a worked example — so they
 cannot drift from `tools/list`. Pages stand alone: no repository-relative
 links. `resources/read` on an unknown URI returns invalid params
-(`-32602`) echoing the URI in `data` and pointing at
-`tailapp://docs/overview`; it never probes paths and never returns empty
-contents. No tool behavior depends on a client reading resources — the
+(`-32602`, message "Resource not found") echoing the URI in `data`; it
+never probes paths and never returns empty contents. No tool behavior depends on a client reading resources — the
 `docs:` pointers in tool descriptions degrade to inert strings.
 
 The process is only an adapter. Start `tailapp serve` first and give the MCP
@@ -87,9 +90,11 @@ reachable:
 }
 ```
 
-Malformed JSON-RPC, unknown methods, and invalid call envelopes use normal
-JSON-RPC errors; an unknown tool name is invalid params (`-32602`) and the
-message lists the valid tool names.
+Unknown methods and invalid call envelopes use normal JSON-RPC errors; an
+unknown tool name is invalid params (`-32602`) quoting the requested name.
+An unparseable input line terminates the session — the transport treats
+framing corruption as fatal, and a stdio client recovers by restarting the
+server process.
 
 ## Common values
 

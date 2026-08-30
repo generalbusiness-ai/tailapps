@@ -84,17 +84,22 @@ func TestRealToolResultsMatchDeclaredOutputSchemas(t *testing.T) {
 	go func() { _ = controlServer.Serve(listener) }()
 	server := &Server{Client: control.NewClient(listener.Addr().String()), Home: home}
 
+	session := startWire(t, server)
+	session.initialize("2025-06-18")
 	validated := make(map[string]bool)
 	call := func(name, arguments string) map[string]any {
 		t.Helper()
-		result := callTool(t, server, name, arguments)
+		var decodedArguments map[string]any
+		if err := json.Unmarshal([]byte(arguments), &decodedArguments); err != nil {
+			t.Fatal(err)
+		}
+		reply := session.call("tools/call", map[string]any{"name": name, "arguments": decodedArguments})
+		result, _ := reply["result"].(map[string]any)
+		if result == nil {
+			t.Fatalf("%s protocol error: %#v", name, reply["error"])
+		}
 		if result["isError"] == true {
-			content, _ := result["content"].([]map[string]string)
-			text := ""
-			if len(content) > 0 {
-				text = content[0]["text"]
-			}
-			t.Fatalf("%s returned an engine error: %s", name, text)
+			t.Fatalf("%s returned an engine error: %#v", name, result["content"])
 		}
 		structured, ok := result["structuredContent"].(map[string]any)
 		if !ok {
