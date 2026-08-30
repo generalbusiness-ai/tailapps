@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"The narrow stage-4 adapter: LoadViaCore compiles through the core under the Tailapp dialect and the legacy runtime identity and returns a Profile with identical inspection data whose evaluation delegates to the core handle.","body":{"commit":"8c6d5e21ec5ae7f80ac1653a0a1d8047e45cbf23","path":"internal/profile/adapter.go"}}
+{"kind":"artifact","text":"Profile carries the optional core handle for adapter-loaded profiles; live callers are unchanged.","body":{"commit":"8c6d5e21ec5ae7f80ac1653a0a1d8047e45cbf23","path":"internal/profile/types.go"}}
