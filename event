@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"The documentation resource catalog at the corrected stage-3 head, unchanged in this delta.","body":{"commit":"90d952f05741809911763b5489b1b657357f88ef","path":"internal/mcp/resources.go"}}
+{"kind":"artifact","text":"The embedded pages at the corrected stage-3 head: the authoring summary counts its five statement kinds correctly.","body":{"commit":"90d952f05741809911763b5489b1b657357f88ef","path":"internal/mcp/docs"}}
