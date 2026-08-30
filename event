@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at jsonataddl","body":{"commit":"4d859fcfc93e885547bdf0ffa7875a0e9f1fcc17","path":"jsonataddl"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:01b348141decccee3ea5296605bc7d22a607f538","text":"Merge retired a covered predecessor; the successor is at jsonataddl."}
