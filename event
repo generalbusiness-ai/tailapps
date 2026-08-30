@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:425d26baabbadc288579bd346f533add831dc540","text":"Merge retired a covered predecessor with no successor at its old path."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:4839f6435f8d4519fb465195b5f2862eb2fda76a","text":"Merge retired a covered predecessor; the successor is at internal/profile/adapter.go."}
