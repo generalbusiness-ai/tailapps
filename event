@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Bundle roster at the corrected promotion head, unchanged in this delta: signal-counts embedded and loadable alongside activity-stats, agent-guard, and session-cost.","body":{"commit":"3aba33fbaad0bb95870f09a3150d9db83436c482","path":"tailapps/embed.go"}}
+{"kind":"artifact","text":"Bundled-app tests at the corrected promotion head, unchanged in this delta: roster compile coverage plus the preserved signal_counts export assertion.","body":{"commit":"3aba33fbaad0bb95870f09a3150d9db83436c482","path":"tailapps/embed_test.go"}}
