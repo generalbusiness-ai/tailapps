@@ -1,0 +1,13 @@
+(
+  $attributes := event.record.attributes;
+  {
+    "decision": "effective",
+    "facts": [],
+    "events": {"otel_event": [{
+      "key": $attributes.key,
+      "amount": $attributes.amount,
+      "retire": $attributes.retire
+    }]},
+    "tables": {}
+  }
+)

@@ -5,9 +5,9 @@ shared interface contract (Gitseq's
 `notes/2026-08-26-jsonata-ddl-application-interface.md`) as executable,
 host-neutral cases. It exists so the `jsonata-ddl-core` extraction
 (`notes/2026-08-28-jsonata-ddl-core-extraction.md`) can prove behavior is
-preserved: today the corpus runs against Tailapps' `internal/profile`; the
-extracted core's adapter must run the identical cases through the same
-runner seam, differentially.
+preserved: the corpus runs against both Tailapps' `internal/profile` and
+the extracted core's adapter (`LoadViaCore`) through the same runner seam,
+differentially, since migration stage 4.
 
 Any deliberate semantic change regenerates goldens with
 `go test ./internal/profile -run TestConformanceCorpus -update-corpus`;
@@ -44,6 +44,15 @@ v1/<case>/
   exact diagnostic as an `ERROR:` line, and `-update-corpus` regenerates
   both, so any divergence in values or diagnostic text fails the freeze.
   `repeat: N` asserts N identical outcomes (determinism).
+- `projection[]` — core-only cases over real SQLite state (the runtime read
+  authorizer is enforcement the extraction adds, so there is no prior
+  implementation to run them against). Each names a program and either a
+  `sql` statement to attempt under that program's default-deny read
+  authorizer (freezing the denial diagnostic or the returned rows), or an
+  `event` plus `meta` to run the full host cycle: execute the compiled read
+  plan under the authorizer over the `state` fixture, evaluate, freeze the
+  result (`expect`), apply the validated mutation plan, and freeze the
+  final table state (`final_state`).
 
 ## Current coverage
 
@@ -60,16 +69,17 @@ v1/<case>/
 - `reject-*` — source sets the compiler must refuse: ambient/dynamic
   JSONata functions, syntax errors, unsupported logical types, multiple
   writers for one table.
+- `projection-state` — fold-read execution over initial SQLite state
+  (OPTIONAL ONE with and without a prior row, MANY with total ordering,
+  a read through a declared view), mutation-plan application (insert,
+  upsert, primary-key delete) with frozen final state, and default-deny
+  authorizer denials: a sibling fold's table, an undeclared host table,
+  SQL functions, PRAGMAs, and writes.
 
 ## Planned coverage
 
 These categories join the corpus at the migration stage that moves their
 enforcement point, per the extraction note:
 
-- fold-read execution semantics, read cardinality and total ordering, and
-  default-deny SQLite authorizer denials (undeclared tables, columns,
-  functions, schemas, PRAGMAs, writes) — with initial SQLite state and
-  expected final state per case;
-- mutation-plan application (insert/upsert/delete against real projections);
 - composed runtime-identity component fixtures, replacing the single
   runtime-profile string pinned today.

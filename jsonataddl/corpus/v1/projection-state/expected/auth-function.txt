@@ -1,0 +1,1 @@
+ERROR: sqlite3: SQL logic error: not authorized to use function: count

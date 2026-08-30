@@ -1,0 +1,79 @@
+{
+ "application": "app",
+ "compile": {
+  "identity": "expected/identity.json",
+  "outcome": "ok"
+ },
+ "dialect": "tailapp/v1",
+ "interface": "gitseq notes/2026-08-26-jsonata-ddl-application-interface.md",
+ "projection": [
+  {
+   "name": "settle-accumulates-over-prior-state",
+   "program": "settle",
+   "state": "state/initial.sql",
+   "event": "inputs/event-accumulate.json",
+   "meta": {"position": 9, "event_id": "local:9#0", "event_type": "otel_event"},
+   "expect": "expected/settle-accumulate.json",
+   "final_state": "expected/final-accumulate.json"
+  },
+  {
+   "name": "settle-retires-by-primary-key-delete",
+   "program": "settle",
+   "state": "state/initial.sql",
+   "event": "inputs/event-retire.json",
+   "meta": {"position": 12, "event_id": "local:12#0", "event_type": "otel_event"},
+   "expect": "expected/settle-retire.json",
+   "final_state": "expected/final-retire.json"
+  },
+  {
+   "name": "settle-first-sight-without-prior-state",
+   "program": "settle",
+   "event": "inputs/event-first.json",
+   "meta": {"position": 3, "event_id": "local:3#0", "event_type": "otel_event"},
+   "expect": "expected/settle-first.json",
+   "final_state": "expected/final-first.json"
+  },
+  {
+   "name": "authorizer-admits-plan-view-and-base-table",
+   "program": "settle",
+   "state": "state/initial.sql",
+   "sql": "SELECT key, balance FROM ledger_positive",
+   "expect": "expected/auth-view-rows.json"
+  },
+  {
+   "name": "authorizer-denies-sibling-fold-table",
+   "program": "settle",
+   "state": "state/initial.sql",
+   "sql": "SELECT note FROM shadow_notes",
+   "expect": "expected/auth-sibling-table.txt"
+  },
+  {
+   "name": "authorizer-denies-undeclared-host-table",
+   "program": "settle",
+   "state": "state/initial.sql",
+   "sql": "SELECT secret FROM host_secrets",
+   "expect": "expected/auth-host-table.txt"
+  },
+  {
+   "name": "authorizer-denies-sql-functions",
+   "program": "settle",
+   "state": "state/initial.sql",
+   "sql": "SELECT count(key) FROM ledger",
+   "expect": "expected/auth-function.txt"
+  },
+  {
+   "name": "authorizer-denies-pragmas",
+   "program": "settle",
+   "state": "state/initial.sql",
+   "sql": "PRAGMA schema_version",
+   "expect": "expected/auth-pragma.txt"
+  },
+  {
+   "name": "authorizer-denies-writes",
+   "program": "settle",
+   "state": "state/initial.sql",
+   "sql": "DELETE FROM ledger",
+   "expect": "expected/auth-write.txt"
+  }
+ ]
+}

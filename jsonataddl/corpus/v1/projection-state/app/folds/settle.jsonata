@@ -1,0 +1,21 @@
+(
+  $old := rows.prior;
+  event.retire = true ? {
+    "decision": "effective",
+    "facts": [{"marks_seen": $count(rows.marks), "was_positive": $exists(rows.positive)}],
+    "tables": {
+      "ledger": {"delete": [{"key": event.key}]},
+      "audit_marks": {"insert": [{"key": event.key, "mark": meta.position}]}
+    }
+  } : {
+    "decision": "effective",
+    "facts": [{"marks_seen": $count(rows.marks), "was_positive": $exists(rows.positive)}],
+    "tables": {
+      "ledger": {"upsert": [{
+        "key": event.key,
+        "balance": $old ? $old.balance + event.amount : event.amount
+      }]},
+      "audit_marks": {"insert": [{"key": event.key, "mark": meta.position}]}
+    }
+  }
+)

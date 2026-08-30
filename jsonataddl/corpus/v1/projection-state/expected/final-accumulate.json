@@ -1,0 +1,28 @@
+{
+ "audit_marks": [
+  {
+   "key": "alpha",
+   "mark": 1
+  },
+  {
+   "key": "alpha",
+   "mark": 2
+  },
+  {
+   "key": "alpha",
+   "mark": 9
+  }
+ ],
+ "ledger": [
+  {
+   "balance": 42,
+   "key": "alpha"
+  }
+ ],
+ "shadow_notes": [
+  {
+   "key": "alpha",
+   "note": "private"
+  }
+ ]
+}

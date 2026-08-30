@@ -34,8 +34,29 @@ stage 6 or on Gitseq adoption, whichever comes first.
   a human-readable descriptor, and a digest that changes when any semantic
   component changes. Replaces the repository-global runtime string at
   migration stage 5.
+- `values.go` — the sole logical value codec: JSON-safe values, exact
+  integers, finite numbers, lossless integer and bytes wrappers, per-type
+  validation with corpus-frozen diagnostics, and the conversions between
+  logical values and SQLite values. All four Tailapp boundaries (ingest,
+  evaluation, projection, query) delegate to it since migration stage 3.
+- `load.go`, `compile.go`, `confine.go`, `evaluate.go` — the extracted
+  behavior of migration stage 4: source loading through the configured
+  layout, DDL compilation and topology/authority validation, the JSONata
+  admitted-subset confinement, bounded evaluation, and strict result and
+  mutation-plan validation. Everything is parameterized by the supplied
+  `Dialect`; the runtime identity string is a caller input, never a core
+  constant.
+- `application.go` — the immutable compiled `Application` handle:
+  inspection accessors that return independent copies, evaluation, read
+  plans, and continue-compatibility.
+- `authorizer.go` — the default-deny SQLite read authorizer derived from a
+  program's compiled read plan and the schema; the host installs it on the
+  connection that executes the plan.
 - `corpus/` — the host-neutral conformance corpus and its format
   (see `corpus/README.md`).
 
-At this migration stage the types exist and are consistency-tested against
-`internal/profile`'s actual behavior; nothing consumes them at run time yet.
+At migration stage 4 the core carries the complete compile-and-evaluate
+behavior and the conformance corpus runs against both implementations
+differentially through the narrow `internal/profile` adapter
+(`LoadViaCore`); live compilation and projection identity still use
+`internal/profile` until the stage-5 switchover.

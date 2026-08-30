@@ -1,0 +1,26 @@
+{
+ "decision": "effective",
+ "facts": [
+  {
+   "marks_seen": 2,
+   "was_positive": true
+  }
+ ],
+ "tables": {
+  "audit_marks": {
+   "insert": [
+    {
+     "key": "alpha",
+     "mark": 12
+    }
+   ]
+  },
+  "ledger": {
+   "delete": [
+    {
+     "key": "alpha"
+    }
+   ]
+  }
+ }
+}

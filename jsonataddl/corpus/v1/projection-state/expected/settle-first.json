@@ -1,0 +1,27 @@
+{
+ "decision": "effective",
+ "facts": [
+  {
+   "marks_seen": 1,
+   "was_positive": true
+  }
+ ],
+ "tables": {
+  "audit_marks": {
+   "insert": [
+    {
+     "key": "beta",
+     "mark": 3
+    }
+   ]
+  },
+  "ledger": {
+   "upsert": [
+    {
+     "balance": 7,
+     "key": "beta"
+    }
+   ]
+  }
+ }
+}

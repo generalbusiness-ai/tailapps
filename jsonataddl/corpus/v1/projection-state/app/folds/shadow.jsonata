@@ -1,0 +1,8 @@
+{
+  "decision": "effective",
+  "facts": [],
+  "tables": {"shadow_notes": {"upsert": [{
+    "key": event.key,
+    "note": "seen"
+  }]}}
+}
