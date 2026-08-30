@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:32b8b59775606c5e80929bd577e71ed0870119c5"}
+{"kind":"request","text":"Rewrite the Tailapps README around tangible user value and make the installable catalog consistent","body":{"conditions":"README leads with what Tailapps provides and shows concrete results; daily-review is a built-in bundle everywhere; obsolete terminology, source-directory caveats, and outcome-free demo material are removed; tests pass at the exact review head","to":"00721374a520eabbbd4ded64dd018110f47545ff20112bee83c75f478e15f818"}}
