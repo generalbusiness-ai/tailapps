@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"CLI at the stage-5 head: the documented tailapp mcp emit-skill DIRECTORY command, the only path that writes the skill.","body":{"commit":"5c439de1b24a7e22ab1199a5bbb5bd3995a6eedf","path":"internal/cli/cli.go"}}
+{"kind":"artifact","text":"MCP reference at the stage-5 head: documents the optional skill packaging, byte derivation, and per-harness placement.","body":{"commit":"5c439de1b24a7e22ab1199a5bbb5bd3995a6eedf","path":"docs/reference/mcp.md"}}
