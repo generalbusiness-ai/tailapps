@@ -32,8 +32,11 @@ stage 6 or on Gitseq adoption, whichever comes first.
 - `identity.go` — the composed runtime identity: independently versioned
   core, dialect, and host components with canonical ordered serialization,
   a human-readable descriptor, and a digest that changes when any semantic
-  component changes. Replaces the repository-global runtime string at
-  migration stage 5.
+  component changes. Since migration stage 5 it replaces the
+  repository-global runtime string on the live path: the core names its own
+  components (`CoreComponents`), the host adds its dialect and host
+  components, and the composed digest is the runtime identity new revisions
+  and projections record.
 - `values.go` — the sole logical value codec: JSON-safe values, exact
   integers, finite numbers, lossless integer and bytes wrappers, per-type
   validation with corpus-frozen diagnostics, and the conversions between
@@ -55,8 +58,11 @@ stage 6 or on Gitseq adoption, whichever comes first.
 - `corpus/` — the host-neutral conformance corpus and its format
   (see `corpus/README.md`).
 
-At migration stage 4 the core carries the complete compile-and-evaluate
+Since migration stage 4 the core carries the complete compile-and-evaluate
 behavior and the conformance corpus runs against both implementations
 differentially through the narrow `internal/profile` adapter
-(`LoadViaCore`); live compilation and projection identity still use
-`internal/profile` until the stage-5 switchover.
+(`LoadViaCore`). Since stage 5 the live path compiles through the core
+under the composed runtime identity (`profile.LoadCurrent`); the legacy
+implementation and its `RuntimeID` remain only as the resolver that keeps
+pre-switchover projections queryable and recognizable until their explicit
+continue-or-reset upgrade, and both are removed at stage 6.

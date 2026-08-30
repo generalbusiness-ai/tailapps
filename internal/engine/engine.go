@@ -185,14 +185,26 @@ func (e *Engine) recover(ctx context.Context) error {
 			e.unavailable[app.Name] = err.Error()
 			continue
 		}
-		compiled, err := compile(app.Name, sources)
+		// The stored runtime selects the resolver. The current composed
+		// runtime opens strictly; the legacy RuntimeID keeps the retained
+		// legacy compiler so its projections stay recognizable under their
+		// exact original semantics; any other runtime is compiled with the
+		// current resolver for query only. Every non-current runtime is
+		// upgrade-pending: queryable, never delivered to, until an explicit
+		// continue or reset re-activates it under the composed runtime.
+		var compiled *profile.Profile
+		if runtime == profile.RuntimeID {
+			compiled, err = legacyCompile(app.Name, sources)
+		} else {
+			compiled, err = compile(app.Name, sources)
+		}
 		if err != nil {
 			e.unavailable[app.Name] = err.Error()
 			continue
 		}
 		path := e.projectionPath(app.Name)
 		var opened *projection.Projection
-		if runtime != profile.RuntimeID {
+		if runtime != profile.CurrentRuntimeID() {
 			e.upgradePending[app.Name] = true
 			opened, err = projection.OpenForUpgrade(ctx, path, compiled, *app.ActiveRevision)
 		} else {
@@ -559,7 +571,7 @@ func (e *Engine) Validate(ctx context.Context, name, expected string) (*profile.
 	if err != nil {
 		return nil, err
 	}
-	if err := e.registry.RecordRevision(ctx, name, compiled.Revision, profile.RuntimeID, sources); err != nil {
+	if err := e.registry.RecordRevision(ctx, name, compiled.Revision, compiled.RuntimeProfile, sources); err != nil {
 		return nil, err
 	}
 	return compiled, nil
@@ -590,7 +602,7 @@ func (e *Engine) activateLocked(ctx context.Context, name, expected, mode string
 	if err != nil {
 		return projection.Frontier{}, err
 	}
-	if err := e.registry.RecordRevision(ctx, name, compiled.Revision, profile.RuntimeID, sources); err != nil {
+	if err := e.registry.RecordRevision(ctx, name, compiled.Revision, compiled.RuntimeProfile, sources); err != nil {
 		return projection.Frontier{}, err
 	}
 	stats, err := e.queue.Stats(ctx)
@@ -599,7 +611,7 @@ func (e *Engine) activateLocked(ctx context.Context, name, expected, mode string
 	}
 	boundary := stats.DeliveryHead
 	current := e.active[name]
-	journal := definition.ActivationJournal{Name: name, NewRevision: compiled.Revision, Runtime: profile.RuntimeID, Mode: mode, Boundary: boundary, ExpectedDraft: expected, OldRevision: app.ActiveRevision}
+	journal := definition.ActivationJournal{Name: name, NewRevision: compiled.Revision, Runtime: compiled.RuntimeProfile, Mode: mode, Boundary: boundary, ExpectedDraft: expected, OldRevision: app.ActiveRevision}
 	switch mode {
 	case "continue":
 		if current == nil {
@@ -844,7 +856,7 @@ func (e *Engine) Status(ctx context.Context) (Status, error) {
 	if err != nil {
 		return Status{}, err
 	}
-	result := Status{Profile: profile.RuntimeID, IngestionReady: len(e.upgradePending) == 0, Inbox: stats, Apps: map[string]projection.Frontier{}, Unavailable: map[string]string{}}
+	result := Status{Profile: profile.CurrentRuntimeID(), IngestionReady: len(e.upgradePending) == 0, Inbox: stats, Apps: map[string]projection.Frontier{}, Unavailable: map[string]string{}}
 	for name, item := range e.active {
 		frontier, err := item.Frontier(ctx)
 		if err != nil {
@@ -1011,7 +1023,22 @@ func (e *Engine) Schema(name string) (*profile.Profile, error) {
 func (e *Engine) projectionPath(name string) string {
 	return filepath.Join(e.home, "projections", name, "state.sqlite")
 }
+
+// compile is the live compilation path: the extracted core under the
+// composed runtime identity.
 func compile(name string, sources map[string][]byte) (*profile.Profile, error) {
+	files := fstest.MapFS{}
+	for path, content := range sources {
+		files[path] = &fstest.MapFile{Data: content, Mode: fs.FileMode(0o600)}
+	}
+	return profile.LoadCurrent(files, ".", name)
+}
+
+// legacyCompile is the retained resolver for revisions recorded under the
+// legacy RuntimeID: the pre-extraction implementation with the legacy
+// identity seed, so an old active projection's revision digest still
+// matches and it remains queryable without silent reinterpretation.
+func legacyCompile(name string, sources map[string][]byte) (*profile.Profile, error) {
 	files := fstest.MapFS{}
 	for path, content := range sources {
 		files[path] = &fstest.MapFile{Data: content, Mode: fs.FileMode(0o600)}

@@ -597,7 +597,7 @@ func TestRecoveryFinishesResetJournalAfterFileSwitch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	journal := definition.ActivationJournal{Name: "agent-guard", NewRevision: compiled.Revision, Runtime: profile.RuntimeID, Mode: "reset", Boundary: 0, ExpectedDraft: app.DraftRevision, OldRevision: &oldFrontier.Revision}
+	journal := definition.ActivationJournal{Name: "agent-guard", NewRevision: compiled.Revision, Runtime: compiled.RuntimeProfile, Mode: "reset", Boundary: 0, ExpectedDraft: app.DraftRevision, OldRevision: &oldFrontier.Revision}
 	if err := first.registry.BeginActivation(ctx, journal); err != nil {
 		t.Fatal(err)
 	}
@@ -763,6 +763,138 @@ func TestRuntimeProfileUpgradeKeepsQueryAndControlButClosesIngestion(t *testing.
 	}
 	if !status.IngestionReady {
 		t.Fatal("current-profile activation did not reopen ingestion")
+	}
+}
+
+// TestLegacyRuntimeProjectionFollowsTheExplicitUpgradePath builds a home
+// whose durable identity is the real legacy RuntimeID - revision digests
+// seeded with the legacy string, exactly as the pre-switchover binary
+// recorded them - and asserts the stage-5 contract: recovery resolves it
+// through the retained legacy compiler, keeps it queryable and recognizable,
+// holds ingestion, and only an explicit continue re-activates it under the
+// composed runtime with a new revision.
+func TestLegacyRuntimeProjectionFollowsTheExplicitUpgradePath(t *testing.T) {
+	ctx := context.Background()
+	home := filepath.Join(t.TempDir(), "home")
+	first, err := Open(ctx, home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	app, err := first.Create(ctx, "agent-guard", "agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := first.Validate(ctx, "agent-guard", app.DraftRevision); err != nil {
+		t.Fatal(err)
+	}
+	active, err := first.Activate(ctx, "agent-guard", app.DraftRevision, "reset", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, sources, err := first.App(ctx, "agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := first.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	legacy, err := legacyCompile("agent-guard", sources)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if legacy.RuntimeProfile != profile.RuntimeID {
+		t.Fatalf("legacy resolver runtime = %q", legacy.RuntimeProfile)
+	}
+	if legacy.Revision == active.Revision {
+		t.Fatal("the composed runtime must change the revision digest for identical sources")
+	}
+	controlDB, err := sqlite3.Open(filepath.Join(home, "control.sqlite"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rewrite := `UPDATE definition_revisions SET digest='` + legacy.Revision + `', runtime_profile='` + profile.RuntimeID + `' WHERE digest='` + active.Revision + `';` +
+		`UPDATE definition_tailapps SET active_revision='` + legacy.Revision + `', runtime_profile='` + profile.RuntimeID + `' WHERE name='agent-guard';`
+	if err := controlDB.Exec(rewrite); err != nil {
+		t.Fatal(err)
+	}
+	if err := controlDB.Close(); err != nil {
+		t.Fatal(err)
+	}
+	projectionDB, err := sqlite3.Open(filepath.Join(home, "projections", "agent-guard", "state.sqlite"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := projectionDB.Exec(`UPDATE tailapp_projection_identity SET revision='` + legacy.Revision + `', runtime_profile='` + profile.RuntimeID + `'`); err != nil {
+		t.Fatal(err)
+	}
+	if err := projectionDB.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	upgraded, err := Open(ctx, home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer upgraded.Close()
+	status, err := upgraded.Status(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status.Profile != profile.CurrentRuntimeID() {
+		t.Fatalf("status runtime = %q", status.Profile)
+	}
+	if status.IngestionReady {
+		t.Fatal("legacy-runtime projection left ingestion open")
+	}
+	if reason, blocked := status.Unavailable["agent-guard"]; blocked {
+		t.Fatalf("legacy-runtime projection must stay recognizable, got unavailable: %s", reason)
+	}
+	if _, err := upgraded.Query(ctx, "agent-guard", query.Request{SQL: `SELECT COUNT(*) FROM session_progress`}, nil); err != nil {
+		t.Fatalf("query during upgrade: %v", err)
+	}
+	body, _ := proto.Marshal(otlpRequest())
+	request := httptest.NewRequest(http.MethodPost, "/v1/logs", bytes.NewReader(body))
+	request.Header.Set("Content-Type", "application/x-protobuf")
+	response := httptest.NewRecorder()
+	upgraded.Receiver().ServeHTTP(response, request)
+	if response.Code != http.StatusServiceUnavailable || !strings.Contains(response.Body.String(), "ingestion_not_ready") {
+		t.Fatalf("upgrade OTLP response %d: %s", response.Code, response.Body.String())
+	}
+
+	current, _, err := upgraded.App(ctx, "agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := upgraded.Activate(ctx, "agent-guard", current.DraftRevision, "continue", false); err != nil {
+		t.Fatalf("continue activation under the composed runtime: %v", err)
+	}
+	status, err = upgraded.Status(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !status.IngestionReady {
+		t.Fatal("continue activation did not reopen ingestion")
+	}
+	identityDB, err := sqlite3.Open(filepath.Join(home, "projections", "agent-guard", "state.sqlite"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer identityDB.Close()
+	statement, _, err := identityDB.Prepare(`SELECT revision, runtime_profile FROM tailapp_projection_identity WHERE singleton=1`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer statement.Close()
+	if !statement.Step() {
+		t.Fatal("projection identity row is gone")
+	}
+	revision, runtime := statement.ColumnText(0), statement.ColumnText(1)
+	if runtime != profile.CurrentRuntimeID() {
+		t.Fatalf("continued projection runtime = %q", runtime)
+	}
+	if revision == legacy.Revision {
+		t.Fatal("continue activation kept the legacy revision digest")
 	}
 }
 
