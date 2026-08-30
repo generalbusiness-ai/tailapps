@@ -129,15 +129,31 @@ func TestRealToolResultsMatchDeclaredOutputSchemas(t *testing.T) {
 	if unrouted, ok := intake["unrouted_records_total"].(float64); !ok || unrouted != 0 {
 		t.Fatalf("fresh resident intake activity = %#v, want zero", intake["unrouted_records_total"])
 	}
-	if records, ok := intake["records_total"].(map[string]any); ok {
-		for signal, count := range records {
-			if count != float64(0) {
-				t.Fatalf("fresh resident records_total[%s] = %#v, want zero activity", signal, count)
-			}
+	records, ok := intake["records_total"].(map[string]any)
+	if !ok {
+		t.Fatalf("fresh resident records_total = %#v, want the preseeded signal object", intake["records_total"])
+	}
+	for _, signal := range []string{"log", "span", "metric", "unknown"} {
+		count, present := records[signal]
+		if !present || count != float64(0) {
+			t.Fatalf("fresh resident records_total[%s] = %#v (present %v), want preseeded zero", signal, count, present)
 		}
+	}
+	if len(records) != 4 {
+		t.Fatalf("fresh resident records_total keys = %#v, want exactly the four signals", records)
 	}
 	if uptime, ok := metrics["uptime_seconds"].(float64); !ok || uptime <= 0 {
 		t.Fatalf("fresh resident uptime = %#v; cumulative gauges are nonzero even before use", metrics["uptime_seconds"])
+	}
+	// The runtime gauges the description claims nonzero.
+	runtime, ok := metrics["runtime"].(map[string]any)
+	if !ok {
+		t.Fatalf("fresh resident runtime = %#v, want the gauge object", metrics["runtime"])
+	}
+	for _, gauge := range []string{"goroutines", "total_memory_bytes"} {
+		if value, ok := runtime[gauge].(float64); !ok || value <= 0 {
+			t.Fatalf("fresh resident runtime.%s = %#v, want nonzero", gauge, runtime[gauge])
+		}
 	}
 
 	// Full draft lifecycle on a probe app.
