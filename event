@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"The cross-harness skill at the stage-5 head: quoted YAML frontmatter within harness bounds and a body byte-derived from the overview resource, written only by the explicit emit command.","body":{"commit":"5c439de1b24a7e22ab1199a5bbb5bd3995a6eedf","path":"internal/mcp/skill.go"}}
+{"kind":"artifact","text":"Skill tests at the stage-5 head: byte derivation from the overview, frontmatter bounds and quoting, and write-only-where-directed behavior.","body":{"commit":"5c439de1b24a7e22ab1199a5bbb5bd3995a6eedf","path":"internal/mcp/skill_test.go"}}
