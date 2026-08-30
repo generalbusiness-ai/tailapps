@@ -187,3 +187,55 @@ func assertCount(t *testing.T, projection *Projection, query string, expected in
 		t.Fatalf("%s: got %d, want %d", strings.TrimSpace(query), count, expected)
 	}
 }
+
+// TestFoldReadsExecuteUnderTheDefaultDenyAuthorizer is the stage-6 closing
+// criterion: the compiled read plan runs with the core's default-deny
+// authorizer seated on the projection connection, so a read outside the
+// plan is denied at execution time - not only by the compile-time textual
+// checks - and the host's own writes stay unrestricted once the plan
+// finishes.
+func TestFoldReadsExecuteUnderTheDefaultDenyAuthorizer(t *testing.T) {
+	ctx := context.Background()
+	guard, err := tailapps.Load("agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(t.TempDir(), "state.sqlite")
+	projection, err := Create(ctx, path, guard, 0, "reset")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer projection.Close()
+	tx, err := projection.db.BeginTx(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+	var fold profile.Program
+	for _, candidate := range guard.Folds {
+		if candidate.Name == "update_guard_analytics" {
+			fold = candidate
+		}
+	}
+	if fold.Name == "" || len(fold.Reads) == 0 {
+		t.Fatal("fixture fold with reads is missing")
+	}
+	event := map[string]any{"harness": "codex", "session_id": "s1"}
+	input, err := projection.evaluationInput(ctx, tx, fold, 1, "e1", "otel_event", event)
+	if err != nil {
+		t.Fatalf("the compiled plan must execute under its own authorizer: %v", err)
+	}
+	if _, present := input.Rows["prior"]; !present {
+		t.Fatalf("plan read missing from input rows: %#v", input.Rows)
+	}
+	doctored := fold
+	doctored.Reads = []profile.Read{{Name: "probe", Cardinality: profile.Many, Limit: 4,
+		SQL: "SELECT revision FROM tailapp_projection_identity", Table: "tailapp_projection_identity", Columns: []string{"revision"}}}
+	_, err = projection.evaluationInput(ctx, tx, doctored, 1, "e1", "otel_event", event)
+	if err == nil || !(strings.Contains(err.Error(), "prohibited") || strings.Contains(err.Error(), "not authorized")) {
+		t.Fatalf("a read outside the compiled plan must be denied at execution time: %v", err)
+	}
+	if _, err := tx.ExecContext(ctx, `UPDATE tailapp_stats SET consumed_records = consumed_records WHERE singleton=1`); err != nil {
+		t.Fatalf("host writes must be unrestricted after the plan releases the guard: %v", err)
+	}
+}

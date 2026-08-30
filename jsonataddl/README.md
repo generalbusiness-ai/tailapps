@@ -59,10 +59,11 @@ stage 6 or on Gitseq adoption, whichever comes first.
   (see `corpus/README.md`).
 
 Since migration stage 4 the core carries the complete compile-and-evaluate
-behavior and the conformance corpus runs against both implementations
-differentially through the narrow `internal/profile` adapter
-(`LoadViaCore`). Since stage 5 the live path compiles through the core
-under the composed runtime identity (`profile.LoadCurrent`); the legacy
-implementation and its `RuntimeID` remain only as the resolver that keeps
-pre-switchover projections queryable and recognizable until their explicit
-continue-or-reset upgrade, and both are removed at stage 6.
+behavior; since stage 5 the live path compiles through it under the
+composed runtime identity (`profile.LoadCurrent`). Stage 6 removed the
+duplicated legacy implementation: `internal/profile` is now a thin host
+façade, its `Load` is the retained legacy resolver - the same core
+compiler seeded with the legacy `RuntimeID`, justified by the stage-4
+differential freeze - the fold-input read conversion lives here as
+`ReadRowValue`, and every live fold read executes under the core's
+default-deny authorizer seated on the projection connection.

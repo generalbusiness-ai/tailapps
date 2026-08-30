@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 )
 
 // The logical value codec: the one implementation of the value rules that
@@ -239,5 +240,56 @@ func LogicalColumnValue(column SQLiteColumn, declared LogicalType) (any, error) 
 		return WrapBytes(column.Blob), nil
 	default:
 		return nil, errors.New("query returned unsupported SQLite type")
+	}
+}
+
+// ReadRowValue converts one fold-read column value from its database/sql
+// representation to the fold-input logical form the runtime has always
+// presented to programs: BOOLEAN integers become booleans, JSON text
+// decodes with number preservation, declared blobs become plain base64
+// text, and remaining values pass through with byte slices read as text.
+// This fold-input shape deliberately differs from LogicalColumnValue's
+// query-side form (no wrappers here); it is part of interpretation
+// semantics, so it must not drift toward the query codec without a
+// runtime identity change.
+func ReadRowValue(value any, declared LogicalType) (any, error) {
+	if value == nil {
+		return nil, nil
+	}
+	switch LogicalType(strings.ToUpper(string(declared))) {
+	case TypeBoolean:
+		integer, ok := value.(int64)
+		if !ok {
+			return nil, errors.New("invalid BOOLEAN storage")
+		}
+		return integer != 0, nil
+	case TypeJSON:
+		var encoded []byte
+		switch typed := value.(type) {
+		case string:
+			encoded = []byte(typed)
+		case []byte:
+			encoded = typed
+		default:
+			return nil, errors.New("invalid JSON storage")
+		}
+		var result any
+		decoder := json.NewDecoder(bytes.NewReader(encoded))
+		decoder.UseNumber()
+		if err := decoder.Decode(&result); err != nil {
+			return nil, err
+		}
+		return result, nil
+	case TypeBlob:
+		bytesValue, ok := value.([]byte)
+		if !ok {
+			return nil, errors.New("invalid BLOB storage")
+		}
+		return base64.StdEncoding.EncodeToString(bytesValue), nil
+	default:
+		if bytesValue, ok := value.([]byte); ok {
+			return string(bytesValue), nil
+		}
+		return value, nil
 	}
 }
