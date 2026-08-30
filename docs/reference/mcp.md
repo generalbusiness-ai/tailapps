@@ -120,7 +120,7 @@ server process.
   "name": "event-counts",
   "draft_revision": "sha256:...",
   "active_revision": "sha256:...",
-  "runtime_profile": "tailapp-...",
+  "runtime_profile": "jsonata-ddl-runtime:sha256:...",
   "activation_mode": "reset",
   "boundary_position": 42
 }

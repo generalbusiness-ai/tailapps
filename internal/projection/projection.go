@@ -145,7 +145,7 @@ func openExisting(ctx context.Context, path string, compiled *profile.Profile, e
 		database.Close()
 		return nil, fmt.Errorf("read projection identity: %w", err)
 	}
-	if name != compiled.Name || revision != expectedRevision || (!allowLegacyRuntime && runtime != profile.RuntimeID) {
+	if name != compiled.Name || revision != expectedRevision || (!allowLegacyRuntime && runtime != compiled.RuntimeProfile) {
 		database.Close()
 		return nil, errors.New("projection identity does not match compiled profile")
 	}
@@ -212,7 +212,7 @@ func (p *Projection) initialize(ctx context.Context, boundary int64, mode string
 			return fmt.Errorf("create projection metadata: %w", err)
 		}
 	}
-	if _, err := tx.ExecContext(ctx, `INSERT INTO tailapp_projection_identity VALUES (1,?,?,?,?)`, p.name, p.profile.Revision, profile.RuntimeID, mode); err != nil {
+	if _, err := tx.ExecContext(ctx, `INSERT INTO tailapp_projection_identity VALUES (1,?,?,?,?)`, p.name, p.profile.Revision, p.profile.RuntimeProfile, mode); err != nil {
 		return fmt.Errorf("create projection identity: %w", err)
 	}
 	if _, err := tx.ExecContext(ctx, `INSERT INTO tailapp_frontier VALUES (1,?,?,'',1,NULL,NULL)`, boundary, boundary); err != nil {
@@ -284,7 +284,7 @@ func (p *Projection) Continue(ctx context.Context, next *profile.Profile, bounda
 			return fmt.Errorf("replace query export %q: %w", name, err)
 		}
 	}
-	if _, err := tx.ExecContext(ctx, `UPDATE tailapp_projection_identity SET revision=?,runtime_profile=?,activation_mode='continue' WHERE singleton=1`, next.Revision, profile.RuntimeID); err != nil {
+	if _, err := tx.ExecContext(ctx, `UPDATE tailapp_projection_identity SET revision=?,runtime_profile=?,activation_mode='continue' WHERE singleton=1`, next.Revision, next.RuntimeProfile); err != nil {
 		return err
 	}
 	if _, err := tx.ExecContext(ctx, `UPDATE tailapp_frontier SET activation_boundary=?,interpreted_position=?,last_event_id='',complete=1,gap_position=NULL,gap_reason=NULL WHERE singleton=1`, boundary, boundary); err != nil {

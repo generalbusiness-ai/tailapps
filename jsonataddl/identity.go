@@ -100,3 +100,18 @@ func (identity RuntimeIdentity) Component(key string) (string, bool) {
 	value, present := identity.components[key]
 	return value, present
 }
+
+// CoreComponents are the core's own identity components: the interface
+// contract it implements and the revisions of the grammar, JSONata subset,
+// value codec, and SQLite policy it ships. The host composes these with its
+// dialect and host components; the core never assembles a full identity,
+// because orchestration and canonicalization are not its to name.
+func CoreComponents() []Component {
+	return []Component{
+		{Key: "core.interface", Value: "jsonata-ddl-application-interface/2026-08-26"},
+		{Key: "core.grammar", Value: "ddl/1"},
+		{Key: "core.jsonata", Value: "jsonata-go-v206/bounded-1"},
+		{Key: "core.value-codec", Value: "logical-values/1"},
+		{Key: "core.sqlite", Value: "sqlite-3.53.4/read-authorizer-1"},
+	}
+}
