@@ -68,7 +68,7 @@ mcp_session() {
 
 "$binary" apps install --bundle agent-guard --idempotency-key demo-install-agent-guard agent-guard >/dev/null
 "$binary" apps install --bundle activity-stats --idempotency-key demo-install-activity-stats activity-stats >/dev/null
-"$binary" apps install --idempotency-key demo-install-signal-counts signal-counts tailapps/signal-counts >/dev/null
+"$binary" apps install --bundle signal-counts --idempotency-key demo-install-signal-counts signal-counts >/dev/null
 mcp_install=$(printf '%s\n' \
   '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"demo","version":"0"}}}' \
   '{"jsonrpc":"2.0","method":"notifications/initialized"}' \

@@ -60,9 +60,9 @@ Interpret the checks in order:
 Read each shipped Tailapp's model before treating results as policy or billing
 evidence: [activity stats](../../tailapps/activity-stats/README.md),
 [agent guard](../../tailapps/agent-guard/README.md),
-[daily review](../../tailapps/daily-review/README.md) (installed from its
-source directory, not a built-in bundle), and
-[session cost](../../tailapps/session-cost/README.md).
+[daily review](../../tailapps/daily-review/README.md),
+[session cost](../../tailapps/session-cost/README.md), and
+[signal counts](../../tailapps/signal-counts/README.md).
 
 ## Security
 
@@ -75,6 +75,6 @@ The shipped guard is detective, not preventive. Export batching adds latency,
 and a silent or terminated harness cannot emit the event needed to diagnose
 it. Keep harness-native permission and sandbox controls in place.
 
-The three shipped Tailapps are only examples. Agents and operators can
+The five shipped Tailapps are a starting kit. Agents and operators can
 [author and install their own](../authoring.md), including a normalizer for a
 different adapter vocabulary.

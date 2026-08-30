@@ -42,9 +42,9 @@ Examples currently listed in the ecosystem include:
 - `@mobrienv/pi-otlp`, which advertises OTLP metrics.
 
 These are useful starting points, not plug-compatible Tailapps guarantees. The
-three shipped Tailapps do not currently recognize `pi.*` event names, and
-metrics alone do not drive them. They are not the Tailapps catalog. Users and
-agents can install a Pi-native Tailapp, fork an example with a `pi.*`
+`activity-stats`, `agent-guard`, and `session-cost` do not currently recognize
+`pi.*` event names, and metrics alone do not drive them. Users and agents can
+install a Pi-native Tailapp, fork an included bundle with a `pi.*`
 normalizer, or replace the examples with analytics suited to their own adapter
 and policy. Translating Pi lifecycle data to the input contracts documented by
 [`agent-guard`](../../tailapps/agent-guard/README.md#input-model) and
