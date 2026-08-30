@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at internal/buildinfo","body":{"commit":"135ee3dda65ab0705aaa7eb869f0f7631d28294c","path":"internal/buildinfo"}}
+{"kind":"artifact","text":"Merge published the current artifact at internal/cli/cli.go","body":{"commit":"135ee3dda65ab0705aaa7eb869f0f7631d28294c","path":"internal/cli/cli.go"}}
