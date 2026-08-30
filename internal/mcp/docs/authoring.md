@@ -7,7 +7,7 @@ only at activation.
 
 ## application.sql
 
-Four statement kinds, in any order:
+Five statement kinds, in any order:
 
 - `CREATE EVENT otel_event (…)` — exactly one private event, always named
   `otel_event`, with typed columns (`TEXT`, `INTEGER`, `REAL`, `BOOLEAN`,

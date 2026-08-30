@@ -157,3 +157,27 @@ func TestPromptsRemainUndeclaredAndUnimplemented(t *testing.T) {
 		t.Fatal("prompts must stay undeclared")
 	}
 }
+
+// TestAuthoringPageCountMatchesItsOwnList pins the load-bearing summary the
+// review caught contradicting itself: the claimed number of statement kinds
+// must equal the number of CREATE kinds the page then enumerates.
+func TestAuthoringPageCountMatchesItsOwnList(t *testing.T) {
+	text, known := readResourceText(docsScheme + "authoring")
+	if !known {
+		t.Fatal("authoring page unknown")
+	}
+	if !strings.Contains(text, "Five statement kinds") {
+		t.Fatalf("authoring page lost its pinned count sentence")
+	}
+	kinds := map[string]bool{}
+	for _, line := range strings.Split(text, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "- `CREATE ") {
+			word := strings.Fields(strings.TrimPrefix(trimmed, "- `CREATE "))[0]
+			kinds[strings.Trim(word, "`")] = true
+		}
+	}
+	if len(kinds) != 5 {
+		t.Fatalf("authoring page enumerates %d distinct CREATE kinds (%v); the summary claims five", len(kinds), kinds)
+	}
+}
