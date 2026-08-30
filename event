@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Profile.Evaluate delegates to the core handle when adapter-loaded; the existing implementation remains the live path until stage 5.","body":{"commit":"8c6d5e21ec5ae7f80ac1653a0a1d8047e45cbf23","path":"internal/profile/evaluate.go"}}
+{"kind":"artifact","text":"The differential harness: the identical corpus runs against both Load and LoadViaCore against the same frozen goldens, plus the manifest extension for core-only projection cases.","body":{"commit":"8c6d5e21ec5ae7f80ac1653a0a1d8047e45cbf23","path":"internal/profile/corpus_test.go"}}
