@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Profile carries the optional core handle for adapter-loaded profiles; live callers are unchanged.","body":{"commit":"8c6d5e21ec5ae7f80ac1653a0a1d8047e45cbf23","path":"internal/profile/types.go"}}
+{"kind":"artifact","text":"Profile.Evaluate delegates to the core handle when adapter-loaded; the existing implementation remains the live path until stage 5.","body":{"commit":"8c6d5e21ec5ae7f80ac1653a0a1d8047e45cbf23","path":"internal/profile/evaluate.go"}}
