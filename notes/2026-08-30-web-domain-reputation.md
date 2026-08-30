@@ -1,17 +1,18 @@
 ---
 date: 2026-08-30
-status: discussion; no decision, no implementation
+status: discussion; revised the same day to the URL-level loopback design;
+  no decision, no implementation
 ---
 
-# Web-domain reputation review, discussed
+# Web reputation review, discussed
 
 The operator's question: does Tailapp capture the URLs coding agents fetch
-with web tools, and could the daily-review cron check the domains an agent
-visited against a reputation service (VirusTotal, Cisco Umbrella)? This
-note records the discussion, the verified current state, a candidate
-design, and the privacy considerations — including the operator's follow-on
-requirement that internal URLs be excluded so private service details are
-not leaked. Nothing here is decided or tasked.
+with web tools, and could the daily-review cron check what an agent
+visited against a reputation service (Google Safe Browsing or VirusTotal)?
+This note records the discussion. It was revised the same day: the first
+design materialized only registrable domains, and the operator redirected
+it to individual URLs with a loopback pipeline (see
+[Design history](#design-history)). Nothing here is decided or tasked.
 
 ## What the pipeline does today, verified
 
@@ -26,128 +27,130 @@ URLs are absent from the analytics by two deliberate layers:
    ran, and succeeded" — agent-guard records `target_coverage: unknown`
    for exactly this case.
 2. **Nothing retains them.** The shipped normalizers refuse to parse raw
-   `tool_input` structures (they only promote a pre-adapted safe `target`
-   attribute), the inbox does not keep canonical records after projections
-   commit, and daily-review counts sensitive-content presence without
-   retaining values. There is no domain inventory anywhere to scan.
+   `tool_input` structures, the inbox does not keep canonical records
+   after projections commit, and daily-review counts sensitive-content
+   presence without retaining values. There is no URL inventory anywhere
+   to scan.
 
-## Candidate design
+## The loopback design
 
-The shape splits cleanly across the existing trust boundary:
+The operator's revised direction: domain-level reputation is not granular
+enough for useful checks — Safe Browsing in particular verdicts canonical
+URLs, and path-specific threats vanish at domain granularity — so the
+pipeline tracks **individual URLs**. And the pieces the first design kept
+outside the engine (the seen-URL cache, the exclusion configuration, the
+verdicts) fold into the pipeline itself, because they are all just
+OTLP-flavored inputs:
 
-**Capture** (operator policy). Either enable `OTEL_LOG_TOOL_DETAILS=1` —
-which also exposes file paths and full shell commands — or a small adapter
-that emits a **dedicated, already-minimized attribute** (the registrable
-domain, post-exclusion) that only the domains Tailapp consumes. An earlier
-draft of this note suggested promoting the full URL into the guard's
-existing `target` attribute; review showed that route is not safe as
-described: the shipped guard copies `target` verbatim into durable policy
-evidence and into `session_progress.action_fingerprint`, so every
-concurrently installed consumer of `target` would retain full URLs —
-internal names, tokens and all — defeating the domain-only retention
-promise. A dedicated minimized attribute keeps the guard's vocabulary
-untouched; any route that reuses a shared attribute must first account for
-every installed consumer of it.
+**One Tailapp, three input families, one loopback.**
 
-**Materialize** (a Tailapp). A new Tailapp (or a daily-review companion)
-whose normalizer recognizes web-tool events and upserts a per-UTC-day table
-of **registrable domains with counts** — never the full URL, since URLs
-routinely embed tokens, session identifiers, and signed parameters. This
-matches daily-review's retention philosophy: aggregate facts, no raw
-values. First-seen/last-seen day columns give the review its "new domain"
-signal cheaply.
+1. **URL observations** from harness telemetry: web-tool events carrying
+   the fetched URL (a dedicated attribute — reusing the guard's shared
+   `target` attribute remains rejected, since the guard copies `target`
+   into durable policy evidence and action fingerprints, and every
+   concurrently installed consumer of a shared attribute must be accounted
+   for).
+2. **Exclusion records**: the exclusion list itself arrives as OTLP-
+   flavored records (operator- or agent-emitted) and materializes into an
+   exclusions table — suffixes or patterns for internal names whose very
+   existence should not reach a third-party service, on top of
+   no-configuration defaults (loopback and private-range literals,
+   `localhost`, single-label names, `.local`, `.internal`, `.home.arpa`,
+   `.test`).
+3. **Reputation reports**: the assessing agent queries the reputation
+   service and emits the verdicts back as OTLP-flavored `url-reputation`
+   records. The pipeline materializes them next to the observations, so
+   "which URLs need (re)checking" is an ordinary query — observed URLs
+   minus exclusions minus fresh verdicts — and the materialized state
+   stays consistent over long periods with **no side-cache** of checked
+   URLs anywhere.
 
-**Scan** (the daily-review cron agent, instructions only). The operator
-scoped this layer explicitly: the reputation check lives entirely in the
-cron agent's instructions — no engine code, no fold logic, no new tooling —
-and the service is **either Google Safe Browsing or VirusTotal**. The
-instructions query the domain table, diff against a local seen-domain
-cache, apply the exclusion patterns, and submit only new external domains
-to the chosen service, reporting hits in the daily review.
+The daily-review cron instructions then: query for unchecked, non-excluded
+URLs; call **either Google Safe Browsing or VirusTotal** through an
+**example companion script** shipped alongside the instructions (the
+script takes URLs, performs the lookup, and emits `url-reputation` OTLP
+records to the resident); and report new hits. The scan layer remains
+instructions-plus-script — no engine code, no fold logic for scanning.
 
-Two constraints on that choice, from the services' own terms and protocol:
+**Trust model, stated plainly.** There is no spoofability, authority, or
+trust boundary of interest inside this pipeline: every OTLP source is
+local, and a harness log carrying a URL is not significantly distinct from
+an agent script sending a `url-reputation` record. A local process that
+could forge reputation records could as easily forge the observations —
+or read the database. That is an accepted shape of this application under
+the locally-deployed, single-user target model, and it matches the
+engine's existing boundary statement (loopback-only receiver, no
+authentication, owner-only control socket).
 
-- **Licensing is an explicit operator decision, not a default.** Safe
-  Browsing's free API is restricted to non-commercial use; commercial use
-  is directed to the paid Web Risk API
-  (https://developers.google.com/safe-browsing/reference/Appropriate.Usage).
-  VirusTotal's public API prohibits commercial use and business workflows
-  that only retrieve reports — which is a fair description of a routine
-  domain-enrichment cron
-  (https://docs.virustotal.com/reference/public-vs-premium-api). Depending
-  on the operator's context, the compliant options may be Web Risk or a VT
-  premium entitlement; the eligibility call is recorded when the cron
-  instructions are written.
-- **Safe Browsing checks canonical URLs, not domain reputation.** Its
-  Lookup API receives URLs, and the hash-prefix flow derives expressions
-  from host plus path and query
-  (https://developers.google.com/safe-browsing/v4/urls-hashing). A
-  registrable-domain-only table can at most check a synthesized root URL
-  (`https://<domain>/`), which misses path-specific threats — an accepted
-  loss under the domain-only retention posture, and it should be stated in
-  the review output. VirusTotal's domain reports match the domain-only
-  representation directly (categories, resolutions, vendor verdicts) but
-  carry the eligibility constraint above and free-tier rate limits.
-  Retaining more than the domain to close the Safe Browsing gap would
-  reopen the URL-retention privacy question and is not proposed here.
+**Why this pipeline earns its complexity.** It is the most complex Tailapp
+shape yet — a feedback loop where the pipeline's own reviewer feeds
+derived records back in — and it deliberately demonstrates a pattern the
+existing apps do not: **Tailapp inputs need not be agent-harness
+instrumentation**. Exclusion configuration, enrichment feeds, and review
+verdicts are all legitimate OTLP-flavored inputs, and the two-stage
+topology materializes them like anything else.
 
-## Excluding internal URLs
+## Privacy posture under URL-level tracking
 
-The operator's added consideration: routine scanning must not leak private
-service details (internal hostnames, single-label service names, corporate
-domains) to a third-party reputation service. Directions discussed:
+Retaining full URLs is a real posture change from daily-review's
+aggregate-only philosophy, accepted for the local target model with two
+standing guards:
 
-- **Exclude at the earliest layer, then again at egress.** The strongest
-  posture excludes internal names *before materialization* — the domain
-  table simply never holds them, so no later component can leak what was
-  never retained — and the cron applies the same exclusion again before
-  submission, as defense in depth against a stale or divergent table.
-- **Default exclusions that need no configuration**: loopback and RFC 1918
-  / RFC 4193 literals, `localhost`, single-label hostnames, `.local`,
-  `.internal`, `.home.arpa`, `.test`, and anything that fails public-suffix
-  registrable-domain derivation. These cover most private-service shapes
-  before any operator setup.
-- **Operator exclusion patterns** for the rest (the corporate domain, VPN
-  suffixes): a small exclusion list — exact suffixes or a regex — but its
-  *location* is a real design question. In the Tailapp source it becomes
-  reviewable, versioned configuration but requires a source update to
-  change; in the cron agent's config it is easy to change but only guards
-  the egress layer. Both layers carrying it (source-versioned suffix list
-  for materialization, agent config for egress) was the position the
-  discussion leaned toward.
-- An exclusion list is itself mildly sensitive (it names the private
-  domains); keeping the materialization-layer list in the Tailapp source
-  means it lands in the repository. If that is unacceptable, the
-  materialization layer can carry only the no-configuration defaults and
-  the operator patterns can live solely at the cron layer, trading some
-  retention minimization for repository hygiene.
+- **Retention is local.** Full URLs (which routinely embed tokens, session
+  identifiers, and signed parameters) live only in the local projection.
+  The note keeps its warning: query results are sensitive; share
+  aggregates.
+- **Egress is filtered twice.** The exclusions table filters what the
+  review queries surface for checking, and the companion script applies
+  the same exclusions before any URL leaves the machine for the
+  reputation service. The eligibility constraints stand: Safe Browsing's
+  free API is non-commercial (commercial use goes to Web Risk;
+  https://developers.google.com/safe-browsing/reference/Appropriate.Usage)
+  and VirusTotal's public API prohibits routine commercial
+  report-retrieval workflows
+  (https://docs.virustotal.com/reference/public-vs-premium-api) — the
+  licensing call is the operator's, recorded when the instructions are
+  written. URL-level checking is exactly what Safe Browsing's canonical-
+  URL and hash-prefix flows are built for
+  (https://developers.google.com/safe-browsing/v4/urls-hashing), removing
+  the first design's synthesized-root-URL loss.
 
 ## Open questions
 
-1. Capture route: `OTEL_LOG_TOOL_DETAILS` (broad, with its own data-policy
-   cost) or the domain-minimizing adapter (narrow, the design above)?
+1. Capture route: `OTEL_LOG_TOOL_DETAILS` (broad, with its data-policy
+   cost) or a narrow adapter emitting the URL as a dedicated attribute?
    Operator policy; the adapter needs a home and a maintainer.
-2. The domain-minimizing adapter owns public-suffix derivation: it emits an
-   already-minimized registrable domain, applying PSL logic and the default
-   exclusions *before* anything reaches telemetry or the materialized
-   table, so neither the engine (dependency-light, no PSL) nor the cron
-   layer derives from URLs. A cron-layer derivation alternative would mean
-   full URLs flowing through telemetry and the table — the route the
-   capture correction rejects — and is not on the table; the open question
-   is only where the adapter itself lives and how its PSL data is updated.
-3. Safe Browsing or VirusTotal (scoped to these two, instructions-only):
-   which one, given the eligibility constraints above (non-commercial-only
-   free tiers; Web Risk or VT premium for commercial contexts), how the API
-   key is held for the cron agent, whether the synthesized-root-URL loss
-   under Safe Browsing is acceptable, and whether its hashed-prefix flow is
-   worth the extra instruction complexity over the plain Lookup API.
-4. Retention: how many days of domain rows the review needs, and whether
-   the table resets with the app's activation semantics suffices.
-5. Where the exclusion configuration lives (both layers, or egress only),
-   and whether it is suffix-list or regex shaped.
+2. The private-event and table shapes for the three input families, and
+   whether one normalizer discriminating three record kinds stays within
+   the two-stage topology comfortably (single writer per table constrains
+   which folds materialize which tables; sibling folds cannot read each
+   other's tables, so the needs-checking query composes at review time or
+   the materializing folds share a writer).
+3. Verdict freshness policy: how old a verdict may be before rechecking,
+   and whether it lives in the review instructions (flexible) or a
+   materialized column (queryable).
+4. The companion script's home, its OTLP record schema for
+   `url-reputation` and exclusion records, and its key handling for the
+   chosen service.
+5. Retention duration for URL rows, and whether activation-reset semantics
+   suffice for pruning.
+
+## Design history
+
+The first design (earlier the same day) materialized only registrable
+domains — never full URLs — with public-suffix derivation in a
+domain-minimizing adapter, a cron-side seen-domain cache, and exclusion
+patterns at materialization and egress. Review hardened it (service
+eligibility terms, the shared-attribute leak, Safe Browsing's URL-not-
+domain semantics), and the operator then redirected: domain granularity is
+too coarse for useful verdicts, and the cache, exclusions, and verdicts
+belong inside the pipeline as OTLP inputs. The domain-only retention
+posture and the side-cache are superseded by the loopback design above;
+the shared-attribute rejection, the eligibility constraints, and the
+two-layer exclusion of internal names carry forward unchanged.
 
 ## Status
 
 Discussion only. Implementation would follow the normal flow: an adopted
 decision resolving the open questions, then staged, reviewed work — the
-capture adapter and its policy being the operator's call throughout.
+capture gate and service licensing being the operator's calls throughout.
