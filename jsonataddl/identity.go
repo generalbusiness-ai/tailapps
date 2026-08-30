@@ -100,8 +100,3 @@ func (identity RuntimeIdentity) Component(key string) (string, bool) {
 	value, present := identity.components[key]
 	return value, present
 }
-
-// DialectComponent renders a dialect as its identity component value.
-func DialectComponent(dialect Dialect) Component {
-	return Component{Key: "dialect", Value: dialect.Identity.Name + "/" + dialect.Identity.Version}
-}

@@ -97,9 +97,32 @@ func TestDescriptorIsSortedAndReadable(t *testing.T) {
 	}
 }
 
-func TestDialectComponentNamesTheDialect(t *testing.T) {
-	component := DialectComponent(Tailapp())
-	if component.Key != "dialect" || component.Value != "tailapp-otlp/1" {
-		t.Fatalf("dialect component = %#v", component)
+func TestDialectComponentBindsEverySemanticField(t *testing.T) {
+	base := DialectComponent(Tailapp())
+	if base.Key != "dialect" || !strings.HasPrefix(base.Value, "tailapp-otlp/1+sha256:") {
+		t.Fatalf("dialect component = %#v", base)
+	}
+	// Changing any semantic field changes the component value mechanically,
+	// with no version bump required: the digest of the canonical form
+	// participates in the composed identity.
+	mutations := map[string]func(*Dialect){
+		"layout":        func(d *Dialect) { d.Layout.ProgramSuffix = ".changed" },
+		"envelope name": func(d *Dialect) { d.HostEvent.ScalarFields[0].Name = "changed" },
+		"envelope type": func(d *Dialect) { d.HostEvent.ScalarFields[0].Nullable = !d.HostEvent.ScalarFields[0].Nullable },
+		"private event": func(d *Dialect) { d.PrivateEvent.Name = "changed" },
+		"topology":      func(d *Dialect) { d.Topology.AtLeastOneFold = false },
+		"authority":     func(d *Dialect) { d.Authority.FoldReads = ReadOwnTables },
+		"limit":         func(d *Dialect) { d.Limits.MaxFacts++ },
+	}
+	for name, mutate := range mutations {
+		changed := Tailapp()
+		mutate(&changed)
+		if DialectComponent(changed).Value == base.Value {
+			t.Fatalf("changing the %s did not change the dialect component", name)
+		}
+	}
+	// Value semantics: mutating one value never affects a fresh one.
+	if DialectComponent(Tailapp()).Value != base.Value {
+		t.Fatal("Tailapp() does not return an independent value")
 	}
 }

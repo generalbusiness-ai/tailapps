@@ -22,9 +22,12 @@ stage 6 or on Gitseq adoption, whichever comes first.
 
 ## Contents
 
-- `dialect.go` — the host policy contract: identity, source layout, host
-  and private event contracts, topology, and evaluation limits, plus the
-  immutable Tailapp dialect value. Core code receives these; it never
+- `dialect.go` — the complete host policy contract: identity, source
+  layout, the typed host-event envelope, private event policy, topology
+  cardinalities, read/write/emission authority, and evaluation limits,
+  plus the Tailapp dialect value. Dialect values have value semantics, and
+  the whole semantic configuration is mechanically bound to the composed
+  identity through a canonical digest. Core code receives these; it never
   hard-codes a host name.
 - `identity.go` — the composed runtime identity: independently versioned
   core, dialect, and host components with canonical ordered serialization,
