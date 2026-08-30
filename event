@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Name validation stays host-side; source-element validation delegates to the core's layout check under the Tailapp dialect.","body":{"commit":"b68253cca3cad6e963794d778e2fd2623adb3a0b","path":"internal/profile/source.go"}}
+{"kind":"artifact","text":"The duplicated legacy compiler is removed.","body":{"commit":"b68253cca3cad6e963794d778e2fd2623adb3a0b","path":"internal/profile/compiler.go"}}
