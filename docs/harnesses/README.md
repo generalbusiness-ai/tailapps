@@ -1,8 +1,8 @@
 # Harness setup
 
-Complete [Run locally](../../README.md#run-locally) first. Keep the resident
-running, use an absolute binary path in harness configuration, and use the same
-`TAILAPP_HOME` everywhere.
+Complete [Install and connect](../../README.md#install-and-connect) first. Keep
+the resident running, use an absolute binary path in harness configuration, and
+use the same `TAILAPP_HOME` everywhere.
 
 A harness has two independent connections:
 
