@@ -1,0 +1,6 @@
+{
+  "decision": "effective",
+  "facts": [],
+  "events": {"otel_event": [{"key": "k", "count": 1, "source_position": 1}]},
+  "tables": {}
+}

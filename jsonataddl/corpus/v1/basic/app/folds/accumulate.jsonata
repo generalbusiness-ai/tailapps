@@ -1,0 +1,15 @@
+(
+  $old := rows.prior;
+  {
+    "decision": "effective",
+    "facts": [],
+    "tables": {"totals": {"upsert": [{
+      "key": event.key,
+      "total": $old ? $old.total + event.count : event.count,
+      "last_ratio": event.ratio,
+      "flag": event.flag,
+      "payload": event.payload,
+      "extra": event.extra
+    }]}}
+  }
+)

@@ -1,0 +1,1 @@
+event otel_event: column "key" has unsupported type "FANCY"

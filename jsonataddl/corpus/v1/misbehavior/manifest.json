@@ -1,0 +1,77 @@
+{
+ "application": "app",
+ "compile": {
+  "identity": "expected/identity.json",
+  "outcome": "ok"
+ },
+ "dialect": "tailapp/v1",
+ "evaluations": [
+  {
+   "expect": "expected/undeclared-event.txt",
+   "input": "inputs/generic-normalize.json",
+   "name": "undeclared-event",
+   "program": "normalize_wrong_event"
+  },
+  {
+   "expect": "expected/fold-cannot-emit.txt",
+   "input": "inputs/generic-fold.json",
+   "name": "fold-cannot-emit",
+   "program": "fold_emits_event"
+  },
+  {
+   "expect": "expected/undeclared-table-write.txt",
+   "input": "inputs/generic-fold.json",
+   "name": "undeclared-table-write",
+   "program": "fold_undeclared_table"
+  },
+  {
+   "expect": "expected/ineffective-cannot-output.txt",
+   "input": "inputs/generic-fold.json",
+   "name": "ineffective-cannot-output",
+   "program": "fold_ineffective_outputs"
+  },
+  {
+   "expect": "expected/facts-limit.txt",
+   "input": "inputs/generic-fold.json",
+   "name": "facts-limit",
+   "program": "fold_too_many_facts"
+  },
+  {
+   "expect": "expected/unknown-result-field.txt",
+   "input": "inputs/generic-fold.json",
+   "name": "unknown-result-field",
+   "program": "fold_unknown_field"
+  },
+  {
+   "expect": "expected/undeclared-column.txt",
+   "input": "inputs/mode-undeclared-column.json",
+   "name": "undeclared-column",
+   "program": "fold_row_shapes"
+  },
+  {
+   "expect": "expected/missing-column.txt",
+   "input": "inputs/mode-missing-column.json",
+   "name": "missing-column",
+   "program": "fold_row_shapes"
+  },
+  {
+   "expect": "expected/wrong-type.txt",
+   "input": "inputs/mode-wrong-type.json",
+   "name": "wrong-type",
+   "program": "fold_row_shapes"
+  },
+  {
+   "expect": "expected/unrepresentable-integer.txt",
+   "input": "inputs/mode-unrepresentable-integer.json",
+   "name": "unrepresentable-integer",
+   "program": "fold_row_shapes"
+  },
+  {
+   "expect": "expected/delete-by-key.json",
+   "input": "inputs/mode-delete-by-key.json",
+   "name": "delete-by-key",
+   "program": "fold_row_shapes"
+  }
+ ],
+ "interface": "gitseq notes/2026-08-26-jsonata-ddl-application-interface.md"
+}

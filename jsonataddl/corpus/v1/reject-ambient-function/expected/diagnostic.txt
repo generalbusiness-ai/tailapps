@@ -1,0 +1,1 @@
+program "normalize" uses an ambient or dynamic JSONata function

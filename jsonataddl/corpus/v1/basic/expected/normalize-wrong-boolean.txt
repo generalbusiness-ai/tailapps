@@ -1,0 +1,1 @@
+ERROR: program "normalize" output: event otel_event[0]: column "flag": must be boolean

@@ -1,0 +1,6 @@
+{
+  "decision": "effective",
+  "facts": [{"stamp": $now()}],
+  "events": {"otel_event": [{"key": "k", "source_position": meta.position}]},
+  "tables": {}
+}

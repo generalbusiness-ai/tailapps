@@ -1,0 +1,1 @@
+ERROR: program "fold_row_shapes" output: table "totals" upsert[0]: column "total": must be an exactly representable JSON integer

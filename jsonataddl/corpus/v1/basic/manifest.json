@@ -1,0 +1,61 @@
+{
+ "application": "app",
+ "compile": {
+  "identity": "expected/identity.json",
+  "outcome": "ok"
+ },
+ "dialect": "tailapp/v1",
+ "evaluations": [
+  {
+   "expect": "expected/normalize-values.json",
+   "input": "inputs/normalize-values.json",
+   "name": "normalize-values",
+   "program": "normalize",
+   "repeat": 3
+  },
+  {
+   "expect": "expected/normalize-skip.json",
+   "input": "inputs/normalize-skip.json",
+   "name": "normalize-skip-is-ineffective",
+   "program": "normalize"
+  },
+  {
+   "expect": "expected/normalize-unrepresentable-integer.txt",
+   "input": "inputs/normalize-overflow.json",
+   "name": "normalize-unrepresentable-integer",
+   "program": "normalize"
+  },
+  {
+   "expect": "expected/normalize-wrong-boolean.txt",
+   "input": "inputs/normalize-wrong-flag.json",
+   "name": "normalize-wrong-boolean",
+   "program": "normalize"
+  },
+  {
+   "expect": "expected/normalize-invalid-blob.txt",
+   "input": "inputs/normalize-bad-blob.json",
+   "name": "normalize-invalid-blob",
+   "program": "normalize"
+  },
+  {
+   "expect": "expected/accumulate-first.json",
+   "input": "inputs/accumulate-first.json",
+   "name": "accumulate-without-prior",
+   "program": "accumulate"
+  },
+  {
+   "expect": "expected/accumulate-prior.json",
+   "input": "inputs/accumulate-prior.json",
+   "name": "accumulate-with-prior",
+   "program": "accumulate",
+   "repeat": 3
+  },
+  {
+   "expect": "expected/unknown-program.txt",
+   "input": "inputs/accumulate-first.json",
+   "name": "unknown-program",
+   "program": "nope"
+  }
+ ],
+ "interface": "gitseq notes/2026-08-26-jsonata-ddl-application-interface.md"
+}

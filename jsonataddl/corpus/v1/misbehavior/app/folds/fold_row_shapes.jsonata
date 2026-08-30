@@ -1,0 +1,22 @@
+(
+  $mode := event.key;
+  $mode = "undeclared-column" ? {
+    "decision": "effective", "facts": [],
+    "tables": {"totals": {"upsert": [{"key": "k", "total": 1, "bonus": 2}]}}
+  } : $mode = "missing-column" ? {
+    "decision": "effective", "facts": [],
+    "tables": {"totals": {"upsert": [{"key": "k"}]}}
+  } : $mode = "wrong-type" ? {
+    "decision": "effective", "facts": [],
+    "tables": {"totals": {"upsert": [{"key": "k", "total": "not a number"}]}}
+  } : $mode = "unrepresentable-integer" ? {
+    "decision": "effective", "facts": [],
+    "tables": {"totals": {"upsert": [{"key": "k", "total": 9007199254740992}]}}
+  } : $mode = "delete-by-key" ? {
+    "decision": "effective", "facts": [],
+    "tables": {"totals": {"delete": [{"key": "k"}]}}
+  } : {
+    "decision": "effective", "facts": [],
+    "tables": {"totals": {"upsert": [{"key": event.key, "total": event.count}]}}
+  }
+)

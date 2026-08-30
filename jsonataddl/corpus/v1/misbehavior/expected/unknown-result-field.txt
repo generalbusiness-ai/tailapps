@@ -1,0 +1,1 @@
+ERROR: program "fold_unknown_field" output: must be one JSON object with only decision, facts, events and tables: json: unknown field "surprise"
