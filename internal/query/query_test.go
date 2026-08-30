@@ -8,10 +8,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/generalbusiness-ai/tailapp/internal/inbox"
-	"github.com/generalbusiness-ai/tailapp/internal/profile"
-	"github.com/generalbusiness-ai/tailapp/internal/projection"
-	"github.com/generalbusiness-ai/tailapp/tailapps"
+	"github.com/generalbusiness-ai/tailapps/internal/inbox"
+	"github.com/generalbusiness-ai/tailapps/internal/profile"
+	"github.com/generalbusiness-ai/tailapps/internal/projection"
+	"github.com/generalbusiness-ai/tailapps/tailapps"
 )
 
 func TestBoundedQueryJoinsOnlyExplicitExportsAtAlignedFrontier(t *testing.T) {

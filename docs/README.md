@@ -1,10 +1,10 @@
-# Tailapp documentation
+# Tailapps documentation
 
 Start with the root [README](../README.md#run-locally). It is the canonical
 build, startup, install, and first-query path. The pages below add detail
 without changing that sequence.
 
-## Use Tailapp
+## Use Tailapps
 
 - [Harness overview and verification](harnesses/README.md)
 - Harness setup: [Claude Code](harnesses/claude-code.md),

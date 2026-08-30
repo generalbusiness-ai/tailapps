@@ -1,5 +1,6 @@
-// Package mcp adapts Tailapp's private control service to MCP JSON-RPC over
-// stdio. It owns no engine state and never opens a writable database.
+// Package mcp adapts the tailapp engine's private control service to MCP
+// JSON-RPC over stdio. It owns no engine state and never opens a writable
+// database.
 package mcp
 
 import (
@@ -8,7 +9,7 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/generalbusiness-ai/tailapp/internal/control"
+	"github.com/generalbusiness-ai/tailapps/internal/control"
 )
 
 type message struct {

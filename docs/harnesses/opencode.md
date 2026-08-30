@@ -1,13 +1,13 @@
 # OpenCode
 
 OpenCode has a native MCP client, but its current documentation does not
-describe a native OTLP exporter for harness events. Tailapp therefore has a
-split setup: MCP is configured directly, while telemetry comes from a plugin.
-Plugins are independent producers and can emit different names and attributes;
-Tailapp documents compatibility per named plugin profile rather than treating
-"OpenCode telemetry" as one wire contract.
+describe a native OTLP exporter for harness events. The Tailapps project
+therefore has a split setup: MCP is configured directly, while telemetry comes
+from a plugin. Plugins are independent producers and can emit different names
+and attributes; the project documents compatibility per named plugin profile
+rather than treating "OpenCode telemetry" as one wire contract.
 
-## Give OpenCode access to Tailapp MCP
+## Give OpenCode access to Tailapps over MCP
 
 Add a local server to `opencode.json` or the applicable user configuration,
 using absolute paths:
@@ -63,7 +63,7 @@ traces disabled. Enable traces only when every local consumer is trusted to
 receive that content.
 
 The DEVtheOPS profile sets `service.name = opencode` and emits unprefixed log
-event names. Tailapp consumes logs as the single counting source:
+event names. The `tailapp` engine consumes logs as the single counting source:
 
 - `tool_result`, with `session.id`, `tool_name`, `success`, and `duration_ms`;
 - `api_request`, with token counters, `cost_usd`, and `duration_ms`.
@@ -87,8 +87,8 @@ Supply the canonical fields described by
 [`agent-guard`](../../tailapps/agent-guard/README.md#input-model) and
 [`session-cost`](../../tailapps/session-cost/README.md#input-model). Avoid
 emitting both before and after as independently counted actions for one
-completed call. Tailapp does not ship or install this plugin in the current
-release.
+completed call. The Tailapps project does not ship or install this plugin in
+the current release.
 
 `activity-stats` accepts the DEVtheOPS logs and the generic adapter records,
 reduces tool and endpoint values to bounded categories, and retains only

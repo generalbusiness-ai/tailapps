@@ -5,7 +5,7 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/generalbusiness-ai/tailapp/internal/profile"
+	"github.com/generalbusiness-ai/tailapps/internal/profile"
 )
 
 func TestSignalCountsCompiles(t *testing.T) {

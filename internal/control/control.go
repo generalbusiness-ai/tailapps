@@ -19,9 +19,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/generalbusiness-ai/tailapp/internal/definition"
-	"github.com/generalbusiness-ai/tailapp/internal/engine"
-	"github.com/generalbusiness-ai/tailapp/internal/query"
+	"github.com/generalbusiness-ai/tailapps/internal/definition"
+	"github.com/generalbusiness-ai/tailapps/internal/engine"
+	"github.com/generalbusiness-ai/tailapps/internal/query"
 )
 
 const MaxRequestBytes = 1 << 20

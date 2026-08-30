@@ -18,7 +18,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/generalbusiness-ai/tailapp/internal/inbox"
+	"github.com/generalbusiness-ai/tailapps/internal/inbox"
 )
 
 const MaxCanonicalRecordBytes = 256 << 10

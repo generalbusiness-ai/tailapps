@@ -20,8 +20,8 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/generalbusiness-ai/tailapp/internal/inbox"
-	operationalmetrics "github.com/generalbusiness-ai/tailapp/internal/metrics"
+	"github.com/generalbusiness-ai/tailapps/internal/inbox"
+	operationalmetrics "github.com/generalbusiness-ai/tailapps/internal/metrics"
 )
 
 func TestReceiverAcceptsJSONLogsAndProtobufTracesAndMetricsInOrder(t *testing.T) {

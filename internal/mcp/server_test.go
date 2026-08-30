@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/generalbusiness-ai/tailapp/internal/control"
+	"github.com/generalbusiness-ai/tailapps/internal/control"
 )
 
 func TestArrayToolResultOmitsStructuredContent(t *testing.T) {

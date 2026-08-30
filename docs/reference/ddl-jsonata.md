@@ -1,9 +1,9 @@
 # DDL and JSONata reference
 
-Tailapp v1 compiles a deliberately small language. It is SQL-shaped for schema
-and bounded reads, with JSONata programs for deterministic normalization and
-fold logic. The restrictions are part of the runtime profile and are enforced
-at validation, not conventions.
+The Tailapps v1 runtime compiles a deliberately small language. It is SQL-shaped
+for schema and bounded reads, with JSONata programs for deterministic
+normalization and fold logic. The restrictions are part of the runtime profile
+and are enforced at validation, not conventions.
 
 For a working source set and installation sequence, start with the
 [authoring guide](../authoring.md).

@@ -6,7 +6,7 @@ rests_on:
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:a02e8da110b93948746edf9adf13e6dd00633271
 ---
 
-# Tailapp initial implementation specification
+# Tailapps initial implementation specification
 
 > **Status:** Implemented baseline. This is the original build specification,
 > not the current command reference. See the [documentation
@@ -201,7 +201,7 @@ eventually cause an upstream exporter with bounded retries to drop telemetry.
 Operational status exposes per-tailapp latency and oldest outstanding position
 so the operator can repair or detach it before the queue fills.
 
-OTLP can deliver at least once. Tailapp does not infer equality as identity and
+OTLP can deliver at least once. Tailapps does not infer equality as identity and
 does not deduplicate records. `content_digest` and native correlation IDs are
 available to application folds.
 
@@ -630,7 +630,7 @@ It does not replay events that arrived while another revision was active.
 
 On engine restart, validate projection identity and frontier, finish or roll
 back an activation journal, and resume pending inbox obligations. A missing,
-corrupt, or profile-incompatible projection is `unavailable`; Tailapp cannot
+corrupt, or profile-incompatible projection is `unavailable`; Tailapps cannot
 rebuild it without retained input and requires explicit reset or a later
 external replay operation.
 
@@ -853,7 +853,7 @@ version one. The documentation must state this plainly.
   provide a thin example adapter from the documented plugin event stream to
   OTLP. The engine contract must not vary between those paths.
 - Record harness versions in fixtures and treat vendor field mappings as
-  compatibility tests, not stable Tailapp engine schema.
+  compatibility tests, not stable `tailapp` engine schema.
 
 ## 15. End-to-end acceptance
 

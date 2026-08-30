@@ -1,4 +1,4 @@
-module github.com/generalbusiness-ai/tailapp
+module github.com/generalbusiness-ai/tailapps
 
 go 1.26.7
 

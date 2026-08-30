@@ -111,12 +111,13 @@ tailapp query \
 
 Treat the result as cumulative since the last reset activation. It is not a
 billing ledger: exporters can omit data, events can be missed while a
-projection is detached, and Tailapp v1 does not retain an event log for replay.
+projection is detached, and the current `tailapp` engine does not retain an
+event log for replay.
 Updating a normalizer with continue activation affects only newly consumed
 records: already-materialized rows keep their previous harness label. Reset
 activation would apply the new label to subsequently received records, but it
-also discards the existing projection history; Tailapp cannot replay that
-history, so a normalizer update does not force a reset.
+also discards the existing projection history; the `tailapp` engine cannot
+replay that history, so a normalizer update does not force a reset.
 Updating an older installed copy to this schema requires reset activation
 because the materialized table gains cached-input, reasoning-output, and
 last-event-time columns.

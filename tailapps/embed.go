@@ -7,7 +7,7 @@ import (
 	"embed"
 	"fmt"
 
-	"github.com/generalbusiness-ai/tailapp/internal/profile"
+	"github.com/generalbusiness-ai/tailapps/internal/profile"
 )
 
 //go:embed activity-stats/application.sql activity-stats/folds/*.jsonata agent-guard/application.sql agent-guard/folds/*.jsonata session-cost/application.sql session-cost/folds/*.jsonata
