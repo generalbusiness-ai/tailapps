@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at tailapps/embed_test.go","body":{"commit":"bb9d39fa09b84aaab46dcedfff42277829b66c83","path":"tailapps/embed_test.go"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:11b51ea84c271a413bbdc9a9d0c3c6d48b924d94","text":"Merge retired a covered predecessor; the successor is at tailapps/embed_test.go."}
