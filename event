@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at README.md","body":{"commit":"a7b2bef31574b9a60f38176ae7ef97d69f13c407","path":"README.md"}}
+{"kind":"artifact","text":"Merge published the current artifact at cmd/tailapp/main.go","body":{"commit":"a7b2bef31574b9a60f38176ae7ef97d69f13c407","path":"cmd/tailapp/main.go"}}
