@@ -1,0 +1,6 @@
+{
+ "revision": "sha256:fbc131f15c1172858e5d92c3a50ca3d0f81f7d600834a08f023ac892fe0b5e68",
+ "runtime_profile": "tailapp-otlp-1.8-json-v1-ddl-jsonata-v206-sqlite-3.53.4@5",
+ "storage_schema_digest": "sha256:61375684b3a9664d6cfb06ff09444103832d06cab230cb6cd584594537f52478",
+ "export_contract_digest": "sha256:967aa4d0cae51a7f54ab7c990c76fdb53892ff126cb68faaa4a1bda8b7d9787b"
+}

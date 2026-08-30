@@ -1,0 +1,18 @@
+{
+ "decision": "effective",
+ "facts": [],
+ "tables": {
+  "totals": {
+   "upsert": [
+    {
+     "extra": null,
+     "flag": null,
+     "key": "alpha",
+     "last_ratio": null,
+     "payload": null,
+     "total": 42
+    }
+   ]
+  }
+ }
+}

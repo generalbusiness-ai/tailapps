@@ -1,0 +1,13 @@
+{
+ "decision": "effective",
+ "facts": [],
+ "tables": {
+  "totals": {
+   "delete": [
+    {
+     "key": "k"
+    }
+   ]
+  }
+ }
+}

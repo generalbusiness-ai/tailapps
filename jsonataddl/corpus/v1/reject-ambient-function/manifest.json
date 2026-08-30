@@ -1,0 +1,9 @@
+{
+ "application": "app",
+ "compile": {
+  "diagnostic": "expected/diagnostic.txt",
+  "outcome": "error"
+ },
+ "dialect": "tailapp/v1",
+ "interface": "gitseq notes/2026-08-26-jsonata-ddl-application-interface.md"
+}

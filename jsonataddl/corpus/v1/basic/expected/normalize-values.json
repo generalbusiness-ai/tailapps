@@ -1,0 +1,25 @@
+{
+ "decision": "effective",
+ "facts": [],
+ "events": {
+  "otel_event": [
+   {
+    "count": 9007199254740991,
+    "extra": {
+     "empty": {},
+     "nested": [
+      "x",
+      1,
+      null
+     ]
+    },
+    "flag": true,
+    "key": "alpha",
+    "payload": "aGVsbG8=",
+    "ratio": 0.5,
+    "source_position": 7
+   }
+  ]
+ },
+ "tables": {}
+}

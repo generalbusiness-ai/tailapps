@@ -1,0 +1,5 @@
+{
+  "decision": "ineffective",
+  "facts": [],
+  "tables": {"t_ineffective": {"upsert": [{"key": "k", "total": 1}]}}
+}

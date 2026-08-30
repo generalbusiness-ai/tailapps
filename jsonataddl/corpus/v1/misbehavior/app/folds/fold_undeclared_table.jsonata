@@ -1,0 +1,5 @@
+{
+  "decision": "effective",
+  "facts": [],
+  "tables": {"other_table": {"upsert": [{"key": "k"}]}}
+}

@@ -1,0 +1,6 @@
+{
+  "decision": "effective",
+  "facts": [],
+  "events": {"wrong_event": [{"key": "k"}]},
+  "tables": {}
+}

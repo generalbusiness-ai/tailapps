@@ -1,0 +1,31 @@
+{
+ "event": {
+  "count": 2,
+  "extra": null,
+  "flag": null,
+  "key": "alpha",
+  "payload": null,
+  "ratio": null,
+  "source_position": 8
+ },
+ "meta": {
+  "emission_ordinal": 0,
+  "event_id": "local:9",
+  "event_type": "otel_event",
+  "position": 9
+ },
+ "rows": {
+  "prior": {
+   "extra": {
+    "nested": [
+     1
+    ]
+   },
+   "flag": true,
+   "key": "alpha",
+   "last_ratio": 0.5,
+   "payload": "aGVsbG8=",
+   "total": 40
+  }
+ }
+}

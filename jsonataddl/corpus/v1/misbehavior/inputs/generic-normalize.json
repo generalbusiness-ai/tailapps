@@ -1,0 +1,30 @@
+{
+ "event": {
+  "content_digest": "digest",
+  "id": "local:7",
+  "name": "agent.run",
+  "observed_unix_nano": null,
+  "record": {
+   "attributes": {
+    "count": 1,
+    "key": "generic"
+   },
+   "resource": {
+    "attributes": {
+     "service.instance.id": "instance-1"
+    }
+   }
+  },
+  "signal": "log",
+  "source": "demo-agent",
+  "span_id": null,
+  "time_unix_nano": "1787900000000000000",
+  "trace_id": null
+ },
+ "meta": {
+  "event_id": "local:7",
+  "event_type": "otlp_record",
+  "position": 7
+ },
+ "rows": {}
+}

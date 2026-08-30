@@ -1,0 +1,77 @@
+{
+ "application": "app",
+ "compile": {
+  "identity": "expected/identity.json",
+  "outcome": "ok"
+ },
+ "dialect": "tailapp/v1",
+ "evaluations": [
+  {
+   "error_contains": "undeclared event output",
+   "input": "inputs/generic-normalize.json",
+   "name": "undeclared-event",
+   "program": "normalize_wrong_event"
+  },
+  {
+   "error_contains": "analytic folds cannot emit events",
+   "input": "inputs/generic-fold.json",
+   "name": "fold-cannot-emit",
+   "program": "fold_emits_event"
+  },
+  {
+   "error_contains": "write to undeclared table",
+   "input": "inputs/generic-fold.json",
+   "name": "undeclared-table-write",
+   "program": "fold_undeclared_table"
+  },
+  {
+   "error_contains": "ineffective decision cannot emit events or change tables",
+   "input": "inputs/generic-fold.json",
+   "name": "ineffective-cannot-output",
+   "program": "fold_ineffective_outputs"
+  },
+  {
+   "error_contains": "facts exceed 64",
+   "input": "inputs/generic-fold.json",
+   "name": "facts-limit",
+   "program": "fold_too_many_facts"
+  },
+  {
+   "error_contains": "must be one JSON object with only decision, facts, events and tables",
+   "input": "inputs/generic-fold.json",
+   "name": "unknown-result-field",
+   "program": "fold_unknown_field"
+  },
+  {
+   "error_contains": "undeclared column",
+   "input": "inputs/mode-undeclared-column.json",
+   "name": "undeclared-column",
+   "program": "fold_row_shapes"
+  },
+  {
+   "error_contains": "missing column",
+   "input": "inputs/mode-missing-column.json",
+   "name": "missing-column",
+   "program": "fold_row_shapes"
+  },
+  {
+   "error_contains": "must be an integer",
+   "input": "inputs/mode-wrong-type.json",
+   "name": "wrong-type",
+   "program": "fold_row_shapes"
+  },
+  {
+   "error_contains": "must be an exactly representable JSON integer",
+   "input": "inputs/mode-unrepresentable-integer.json",
+   "name": "unrepresentable-integer",
+   "program": "fold_row_shapes"
+  },
+  {
+   "expect": "expected/delete-by-key.json",
+   "input": "inputs/mode-delete-by-key.json",
+   "name": "delete-by-key",
+   "program": "fold_row_shapes"
+  }
+ ],
+ "interface": "gitseq notes/2026-08-26-jsonata-ddl-application-interface.md"
+}

@@ -1,0 +1,21 @@
+(
+  $attributes := event.record.attributes;
+  $attributes.skip = true ? {
+    "decision": "ineffective",
+    "facts": [{"reason": "skipped by request"}],
+    "tables": {}
+  } : {
+    "decision": "effective",
+    "facts": [],
+    "events": {"otel_event": [{
+      "key": $attributes.key,
+      "count": $attributes.count,
+      "ratio": $attributes.ratio,
+      "flag": $attributes.flag,
+      "payload": $attributes.payload,
+      "extra": $attributes.extra,
+      "source_position": meta.position
+    }]},
+    "tables": {}
+  }
+)

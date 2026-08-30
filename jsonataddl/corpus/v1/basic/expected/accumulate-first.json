@@ -1,0 +1,22 @@
+{
+ "decision": "effective",
+ "facts": [],
+ "tables": {
+  "totals": {
+   "upsert": [
+    {
+     "extra": {
+      "nested": [
+       1
+      ]
+     },
+     "flag": true,
+     "key": "alpha",
+     "last_ratio": 0.5,
+     "payload": "aGVsbG8=",
+     "total": 2
+    }
+   ]
+  }
+ }
+}
