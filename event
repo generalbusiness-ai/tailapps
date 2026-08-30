@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Evaluate is pure delegation to the core handle; the duplicated output validator is gone.","body":{"commit":"b68253cca3cad6e963794d778e2fd2623adb3a0b","path":"internal/profile/evaluate.go"}}
+{"kind":"artifact","text":"Name validation stays host-side; source-element validation delegates to the core's layout check under the Tailapp dialect.","body":{"commit":"b68253cca3cad6e963794d778e2fd2623adb3a0b","path":"internal/profile/source.go"}}
