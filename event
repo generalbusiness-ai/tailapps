@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at tailapps/session-cost/README.md","body":{"commit":"a7b2bef31574b9a60f38176ae7ef97d69f13c407","path":"tailapps/session-cost/README.md"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:08772acd9732630b7be393207f27e90a63d1bf7b","text":"Merge retired a covered predecessor; the successor is at docs/harnesses/claude-code.md."}
