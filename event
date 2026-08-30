@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"CLI reference at the promote-examples head: signal-counts added to the built-in bundle names and the directory-install example path updated.","body":{"commit":"2fdf86159bf79fccbb3c3bffc79c6f3ceddb418c","path":"docs/reference/cli.md"}}
+{"kind":"artifact","text":"MCP reference at the promote-examples head: signal-counts added to the built-in bundle values for tailapp_create and tailapp_install.","body":{"commit":"2fdf86159bf79fccbb3c3bffc79c6f3ceddb418c","path":"docs/reference/mcp.md"}}
