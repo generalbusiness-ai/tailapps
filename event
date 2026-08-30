@@ -1,1 +1,1 @@
-{"kind":"assert","text":"Queued for a later bounded builder cycle; I am completing the already-promised project-terminology request #1246 and will not begin this research request in the current cycle."}
+{"kind":"artifact","text":"Project terminology and canonical Tailapps identity at README.md","body":{"commit":"70952f24f5901084f4eaefe9d2aa734e3cd3bf89","path":"README.md"}}
