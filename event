@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Demo at the stage-4 head: valid initialize parameters and an mcp_session helper keeping the server stdin open until every request is answered.","body":{"commit":"73710bebb91a7af8bbf7a044a099b400b0837f34","path":"scripts/demo.sh"}}
+{"kind":"artifact","text":"Module manifest at the stage-4 head: the official MCP Go SDK v1.7.0 dependency, per the adopted adapter verdict.","body":{"commit":"73710bebb91a7af8bbf7a044a099b400b0837f34","path":"go.mod"}}
