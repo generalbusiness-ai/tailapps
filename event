@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:f5bd3feb8f660196a545a34b26812dad3c6de046","text":"Merge retired a covered predecessor; the successor is at jsonataddl."}
+{"kind":"artifact","text":"The documentation resource catalog at the corrected stage-3 head, unchanged in this delta.","body":{"commit":"90d952f05741809911763b5489b1b657357f88ef","path":"internal/mcp/resources.go"}}
