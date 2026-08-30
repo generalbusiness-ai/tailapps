@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Unchanged in this delta: the projection-case runner acting as the host.","body":{"commit":"f934363d4c5b3f740c9d8be6266fdb399e370606","path":"internal/profile/corpus_projection_test.go"}}
+{"kind":"artifact","text":"Unchanged in this delta: the projection-state corpus cases and frozen authorizer denials.","body":{"commit":"f934363d4c5b3f740c9d8be6266fdb399e370606","path":"jsonataddl/corpus/v1/projection-state/manifest.json"}}
