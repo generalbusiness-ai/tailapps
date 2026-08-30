@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"The daily-review Tailapp source set as authored by hugh, committed unchanged except the added directory-install snippet, rebased onto the corrected promotion head.","body":{"commit":"8e57f341ac997376025acf27609f0e20825b04ae","path":"tailapps/daily-review"}}
+{"kind":"artifact","text":"Bundled-app tests at the corrected daily-review head: the disk-compile test asserts the source directory compiles and exports daily_review.","body":{"commit":"8e57f341ac997376025acf27609f0e20825b04ae","path":"tailapps/embed_test.go"}}
