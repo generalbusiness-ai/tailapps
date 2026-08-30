@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"CLI at the placement-corrected stage-5 head, unchanged in this delta.","body":{"commit":"bc2e7c4a33b0425c5349ad465b10351b254b9bee","path":"internal/cli/cli.go"}}
+{"kind":"artifact","text":"MCP reference at the placement-corrected stage-5 head: skill placement now states that a single-name path covers two harnesses and coverage of all three needs one directory reachable under both roots or emission into both.","body":{"commit":"bc2e7c4a33b0425c5349ad465b10351b254b9bee","path":"docs/reference/mcp.md"}}
