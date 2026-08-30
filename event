@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at notes/2026-08-30-web-domain-reputation.md","body":{"commit":"81ab1b366617ee35c53268ea29b5a754858067ae","path":"notes/2026-08-30-web-domain-reputation.md"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:9df6c52798e5d326cad9efb071c2d406deaaabd2","text":"Merge retired a covered predecessor; the successor is at notes/2026-08-30-web-domain-reputation.md."}
