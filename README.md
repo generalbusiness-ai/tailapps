@@ -40,7 +40,8 @@ export TAILAPP_HOME="$HOME/.local/share/tailapp"
 The receiver is deliberately loopback-only; use an explicit IP rather than
 `localhost`. Its actual URL is also written to `$TAILAPP_HOME/engine.json`.
 
-In another terminal, export the same `TAILAPP_HOME` and install the examples:
+In another terminal, export the same `TAILAPP_HOME` and install the shipped
+Tailapps:
 
 ```sh
 export TAILAPP_HOME="$HOME/.local/share/tailapp"

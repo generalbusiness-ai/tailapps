@@ -118,7 +118,7 @@ tailapp apps install \
 The directory may contain author documentation. Only `application.sql` and
 regular, non-symlink `folds/*.jsonata` files become executable source.
 
-Install a shipped example without a directory:
+Install a built-in bundle without a directory:
 
 ```sh
 tailapp apps install --bundle agent-guard \

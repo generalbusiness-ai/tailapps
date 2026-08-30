@@ -156,7 +156,7 @@ Custom-source arguments:
 ```
 
 Every source value is standard base64. Supply the complete source map; the
-normal source limits still apply. To install a shipped example, omit `sources`
+normal source limits still apply. To install a built-in bundle, omit `sources`
 and pass `"bundle": "activity-stats"`, `"bundle": "agent-guard"`,
 `"bundle": "session-cost"`, or `"bundle": "signal-counts"`. Supplying
 both is invalid.
