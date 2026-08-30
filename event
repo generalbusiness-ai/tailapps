@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:a424c672a0adea7271ee1875c7e21fb80f47307c","text":"Merge retired a covered predecessor; the successor is at docs/reference/ddl-jsonata.md."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:a52953c3d2e076c6e735252432a8061c3264921d","text":"Merge retired a covered predecessor; the successor is at notes/2026-08-28-jsonata-ddl-core-extraction.md."}
