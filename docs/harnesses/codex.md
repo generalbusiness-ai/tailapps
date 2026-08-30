@@ -1,7 +1,7 @@
 # Codex
 
 Codex can send native structured log events directly to Tailapps over
-OTLP/HTTP. The three examples shipped with this release recognize its tool and
+OTLP/HTTP. The included bundles recognize its tool and
 API-request event names.
 
 ## Send telemetry
@@ -42,8 +42,8 @@ A useful first prompt is:
 
 ## Current bundle fit
 
-The three shipped Tailapps are examples, not a catalog. Users and agents can
-fork, extend, replace, or supplement them; the
+The five shipped Tailapps are a starting kit, not a fixed catalog. Users and
+agents can fork, extend, replace, or supplement them; the
 [authoring guide](../authoring.md) covers installation over CLI and MCP.
 
 `agent-guard` recognizes `codex.tool_call`, `codex.tool_decision`, and

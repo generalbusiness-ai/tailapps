@@ -201,7 +201,8 @@ Arguments:
 ```
 
 Optional `bundle` is a string. Built-in values are `activity-stats`,
-`agent-guard`, `session-cost`, and `signal-counts`; omit it for custom source.
+`agent-guard`, `daily-review`, `session-cost`, and `signal-counts`; omit it for
+custom source.
 Result: [App](#app).
 
 ### `tailapp_install`
@@ -226,7 +227,8 @@ Custom-source arguments:
 Every source value is standard base64. Supply the complete source map; the
 normal source limits still apply. To install a built-in bundle, omit `sources`
 and pass `"bundle": "activity-stats"`, `"bundle": "agent-guard"`,
-`"bundle": "session-cost"`, or `"bundle": "signal-counts"`. Supplying
+`"bundle": "daily-review"`, `"bundle": "session-cost"`, or
+`"bundle": "signal-counts"`. Supplying
 both is invalid.
 
 Result:

@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-	"testing/fstest"
 
 	"github.com/generalbusiness-ai/tailapps/internal/profile"
 )
@@ -26,16 +25,8 @@ func TestBundledTailappsCompile(t *testing.T) {
 	}
 }
 
-func TestDailyReviewCompilesFromSourceDirectory(t *testing.T) {
-	files := fstest.MapFS{}
-	for _, name := range []string{"application.sql", "folds/normalize.jsonata", "folds/daily.jsonata"} {
-		content, err := os.ReadFile(filepath.Join("daily-review", name))
-		if err != nil {
-			t.Fatal(err)
-		}
-		files[name] = &fstest.MapFile{Data: content}
-	}
-	compiled, err := profile.Load(files, ".", "daily-review")
+func TestDailyReviewExportsDailyReview(t *testing.T) {
+	compiled, err := Load("daily-review")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -16,13 +16,11 @@ they do not copy its value. This is useful for detecting telemetry privacy
 regressions even when the source records are otherwise outside the shipped
 analytics vocabularies.
 
-`daily-review` is not a built-in bundle; install and first-activate it from
-its source directory in one request:
+Install and first-activate the built-in bundle in one request:
 
 ```sh
-tailapp apps install \
-  --idempotency-key install-daily-review-v1 \
-  daily-review tailapps/daily-review
+tailapp apps install --bundle daily-review \
+  --idempotency-key install-daily-review-v1 daily-review
 ```
 
 Then query the exported `daily_review` table:

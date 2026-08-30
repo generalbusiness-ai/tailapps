@@ -1,6 +1,6 @@
 # Tailapps documentation
 
-Start with the root [README](../README.md#run-locally). It is the canonical
+Start with the root [README](../README.md#install-and-connect). It is the canonical
 build, startup, install, and first-query path. The pages below add detail
 without changing that sequence.
 
@@ -12,8 +12,7 @@ without changing that sequence.
   [Pi](harnesses/pi.md)
 - Shipped Tailapps: [activity stats](../tailapps/activity-stats/README.md),
   [agent guard](../tailapps/agent-guard/README.md),
-  [daily review](../tailapps/daily-review/README.md) (installed from its
-  source directory, not a built-in bundle),
+  [daily review](../tailapps/daily-review/README.md),
   [session cost](../tailapps/session-cost/README.md), and
   [signal counts](../tailapps/signal-counts/README.md)
 

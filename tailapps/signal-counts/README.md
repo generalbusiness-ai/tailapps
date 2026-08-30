@@ -7,9 +7,8 @@ retaining the source records.
 Install and first-activate it in one request:
 
 ```sh
-tailapp apps install \
-  --idempotency-key install-signal-counts-v1 \
-  signal-counts tailapps/signal-counts
+tailapp apps install --bundle signal-counts \
+  --idempotency-key install-signal-counts-v1 signal-counts
 ```
 
 Then query its exported table:
@@ -20,5 +19,5 @@ tailapp query \
   signal-counts
 ```
 
-`README.md` is author documentation and is not installed as executable source;
-the install command reads only `application.sql` and `folds/*.jsonata`.
+The source directory remains a compact template for authoring your own
+Tailapp.
