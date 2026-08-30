@@ -45,6 +45,18 @@ JSON Schema 2020-12, no `$schema` marker) describing its
 `structuredContent`; the schemas name the stable core fields and stay open
 to additions.
 
+Every tool also carries a display `title`, a description that states what it
+does, its result contract and empty-result shape, its workflow position, and
+a trailing stable `docs: tailapp://docs/tools/NAME` pointer (an inert string
+until the documentation resource catalog ships), and complete behavior
+`annotations`: `readOnlyHint` on the eight read tools, explicit
+`destructiveHint` values (`true` only for `tailapp_delete` and
+`tailapp_activate`, whose reset mode discards materialized state),
+`idempotentHint` on all six mutation tools (every mutation replays through
+the idempotency ledger), and `openWorldHint: false` everywhere — the server
+talks only to the local engine. Annotations are advisory hints for approval
+UIs, never a security boundary.
+
 Engine/application errors are MCP tool results, not JSON-RPC failures. The
 text names the failing tool, substitutes `$TAILAPP_HOME` for the private
 engine-home path, and suggests the next step when the engine is not

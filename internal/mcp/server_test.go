@@ -221,6 +221,56 @@ func TestParseErrorKeepsSessionAlive(t *testing.T) {
 	}
 }
 
+func TestEveryToolCarriesOrientation(t *testing.T) {
+	for _, item := range tools() {
+		if item.Title == "" {
+			t.Fatalf("%s has no title", item.Name)
+		}
+		if len(item.Description) >= 2048 {
+			t.Fatalf("%s description is %d bytes; the 2KB harness truncation cap requires fewer", item.Name, len(item.Description))
+		}
+		if !strings.HasSuffix(item.Description, "docs: tailapp://docs/tools/"+item.Name) {
+			t.Fatalf("%s description must end with its stable docs URI: %q", item.Name, item.Description)
+		}
+	}
+}
+
+func TestToolAnnotationsMatchSafetyContract(t *testing.T) {
+	readOnly := map[string]bool{
+		"tailapps_list": true, "tailapp_get": true, "tailapp_validate": true,
+		"tailapp_status": true, "tailapp_metrics": true, "tailapp_ineffective": true,
+		"tailapp_schema": true, "tailapp_query": true,
+	}
+	destructive := map[string]bool{"tailapp_delete": true, "tailapp_activate": true}
+	idempotent := map[string]bool{
+		"tailapp_create": true, "tailapp_install": true, "tailapp_delete": true,
+		"tailapp_put_element": true, "tailapp_delete_element": true, "tailapp_activate": true,
+	}
+	seen := 0
+	for _, item := range tools() {
+		seen++
+		hints := item.Annotations
+		if hints.OpenWorldHint {
+			t.Fatalf("%s claims an open world; the server talks only to the local engine", item.Name)
+		}
+		if hints.ReadOnlyHint != readOnly[item.Name] {
+			t.Fatalf("%s readOnlyHint = %v; a wrong value is auto-approval policy on some harnesses", item.Name, hints.ReadOnlyHint)
+		}
+		if hints.DestructiveHint != destructive[item.Name] {
+			t.Fatalf("%s destructiveHint = %v", item.Name, hints.DestructiveHint)
+		}
+		if hints.IdempotentHint != idempotent[item.Name] {
+			t.Fatalf("%s idempotentHint = %v; every mutation tool replays through the idempotency ledger", item.Name, hints.IdempotentHint)
+		}
+		if hints.ReadOnlyHint && (hints.DestructiveHint || hints.IdempotentHint) {
+			t.Fatalf("%s mixes read-only with mutation hints", item.Name)
+		}
+	}
+	if seen != 14 {
+		t.Fatalf("tools = %d, want 14", seen)
+	}
+}
+
 func TestMutationToolsRequireIdempotencyKeys(t *testing.T) {
 	mutations := map[string]bool{
 		"tailapp_create":         true,
