@@ -365,8 +365,9 @@ func TestDialectEnvelopeTypesMatchObservedCanonicalRecords(t *testing.T) {
 			for _, field := range dialect.HostEvent.Fields() {
 				value, present := event[field.Name]
 				if value == nil {
-					if !field.Nullable && present {
-						t.Fatalf("%s/%s: non-nullable envelope field %q is null", fixture, name, field.Name)
+					if !field.Nullable {
+						t.Fatalf("%s/%s: non-nullable envelope field %q is %s", fixture, name, field.Name,
+							map[bool]string{true: "null", false: "absent"}[present])
 					}
 					continue
 				}
