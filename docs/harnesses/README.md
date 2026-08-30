@@ -60,7 +60,8 @@ Interpret the checks in order:
 Read each shipped Tailapp's model before treating results as policy or billing
 evidence: [activity stats](../../tailapps/activity-stats/README.md),
 [agent guard](../../tailapps/agent-guard/README.md),
-[daily review](../../tailapps/daily-review/README.md), and
+[daily review](../../tailapps/daily-review/README.md) (installed from its
+source directory, not a built-in bundle), and
 [session cost](../../tailapps/session-cost/README.md).
 
 ## Security
