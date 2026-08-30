@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Load is the retained legacy resolver - the core compiler seeded with the legacy RuntimeID, justified by the stage-4 differential freeze - plus the core-to-Profile conversion and evaluation delegation.","body":{"commit":"b68253cca3cad6e963794d778e2fd2623adb3a0b","path":"internal/profile/adapter.go"}}
+{"kind":"artifact","text":"Evaluate is pure delegation to the core handle; the duplicated output validator is gone.","body":{"commit":"b68253cca3cad6e963794d778e2fd2623adb3a0b","path":"internal/profile/evaluate.go"}}
