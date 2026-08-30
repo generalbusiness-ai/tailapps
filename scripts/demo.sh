@@ -36,14 +36,44 @@ while [ ! -S "$TAILAPP_HOME/engine.sock" ]; do
   sleep 0.05
 done
 
+
+# mcp_session feeds the request lines on stdin to one MCP server session,
+# keeping the server's stdin open until every request has a response (the
+# SDK-based server tears down on end of input rather than draining), then
+# prints the responses.
+mcp_session() {
+  requests=$(cat)
+  expected=$(printf '%s\n' "$requests" | grep -c '"id"')
+  fifo="$demo_tmp/mcp_fifo"
+  out="$demo_tmp/mcp_out"
+  rm -f "$fifo" "$out"
+  mkfifo "$fifo"
+  "$binary" mcp < "$fifo" > "$out" &
+  mcp_pid=$!
+  exec 9> "$fifo"
+  printf '%s\n' "$requests" >&9
+  attempt=0
+  while [ "$(grep -c '"id"' "$out" 2>/dev/null || true)" -lt "$expected" ]; do
+    attempt=$((attempt + 1))
+    if [ "$attempt" -gt 200 ]; then
+      break
+    fi
+    sleep 0.05
+  done
+  exec 9>&-
+  wait "$mcp_pid" 2>/dev/null || true
+  rm -f "$fifo"
+  cat "$out"
+}
+
 "$binary" apps install --bundle agent-guard --idempotency-key demo-install-agent-guard agent-guard >/dev/null
 "$binary" apps install --bundle activity-stats --idempotency-key demo-install-activity-stats activity-stats >/dev/null
 "$binary" apps install --idempotency-key demo-install-signal-counts signal-counts tailapps/signal-counts >/dev/null
 mcp_install=$(printf '%s\n' \
-  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
+  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"demo","version":"0"}}}' \
   '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
   '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"tailapp_install","arguments":{"name":"session-cost","bundle":"session-cost","idempotency_key":"demo-install-session-cost"}}}' \
-  | "$binary" mcp)
+  | mcp_session)
 printf '%s\n' "$mcp_install" | grep -q 'session-cost'
 
 "$binary" ingest-fixture --signal logs --content-type application/json testdata/otlp/cross-harness.json >/dev/null
@@ -102,14 +132,14 @@ printf '%s\n' "$activity" | grep -q 'codex'
 printf '%s\n' "$activity" | grep -q 'opencode'
 
 mcp_output=$(printf '%s\n' \
-  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
+  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"demo","version":"0"}}}' \
   '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
   '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' \
   '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"tailapp_query","arguments":{"name":"agent-guard","mounts":{"cost":"session-cost"},"sql":"SELECT progress.harness, progress.session_id, costrow.input_tokens, costrow.output_tokens FROM session_progress progress JOIN cost.session_cost costrow ON costrow.harness=progress.harness AND costrow.session_id=progress.session_id ORDER BY progress.harness"}}}' \
   '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"tailapp_metrics","arguments":{}}}' \
   '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"tailapp_ineffective","arguments":{"name":"agent-guard"}}}' \
   '{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"tailapp_query","arguments":{"name":"activity-stats","sql":"SELECT harness, SUM(event_count) AS events FROM event_inventory GROUP BY harness ORDER BY harness"}}}' \
-  | "$binary" mcp)
+  | mcp_session)
 printf '%s\n' "$mcp_output" | grep -q 'tailapp_query'
 printf '%s\n' "$mcp_output" | grep -q 'shared-opencode'
 printf '%s\n' "$mcp_output" | grep -q 'tailapp.metrics/v1'
