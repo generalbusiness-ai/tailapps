@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Module manifest at the stage-4 head: the official MCP Go SDK v1.7.0 dependency, per the adopted adapter verdict.","body":{"commit":"73710bebb91a7af8bbf7a044a099b400b0837f34","path":"go.mod"}}
+{"kind":"artifact","text":"Module checksums at the stage-4 head for the SDK dependency tree.","body":{"commit":"73710bebb91a7af8bbf7a044a099b400b0837f34","path":"go.sum"}}
