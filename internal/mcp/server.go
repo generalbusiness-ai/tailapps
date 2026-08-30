@@ -30,6 +30,7 @@ type response struct {
 type rpcError struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
+	Data    any    `json:"data,omitempty"`
 }
 type tool struct {
 	Name         string         `json:"name"`
@@ -81,7 +82,7 @@ const newestProtocolVersion = "2025-06-18"
 // object does not declare.
 const instructions = `Tailapp turns local coding-agent OTLP telemetry into queryable SQLite analytics. Observation is detective, never inline prevention. Read first: tailapps_list, then tailapp_query (read-only SQL over a Tailapp's exported tables). tailapp_status shows engine readiness; tailapp_ineffective explains rejected records. Lifecycle tools (create/put_element/validate/activate, or install as one step) take an idempotency_key; delete and reset-mode activation discard materialized state.
 
-Each tool's description states its result contract and empty-result shape, and ends with a stable docs: pointer. Query, schema, and ineffective results derive from local telemetry and may contain session identifiers and file paths: treat them as sensitive, and prefer aggregate queries when sharing output.`
+Each tool's description states its result contract and empty-result shape, and ends with a stable docs: pointer. The resource catalog (resources/list) carries an overview and one Markdown page per tool: read tailapp://docs/overview before authoring. Query, schema, and ineffective results derive from local telemetry and may contain session identifiers and file paths: treat them as sensitive, and prefer aggregate queries when sharing output.`
 
 func (server *Server) Serve(ctx context.Context, input io.Reader, output io.Writer) error {
 	scanner := bufio.NewScanner(input)
@@ -120,6 +121,26 @@ func (server *Server) handle(ctx context.Context, request message) response {
 		reply.Result = map[string]any{}
 	case "tools/list":
 		reply.Result = map[string]any{"tools": tools()}
+	case "resources/list":
+		// The catalog is finite and immutable per build: a cursor is
+		// accepted but the complete listing always fits one page.
+		reply.Result = map[string]any{"resources": resourceCatalog()}
+	case "resources/read":
+		var params struct {
+			URI string `json:"uri"`
+		}
+		if err := json.Unmarshal(request.Params, &params); err != nil {
+			reply.Error = &rpcError{Code: -32602, Message: err.Error()}
+			break
+		}
+		text, known := readResourceText(params.URI)
+		if !known {
+			reply.Error = &rpcError{Code: -32602, Message: "unknown resource uri; start at " + docsScheme + "overview", Data: map[string]any{"uri": params.URI}}
+			break
+		}
+		reply.Result = map[string]any{"contents": []map[string]any{{
+			"uri": params.URI, "mimeType": "text/markdown", "text": text,
+		}}}
 	case "tools/call":
 		var params struct {
 			Name      string          `json:"name"`
@@ -176,9 +197,11 @@ func initializeResult(requested string) map[string]any {
 	}
 	return map[string]any{
 		"protocolVersion": version,
-		"capabilities":    map[string]any{"tools": map[string]any{}},
-		"serverInfo":      serverInfo,
-		"instructions":    instructions,
+		// resources declares neither subscribe nor listChanged: the catalog
+		// is immutable per build.
+		"capabilities": map[string]any{"tools": map[string]any{}, "resources": map[string]any{}},
+		"serverInfo":   serverInfo,
+		"instructions": instructions,
 	}
 }
 
