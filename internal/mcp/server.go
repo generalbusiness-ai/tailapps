@@ -130,6 +130,9 @@ func (server *Server) handle(ctx context.Context, request message) response {
 			}
 			result = map[string]any{field: result}
 		}
+		if object, ok := result.(map[string]any); ok {
+			normalizeResult(outputSchemas[params.Name], object)
+		}
 		encoded, _ := json.Marshal(result)
 		toolResult := map[string]any{"content": []map[string]string{{"type": "text", "text": string(encoded)}}}
 		if _, object := result.(map[string]any); object {
@@ -176,6 +179,38 @@ func (server *Server) engineErrorText(toolName, raw string) string {
 		text += "; engine not reachable - is 'tailapp serve' running with the same TAILAPP_HOME?"
 	}
 	return toolName + " failed: " + text
+}
+
+// outputSchemas indexes each tool's declared result contract so result
+// normalization is driven by the single declaration rather than a parallel
+// hand-maintained list.
+var outputSchemas = func() map[string]map[string]any {
+	index := make(map[string]map[string]any)
+	for _, item := range tools() {
+		index[item.Name] = item.OutputSchema
+	}
+	return index
+}()
+
+// normalizeResult repairs Go's nil-collection encoding against the declared
+// contract: a top-level property the outputSchema declares as an array that
+// arrives as JSON null becomes an empty array, so an empty engine result
+// (no query rows, no rejected records) still validates against the schema a
+// client was promised. Properties declared nullable are left alone.
+func normalizeResult(schema, result map[string]any) {
+	if schema == nil || result == nil {
+		return
+	}
+	properties, _ := schema["properties"].(map[string]any)
+	for name, declared := range properties {
+		property, _ := declared.(map[string]any)
+		if property == nil || property["type"] != "array" {
+			continue
+		}
+		if value, present := result[name]; present && value == nil {
+			result[name] = []any{}
+		}
+	}
 }
 
 // wrappedResults names the tools whose engine results are not JSON objects;
