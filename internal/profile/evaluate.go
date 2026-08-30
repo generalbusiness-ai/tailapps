@@ -2,13 +2,13 @@ package profile
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"strings"
+
+	"github.com/generalbusiness-ai/tailapps/jsonataddl"
 )
 
 type EvaluationInput struct {
@@ -189,16 +189,7 @@ func (p *Profile) validateOutput(program Program, output []byte) (EvaluationResu
 }
 
 func decodeObject(encoded []byte) (map[string]any, error) {
-	var result map[string]any
-	decoder := json.NewDecoder(bytes.NewReader(encoded))
-	decoder.UseNumber()
-	if err := decoder.Decode(&result); err != nil {
-		return nil, errors.New("must be a JSON object")
-	}
-	if result == nil {
-		return nil, errors.New("must be a JSON object")
-	}
-	return result, nil
+	return jsonataddl.DecodeObject(encoded)
 }
 
 func validateRow(row map[string]any, columns []Column, complete bool) error {
@@ -224,55 +215,11 @@ func validateRow(row map[string]any, columns []Column, complete bool) error {
 	return nil
 }
 
+// validateValue delegates per-value validation to the shared logical value
+// codec; the conformance corpus freezes the diagnostics, so this boundary
+// replacement must be (and is) diagnostic-identical.
 func validateValue(value any, column Column) error {
-	if value == nil {
-		if column.NotNull || column.PrimaryKey {
-			return errors.New("null violates NOT NULL")
-		}
-		return nil
-	}
-	switch column.Type {
-	case TypeText:
-		if _, ok := value.(string); !ok {
-			return errors.New("must be text")
-		}
-	case TypeInteger:
-		number, ok := value.(json.Number)
-		if !ok {
-			return errors.New("must be an integer")
-		}
-		integer, err := number.Int64()
-		if err != nil || integer < -(1<<53-1) || integer > 1<<53-1 {
-			return errors.New("must be an exactly representable JSON integer")
-		}
-	case TypeReal:
-		number, ok := value.(json.Number)
-		if !ok {
-			return errors.New("must be a finite number")
-		}
-		real, err := number.Float64()
-		if err != nil || math.IsInf(real, 0) || math.IsNaN(real) {
-			return errors.New("must be a finite number")
-		}
-	case TypeBoolean:
-		if _, ok := value.(bool); !ok {
-			return errors.New("must be boolean")
-		}
-	case TypeBlob:
-		text, ok := value.(string)
-		if !ok {
-			return errors.New("must be base64 text")
-		}
-		if _, err := base64.StdEncoding.DecodeString(text); err != nil {
-			return errors.New("must be base64 text")
-		}
-	case TypeJSON:
-		// Every decoded JSON value is admitted; canonicalization occurs at the
-		// evaluator boundary and SQLite stores the encoded representation.
-	default:
-		return fmt.Errorf("unsupported logical type %q", column.Type)
-	}
-	return nil
+	return jsonataddl.ValidateValue(value, jsonataddl.LogicalType(column.Type), column.NotNull || column.PrimaryKey)
 }
 
 func keyColumns(table Table) []Column {
