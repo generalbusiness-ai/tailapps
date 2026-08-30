@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:4cd29578b656c3961687015c5d8ec4985922c1a7","text":"Replace the premature review request with one citing every effective file artifact"}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:48f2e2a83089918e6eb2e0041193f1a7857db97c","text":"Replace the invalid whole-repository artifact with effective per-file artifacts"}
