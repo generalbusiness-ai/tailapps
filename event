@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"MCP reference at the promote-examples head: signal-counts added to the built-in bundle values for tailapp_create and tailapp_install.","body":{"commit":"2fdf86159bf79fccbb3c3bffc79c6f3ceddb418c","path":"docs/reference/mcp.md"}}
+{"kind":"artifact","text":"Canonical-record reference at the promote-examples head: the working-example link points at tailapps/signal-counts.","body":{"commit":"2fdf86159bf79fccbb3c3bffc79c6f3ceddb418c","path":"docs/reference/otel-records.md"}}
