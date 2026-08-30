@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Bundle roster at the promote-examples head: signal-counts embedded and loadable alongside activity-stats, agent-guard, and session-cost.","body":{"commit":"2fdf86159bf79fccbb3c3bffc79c6f3ceddb418c","path":"tailapps/embed.go"}}
+{"kind":"artifact","text":"Bundled-app tests at the promote-examples head: signal-counts covered by the roster compile test plus a preserved signal_counts export-contract assertion replacing the removed examples test.","body":{"commit":"2fdf86159bf79fccbb3c3bffc79c6f3ceddb418c","path":"tailapps/embed_test.go"}}
