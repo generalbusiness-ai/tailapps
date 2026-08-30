@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:13501a58e2e5ffc61290e36e18a652353b83e501"}
+{"kind":"artifact","text":"MCP adapter at the metrics-corrected stage-2 head: the tailapp_metrics clause states the cumulative-counter fresh-resident shape; all other orientation unchanged.","body":{"commit":"46104b42441f16d7b0e4835b071edc5017f2538c","path":"internal/mcp/server.go"}}
