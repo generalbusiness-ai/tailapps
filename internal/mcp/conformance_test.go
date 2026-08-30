@@ -274,4 +274,3 @@ func matchesType(property map[string]any, value any) error {
 	}
 	return nil
 }
-

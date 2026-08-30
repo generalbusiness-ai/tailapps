@@ -235,6 +235,45 @@ func TestEveryToolCarriesOrientation(t *testing.T) {
 	}
 }
 
+// TestEveryDescriptionStatesItsSemanticClauses pins the three clauses the
+// design requires of every description - the result contract, the
+// empty-result (or failure-absence) shape, and the workflow position - as
+// exact per-tool fragments, so removing or weakening any clause fails.
+func TestEveryDescriptionStatesItsSemanticClauses(t *testing.T) {
+	clauses := map[string]struct{ contract, empty, workflow string }{
+		"tailapps_list":          {`Returns {"apps": [...]}`, `an empty engine returns {"apps": []}, never null`, "Start here"},
+		"tailapp_get":            {"Returns {app, sources}", "empty draft returns {} sources", "draft edits are not live until tailapp_activate"},
+		"tailapp_create":         {"Returns the app", "a fresh empty draft has only name and draft_revision", "Follow with tailapp_put_element"},
+		"tailapp_install":        {"Returns {app, profile, frontier}", "no partial success - failure installs nothing", "one-step alternative to the create/put/validate/activate sequence"},
+		"tailapp_delete":         {"Returns {deleted: true}", "an unknown name is an error, not an empty result", "end of a Tailapp's lifecycle"},
+		"tailapp_put_element":    {"Returns the app with its new draft_revision", "no other change", "between tailapp_create and tailapp_validate"},
+		"tailapp_delete_element": {"Returns the app with its new draft_revision", "removing the last element leaves a valid empty draft", "between create and validate"},
+		"tailapp_validate":       {"Returns the full compiled profile", "never a partial profile", "before tailapp_activate"},
+		"tailapp_activate":       {"Returns the projection {frontier}", "complete true and no gap fields", "last step of the draft loop"},
+		"tailapp_status":         {"Returns {profile, ingestion_ready, inbox, apps, unavailable}", "with no Tailapps installed, apps is {}", "Start here when telemetry seems missing"},
+		"tailapp_metrics":        {"Returns a flat object of counters and gauges", "an idle engine returns zero counts and an empty tailapps map", "operational triage"},
+		"tailapp_ineffective":    {"Returns {tailapp, revision, capacity, ineffective_records, records}", "no rejections returns records: []", "after tailapp_status shows intake"},
+		"tailapp_schema":         {"Returns the compiled profile object", "stable between activations", "before writing SQL for tailapp_query"},
+		"tailapp_query":          {"Returns {columns, rows, complete, truncated}", "an empty projection returns rows: []", "after tailapps_list"},
+	}
+	seen := 0
+	for _, item := range tools() {
+		expected, known := clauses[item.Name]
+		if !known {
+			t.Fatalf("tool %s has no pinned semantic clauses", item.Name)
+		}
+		seen++
+		for clause, fragment := range map[string]string{"result contract": expected.contract, "empty-result shape": expected.empty, "workflow position": expected.workflow} {
+			if !strings.Contains(item.Description, fragment) {
+				t.Fatalf("%s description lost its %s clause (%q): %q", item.Name, clause, fragment, item.Description)
+			}
+		}
+	}
+	if seen != len(clauses) {
+		t.Fatalf("pinned %d tools, saw %d", len(clauses), seen)
+	}
+}
+
 func TestToolAnnotationsMatchSafetyContract(t *testing.T) {
 	readOnly := map[string]bool{
 		"tailapps_list": true, "tailapp_get": true, "tailapp_validate": true,
