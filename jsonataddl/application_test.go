@@ -1,8 +1,10 @@
 package jsonataddl
 
 import (
+	"encoding/json"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 	"testing/fstest"
 
@@ -280,6 +282,73 @@ func TestReadAuthorizerDerivesFromThePlan(t *testing.T) {
 	if _, found := application.ReadAuthorizer("nope"); found {
 		t.Fatal("unknown program must have no authorizer")
 	}
+}
+
+// TestConcurrentEvaluateOnOneHandle is the regression for the stage-4
+// review finding: the pinned jsonata evaluator mutates per-expression
+// state during Evaluate, so one Application handle used from many
+// goroutines raced before evaluation serialized per program. Under the
+// race detector this exercises the compiledExpression lock on the same
+// program and on sibling programs concurrently.
+func TestConcurrentEvaluateOnOneHandle(t *testing.T) {
+	application := loadCorpusApplication(t, "corpus/v1/projection-state/app")
+	input := EvaluationInput{
+		Meta:  map[string]any{"position": 9, "event_id": "local:9#0", "event_type": "otel_event"},
+		Event: map[string]any{"key": "alpha", "amount": 2, "retire": nil},
+		Rows: map[string]any{
+			"prior":    map[string]any{"key": "alpha", "balance": 40},
+			"marks":    []any{map[string]any{"key": "alpha", "mark": 1}},
+			"positive": map[string]any{"key": "alpha", "balance": 40},
+		},
+	}
+	const goroutines = 16
+	const repeats = 8
+	results := make(chan string, goroutines*2*repeats)
+	var group sync.WaitGroup
+	for worker := 0; worker < goroutines; worker++ {
+		group.Add(1)
+		go func() {
+			defer group.Done()
+			for attempt := 0; attempt < repeats; attempt++ {
+				result, err := application.Evaluate("settle", input)
+				if err != nil {
+					results <- "ERROR: " + err.Error()
+					continue
+				}
+				encoded, _ := json.Marshal(result)
+				results <- string(encoded)
+				// The sibling program concurrently, so distinct locks are
+				// held at once without deadlock.
+				if _, err := application.Evaluate("shadow", input); err != nil {
+					results <- "ERROR: " + err.Error()
+				} else {
+					results <- "shadow-ok"
+				}
+			}
+		}()
+	}
+	group.Wait()
+	close(results)
+	settled := map[string]int{}
+	for outcome := range results {
+		settled[outcome]++
+	}
+	if len(settled) != 2 {
+		t.Fatalf("concurrent evaluations diverged: %v", keysOf(settled))
+	}
+	for outcome := range settled {
+		if strings.HasPrefix(outcome, "ERROR:") {
+			t.Fatalf("concurrent evaluation failed: %s", outcome)
+		}
+	}
+}
+
+func keysOf(values map[string]int) []string {
+	result := make([]string, 0, len(values))
+	for key := range values {
+		result = append(result, key)
+	}
+	return result
 }
 
 func TestContinueCompatibleOverCoreHandles(t *testing.T) {

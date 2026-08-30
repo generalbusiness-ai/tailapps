@@ -442,7 +442,7 @@ func (c *coreCompiler) compileProgram(name, event, body string, normalizer bool)
 	expression.SetMaxDepth(c.dialect.Limits.MaxDepth)
 	expression.SetMaxRange(c.dialect.Limits.MaxRange)
 	expression.SetMaxTime(evaluationWallTimeMilliseconds)
-	program := Program{Name: name, Event: event, Path: programPath, Reads: reads, Normalizer: normalizer, expression: expression}
+	program := Program{Name: name, Event: event, Path: programPath, Reads: reads, Normalizer: normalizer, expression: &compiledExpression{expression: expression}}
 	if normalizer {
 		if event != c.dialect.HostEvent.Name {
 			return Program{}, fmt.Errorf("normalizer %q must consume %s", name, c.dialect.HostEvent.Name)

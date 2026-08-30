@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"sync"
 
 	jsonata "github.com/jsonata-go/jsonata/v206"
 )
@@ -69,7 +70,24 @@ type Program struct {
 	Emits      string   `json:"emits,omitempty"`
 	Normalizer bool     `json:"normalizer"`
 
+	expression *compiledExpression
+}
+
+// compiledExpression owns one compiled JSONata program together with the
+// lock that makes evaluation safe for concurrent callers: the pinned
+// evaluator mutates per-expression state (environment frames, timestamp,
+// timeout start, depth) during Evaluate, so evaluations of one program
+// must serialize. Program values copy the pointer, so every copy shares
+// the same lock and the guarantee holds across accessor copies.
+type compiledExpression struct {
+	mu         sync.Mutex
 	expression *jsonata.Expression
+}
+
+func (compiled *compiledExpression) evaluate(input []byte) ([]byte, error) {
+	compiled.mu.Lock()
+	defer compiled.mu.Unlock()
+	return compiled.expression.Evaluate(input, nil)
 }
 
 type ExportColumn struct {
@@ -87,7 +105,9 @@ type Export struct {
 // Application is an immutable compiled handle: inspection data, evaluation
 // methods, runtime identity, compatibility information, and read plus
 // mutation plans. Every accessor returns an independent copy, so no caller
-// can mutate compiled state; the handle is safe for concurrent use.
+// can mutate compiled state; the handle is safe for concurrent use, with
+// evaluations of one program serializing on that program's lock (see
+// compiledExpression).
 type Application struct {
 	name                 string
 	revision             string
