@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:4832d619e3f4147fec5287ffdbbdf6d8088d52e4"}
+{"kind":"artifact","text":"MCP adapter at the corrected stage-2 head: every description carries its result contract, empty-result shape, and workflow position; the annotation comment states install first-activates additively; titles, docs URIs, and explicit annotations unchanged.","body":{"commit":"fd7f6e78042fc2fee24adba799cfda9d301c2700","path":"internal/mcp/server.go"}}
