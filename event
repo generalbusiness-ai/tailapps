@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at scripts/demo.sh","body":{"commit":"6b0fbc74a84d94d82d57dcaf0f457ab610a799aa","path":"scripts/demo.sh"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:00f44669263ad519355e9891783075bbf632195a","text":"Merge retired a covered predecessor; the successor is at docs/reference/mcp.md."}
