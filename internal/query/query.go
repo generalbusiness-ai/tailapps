@@ -21,8 +21,8 @@ import (
 
 	"github.com/ncruces/go-sqlite3"
 
-	"github.com/generalbusiness-ai/tailapp/internal/profile"
-	"github.com/generalbusiness-ai/tailapp/internal/projection"
+	"github.com/generalbusiness-ai/tailapps/internal/profile"
+	"github.com/generalbusiness-ai/tailapps/internal/projection"
 )
 
 const (

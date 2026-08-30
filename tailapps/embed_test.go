@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/generalbusiness-ai/tailapp/internal/profile"
+	"github.com/generalbusiness-ai/tailapps/internal/profile"
 )
 
 func TestBundledTailappsCompile(t *testing.T) {

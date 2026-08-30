@@ -1,6 +1,7 @@
 # Runtime metrics reference
 
-Tailapp exposes one versioned, payload-free operational snapshot through:
+The `tailapp` engine exposes one versioned, payload-free operational snapshot
+through:
 
 ```sh
 tailapp metrics --json
@@ -120,6 +121,6 @@ to zero, but the anomaly remains observable.
 
 Metrics never contain OTLP bodies, attributes, prompts, tool inputs, SQL,
 parameters, source text, event names, revisions as labels, or per-request
-records. Tailapp does not currently expose Prometheus or export its own OTLP
-metrics. A future exporter must target a separate collector endpoint rather
-than Tailapp's own receiver, avoiding recursive self-ingestion.
+records. The `tailapp` engine does not currently expose Prometheus or export
+its own OTLP metrics. A future exporter must target a separate collector
+endpoint rather than the `tailapp` receiver, avoiding recursive self-ingestion.

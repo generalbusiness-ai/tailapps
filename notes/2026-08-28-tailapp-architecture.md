@@ -6,13 +6,13 @@ rests_on:
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:a02e8da110b93948746edf9adf13e6dd00633271
 ---
 
-# Tailapp architecture
+# Tailapps architecture
 
 > **Status:** Implemented baseline. This note records the architectural
 > decisions; the [documentation map](../docs/README.md) and references describe
 > the current user-facing interfaces.
 
-Tailapp is a local analytics engine for agent-harness telemetry. It accepts
+Tailapps is a local analytics engine for agent-harness telemetry. It accepts
 OpenTelemetry (OTel) streams and continuously materializes user-defined
 relational projections. It does not retain the telemetry stream as an event
 log.
@@ -25,7 +25,7 @@ This design applies the JSONata-with-DDL model developed in Gitseq without
 making Gitseq itself a runtime dependency. The important contract is retained:
 typed events, declared reads from materialized state, deterministic JSONata
 transitions, validated typed row changes out, and SQL over materialized state.
-Unlike Gitseq, Tailapp does not initially retain an authoritative event
+Unlike Gitseq, Tailapps does not initially retain an authoritative event
 history, so its materialized tables are durable state rather than disposable
 replay caches.
 
@@ -409,7 +409,7 @@ process state available to JSONata folds.
 ## Trust, privacy, and failure boundaries
 
 Agent telemetry can contain prompts, responses, commands, paths, tool inputs,
-account identifiers, and model metadata. Tailapp therefore treats inbox and
+account identifiers, and model metadata. Tailapps therefore treats inbox and
 projection files as private to the local user, creates state directories
 with restrictive permissions, binds listeners to loopback, disables SQLite
 extension loading, and avoids logging record bodies in its own operational

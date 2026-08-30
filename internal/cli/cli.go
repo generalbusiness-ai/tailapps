@@ -20,11 +20,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/generalbusiness-ai/tailapp/internal/control"
-	"github.com/generalbusiness-ai/tailapp/internal/engine"
-	"github.com/generalbusiness-ai/tailapp/internal/ingest"
-	"github.com/generalbusiness-ai/tailapp/internal/mcp"
-	"github.com/generalbusiness-ai/tailapp/internal/profile"
+	"github.com/generalbusiness-ai/tailapps/internal/control"
+	"github.com/generalbusiness-ai/tailapps/internal/engine"
+	"github.com/generalbusiness-ai/tailapps/internal/ingest"
+	"github.com/generalbusiness-ai/tailapps/internal/mcp"
+	"github.com/generalbusiness-ai/tailapps/internal/profile"
 )
 
 func Home() (string, error) {

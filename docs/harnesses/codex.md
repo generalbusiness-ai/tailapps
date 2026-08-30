@@ -1,6 +1,6 @@
 # Codex
 
-Codex can send native structured log events directly to Tailapp over
+Codex can send native structured log events directly to Tailapps over
 OTLP/HTTP. The three examples shipped with this release recognize its tool and
 API-request event names.
 
@@ -17,14 +17,15 @@ exporter = { otlp-http = { endpoint = "http://127.0.0.1:4318/v1/logs", protocol 
 
 Codex does not allow a project-local `.codex/config.toml` to override telemetry
 routing, so this must be user-level configuration. `binary` means
-OTLP/HTTP protobuf; `json` also works with Tailapp. Keep `log_user_prompt =
-false` unless your data policy explicitly permits raw prompt export.
+OTLP/HTTP protobuf; `json` also works with the `tailapp` receiver. Keep
+`log_user_prompt = false` unless your data policy explicitly permits raw prompt
+export.
 
 Restart Codex after changing the configuration. Codex batches exports and
 flushes them on shutdown, so allow for a delay before treating an empty query
 as a configuration failure.
 
-## Give Codex access to Tailapp MCP
+## Give Codex access to Tailapps over MCP
 
 ```sh
 codex mcp add \
@@ -35,7 +36,7 @@ codex mcp get tailapp
 
 A useful first prompt is:
 
-> Query Tailapp for this session's guard coverage and recent findings. Join
+> Query Tailapps for this session's guard coverage and recent findings. Join
 > session-cost if a matching row exists, and distinguish missing telemetry
 > from an observed clean result.
 
@@ -80,7 +81,7 @@ per-Tailapp, not a receiver-wide drop.
 
 The checked-in compatibility fixture is a structurally representative,
 scrubbed capture from Codex CLI 0.150.1. Vendor fields may change; the official
-documentation describes the event families but is not the Tailapp engine
+documentation describes the event families but is not the `tailapp` engine
 contract. After an upgrade, use `ineffective` and `telemetry_coverage` to check
 the live shape. Updating an older installed `session-cost` to this schema adds
 cached-input, reasoning-output, and last-event-time columns and therefore

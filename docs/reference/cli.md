@@ -10,7 +10,7 @@ owner-only Unix socket.
 
 ## Environment
 
-`TAILAPP_HOME` selects the engine home. If unset, Tailapp uses
+`TAILAPP_HOME` selects the engine home. If unset, `tailapp` uses
 `tailapp` beneath the operating system's user configuration directory. Set it
 explicitly when the resident and harness-launched MCP processes must share one
 engine.

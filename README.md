@@ -9,6 +9,10 @@ is a small declarative source set—not another service—and has its own isolat
 continuously materialized SQLite projection. Agents manage and query Tailapps
 through MCP; people and scripts can do the same through the CLI.
 
+The project and GitHub repository are named
+[**Tailapps**](https://github.com/generalbusiness-ai/tailapps). The executable
+remains `tailapp`, and each installed source set is a **Tailapp**.
+
 ![Tailapps pipeline: OTLP/HTTP enters a local resident, DDL and JSONata define a two-stage Tailapp, and MCP queries its SQLite projection.](docs/assets/tailapp-architecture.svg)
 
 ## Try it
@@ -100,9 +104,9 @@ lifecycle.
 
 ## Know the boundaries
 
-- Tailapp is local and single-user. The OTLP receiver has no authentication or
-  TLS, and any process with access to the owner-only control socket can use the
-  mutation-capable MCP interface.
+- The `tailapp` engine is local and single-user. The OTLP receiver has no
+  authentication or TLS, and any process with access to the owner-only control
+  socket can use the mutation-capable MCP interface.
 - The shipped guard is detective, not preventive. It cannot block a tool call,
   stop an agent, or prove that an unobserved operation did not happen. Keep
   harness-native permission and sandbox controls in place.
@@ -141,5 +145,5 @@ go vet ./...
 ```
 
 GitHub Actions runs the same gates with the Go version declared in `go.mod`.
-Tailapp is licensed under [Apache 2.0](LICENSE); attribution is in
+The Tailapps project is licensed under [Apache 2.0](LICENSE); attribution is in
 [NOTICE](NOTICE).

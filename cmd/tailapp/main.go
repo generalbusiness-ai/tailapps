@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/generalbusiness-ai/tailapp/internal/cli"
+	"github.com/generalbusiness-ai/tailapps/internal/cli"
 )
 
 func main() {

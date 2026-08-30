@@ -66,7 +66,7 @@ A log adds:
 | `record.flags` | integer |
 | `record.dropped_attributes_count` | integer |
 
-`event.name` comes from the log record's `event_name`; if absent, Tailapp uses
+`event.name` comes from the log record's `event_name`; if absent, `tailapp` uses
 the string attribute `event.name`.
 
 ```json

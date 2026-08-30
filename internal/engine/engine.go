@@ -19,14 +19,14 @@ import (
 
 	"golang.org/x/sys/unix"
 
-	"github.com/generalbusiness-ai/tailapp/internal/definition"
-	"github.com/generalbusiness-ai/tailapp/internal/inbox"
-	"github.com/generalbusiness-ai/tailapp/internal/ingest"
-	operationalmetrics "github.com/generalbusiness-ai/tailapp/internal/metrics"
-	"github.com/generalbusiness-ai/tailapp/internal/profile"
-	"github.com/generalbusiness-ai/tailapp/internal/projection"
-	"github.com/generalbusiness-ai/tailapp/internal/query"
-	"github.com/generalbusiness-ai/tailapp/tailapps"
+	"github.com/generalbusiness-ai/tailapps/internal/definition"
+	"github.com/generalbusiness-ai/tailapps/internal/inbox"
+	"github.com/generalbusiness-ai/tailapps/internal/ingest"
+	operationalmetrics "github.com/generalbusiness-ai/tailapps/internal/metrics"
+	"github.com/generalbusiness-ai/tailapps/internal/profile"
+	"github.com/generalbusiness-ai/tailapps/internal/projection"
+	"github.com/generalbusiness-ai/tailapps/internal/query"
+	"github.com/generalbusiness-ai/tailapps/tailapps"
 )
 
 type Engine struct {

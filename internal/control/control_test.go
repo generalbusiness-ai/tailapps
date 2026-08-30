@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/generalbusiness-ai/tailapp/internal/definition"
-	"github.com/generalbusiness-ai/tailapp/internal/engine"
+	"github.com/generalbusiness-ai/tailapps/internal/definition"
+	"github.com/generalbusiness-ai/tailapps/internal/engine"
 )
 
 func TestControlRequestsAreMeasuredAfterCompletion(t *testing.T) {

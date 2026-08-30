@@ -8,10 +8,10 @@ rests_on:
 
 # Extracting `jsonata-ddl-core`
 
-Tailapp's `internal/profile` package is now a production-quality implementation
+The Tailapps project's `internal/profile` package is now a production-quality implementation
 of the small JSONata-with-DDL model. Gitseq has the platform-neutral interface
 note and an intentionally incomplete spike. The useful direction is therefore
-to extract Tailapp's mature implementation behind a host-neutral contract, not
+to extract the Tailapps project's mature implementation behind a host-neutral contract, not
 to merge two peers or make either product depend on the other's runtime.
 
 This note defines that extraction. It deliberately does not decide the
@@ -78,7 +78,7 @@ default-deny authorizer callback and an immutable read plan, while the host
 supplies the already-open SQLite transaction. This keeps replay semantics in
 the core and database ownership in the host.
 
-The public core API must not expose the concrete JSONata AST or Tailapp's
+The public core API must not expose the concrete JSONata AST or the Tailapps project's
 projection types. Compiled applications are immutable handles with inspection
 data, evaluation methods, runtime identity, compatibility information, and
 read/mutation plans.
@@ -116,9 +116,9 @@ Tailapp supplies a versioned dialect with:
 - exactly one declared private event named `otel_event`;
 - exactly one normalizer from `otlp_record` that may emit only `otel_event`;
 - one or more analytic folds over `otel_event` that cannot emit events; and
-- Tailapp's single-writer and read-visibility rules.
+- the Tailapps project's single-writer and read-visibility rules.
 
-This configuration preserves Tailapp's deliberately bounded two-stage
+This configuration preserves the Tailapps project's deliberately bounded two-stage
 pipeline. Parameterization is not permission to build an arbitrary dataflow
 graph: the core admits only topology policies it implements, and the Tailapp
 host selects this closed policy.
@@ -142,10 +142,10 @@ The core will contain the sole logical value codec. It defines:
 - canonical JSON encode/decode using number-preserving decoding; and
 - logical-to-SQLite and SQLite-to-logical conversion by declared type.
 
-Hosts still decide what their native input means. Tailapp's OTLP adapter, for
+Hosts still decide what their native input means. The Tailapps OTLP adapter, for
 example, decides that an OTLP `int64` outside the exact JSON range uses the
 integer wrapper. It must construct that value through the shared codec rather
-than duplicating its bounds or wrapper spelling. Tailapp's query layer still
+than duplicating its bounds or wrapper spelling. The Tailapps query layer still
 chooses its response envelope, but obtains each typed result value from that
 same codec. Fold inputs, row changes, projection reads/writes, and query rows
 therefore share one tested implementation.
@@ -274,8 +274,8 @@ note does not choose them.
    hardening; the spike is evidence and test material, not a second source of
    implementation truth.
 2. **Where does the library live?** Plausible homes are a second Go module in
-   the Tailapp repository, a dedicated `jsonata-ddl-core` repository, or a
-   shared repository containing more than one related module. A Tailapp-local
+   the Tailapps repository, a dedicated `jsonata-ddl-core` repository, or a
+   shared repository containing more than one related module. A Tailapps-local
    module minimizes initial coordination; a dedicated repository gives the
    cleanest neutral ownership and release lifecycle; a broader shared
    repository is justified only if another concrete shared component exists.
@@ -290,7 +290,7 @@ host-neutral and the extraction does not import Gitseq product code.
 
 The extraction is complete only when Tailapp has no hard-coded source or event
 names in core code, no repository-global runtime string, and no duplicated
-logical value conversions; the exact current Tailapp topology is expressed by
+logical value conversions; the exact current Tailapps topology is expressed by
 its dialect; every fold read is enforced by the default-deny runtime
 authorizer; old projections follow the explicit runtime-upgrade path; and the
-shared corpus plus Tailapp's existing tests pass against the extracted core.
+shared corpus plus Tailapps' existing tests pass against the extracted core.

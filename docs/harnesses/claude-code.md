@@ -64,8 +64,8 @@ claude
 ```
 
 Use the signal-specific endpoint exactly as shown, including `/v1/logs`.
-Tailapp accepts both `http/protobuf` and `http/json`; it does not accept OTLP
-gRPC.
+The `tailapp` receiver accepts both `http/protobuf` and `http/json`; it does
+not accept OTLP gRPC.
 
 The shipped analytics do not require prompt text, assistant-response text, or
 tool content. Leave `OTEL_LOG_USER_PROMPTS`,
@@ -100,7 +100,7 @@ provide. If no records arrive, run `claude --debug` and inspect its
 OpenTelemetry exporter errors. If intake rises but no rows appear, inspect
 `./tailapp ineffective activity-stats` for an adapter-shape mismatch.
 
-## Give Claude access to Tailapp MCP
+## Give Claude access to Tailapps over MCP
 
 Use absolute values so Claude's spawned stdio process does not depend on its
 working directory:
@@ -116,7 +116,7 @@ claude mcp get tailapp
 
 Inside Claude Code, `/mcp` shows connection status. A useful first prompt is:
 
-> Use Tailapp to show telemetry coverage, recent policy findings, and session
+> Use Tailapps to show telemetry coverage, recent policy findings, and session
 > cost for this harness. Explain any unknown coverage before drawing a policy
 > conclusion.
 

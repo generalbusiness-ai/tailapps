@@ -22,11 +22,11 @@ import (
 	resourcev1 "go.opentelemetry.io/proto/otlp/resource/v1"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/generalbusiness-ai/tailapp/internal/definition"
-	"github.com/generalbusiness-ai/tailapp/internal/inbox"
-	"github.com/generalbusiness-ai/tailapp/internal/profile"
-	"github.com/generalbusiness-ai/tailapp/internal/projection"
-	"github.com/generalbusiness-ai/tailapp/internal/query"
+	"github.com/generalbusiness-ai/tailapps/internal/definition"
+	"github.com/generalbusiness-ai/tailapps/internal/inbox"
+	"github.com/generalbusiness-ai/tailapps/internal/profile"
+	"github.com/generalbusiness-ai/tailapps/internal/projection"
+	"github.com/generalbusiness-ai/tailapps/internal/query"
 )
 
 func TestEngineLifecycleIngestionProjectionQueryAndIsolation(t *testing.T) {

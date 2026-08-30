@@ -1,6 +1,6 @@
-// Package inbox owns Tailapp's bounded durable delivery queue. The queue is
-// operational state: event content disappears as soon as every consumer
-// captured at acceptance has consumed or detached from the record.
+// Package inbox owns the tailapp engine's bounded durable delivery queue. The
+// queue is operational state: event content disappears as soon as every
+// consumer captured at acceptance has consumed or detached from the record.
 package inbox
 
 import (

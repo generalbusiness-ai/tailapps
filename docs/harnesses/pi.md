@@ -2,7 +2,7 @@
 
 Pi intentionally keeps both MCP and observability integrations out of its
 core. Its extension system can provide them, and third-party packages exist,
-but Tailapp does not ship or verify a turnkey Pi adapter.
+but the Tailapps project does not ship or verify a turnkey Pi adapter.
 
 ## MCP through a third-party adapter
 
@@ -12,7 +12,7 @@ One example is the third-party `pi-mcp-adapter` package:
 pi install npm:pi-mcp-adapter
 ```
 
-Its documented shared project format is `.mcp.json`. A Tailapp entry is:
+Its documented shared project format is `.mcp.json`. A `tailapp` MCP entry is:
 
 ```json
 {
@@ -29,7 +29,7 @@ Its documented shared project format is `.mcp.json`. A Tailapp entry is:
 ```
 
 Restart Pi, then use the adapter's `/mcp` setup/status interface. This package
-is not part of Pi or Tailapp; review its source and release before installing
+is not part of Pi or Tailapps; review its source and release before installing
 an extension that runs with your user privileges. `pi-mcp-extension` is
 another package listed in Pi's package catalog.
 
@@ -41,9 +41,9 @@ Examples currently listed in the ecosystem include:
   OTLP and uses `pi.*` event names; and
 - `@mobrienv/pi-otlp`, which advertises OTLP metrics.
 
-These are useful starting points, not plug-compatible Tailapp guarantees. The
+These are useful starting points, not plug-compatible Tailapps guarantees. The
 three shipped Tailapps do not currently recognize `pi.*` event names, and
-metrics alone do not drive them. They are not the Tailapp catalog. Users and
+metrics alone do not drive them. They are not the Tailapps catalog. Users and
 agents can install a Pi-native Tailapp, fork an example with a `pi.*`
 normalizer, or replace the examples with analytics suited to their own adapter
 and policy. Translating Pi lifecycle data to the input contracts documented by
@@ -52,13 +52,13 @@ and policy. Translating Pi lifecycle data to the input contracts documented by
 available path.
 
 Point an HTTP/protobuf or HTTP/JSON logs exporter at
-`http://127.0.0.1:4318/v1/logs`. Tailapp does not accept OTLP gRPC. Preserve a
-stable Pi session ID, choose one result event per tool action, report whether
-the action succeeded, and distinguish redacted target/progress data from an
-observed value.
+`http://127.0.0.1:4318/v1/logs`. The `tailapp` receiver does not accept OTLP
+gRPC. Preserve a stable Pi session ID, choose one result event per tool action,
+report whether the action succeeded, and distinguish redacted target/progress
+data from an observed value.
 
 Until a Pi-aware Tailapp or mapping exists, the Pi MCP adapter can query and
-manage Tailapp, but Pi's own activity will not appear in the shipped examples'
+manage Tailapps, but Pi's own activity will not appear in the shipped examples'
 tables. See [Author and install a Tailapp](../authoring.md) for the CLI and MCP
 lifecycle.
 

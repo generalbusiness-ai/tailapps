@@ -6,7 +6,7 @@ running, use an absolute binary path in harness configuration, and use the same
 
 A harness has two independent connections:
 
-1. It sends OTLP/HTTP telemetry to Tailapp's loopback receiver.
+1. It sends OTLP/HTTP telemetry to the `tailapp` engine's loopback receiver.
 2. Its MCP client starts `tailapp mcp` over stdio. That adapter connects to the
    resident through `$TAILAPP_HOME/engine.sock`.
 
@@ -64,8 +64,8 @@ evidence: [activity stats](../../tailapps/activity-stats/README.md),
 
 ## Security
 
-Tailapp v1 is a local, same-OS-user service. Its receiver has no TLS or
-authentication, MCP can mutate Tailapp definitions, and telemetry or
+The Tailapps v1 engine is a local, same-OS-user service. Its receiver has no
+TLS or authentication, MCP can mutate Tailapp definitions, and telemetry or
 projections may contain sensitive content. Do not expose the receiver beyond
 loopback or give untrusted processes access to the MCP command.
 

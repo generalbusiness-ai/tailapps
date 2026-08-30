@@ -21,8 +21,8 @@ import (
 	"github.com/ncruces/go-sqlite3"
 	sqlitedriver "github.com/ncruces/go-sqlite3/driver"
 
-	"github.com/generalbusiness-ai/tailapp/internal/inbox"
-	"github.com/generalbusiness-ai/tailapp/internal/profile"
+	"github.com/generalbusiness-ai/tailapps/internal/inbox"
+	"github.com/generalbusiness-ai/tailapps/internal/profile"
 )
 
 type Frontier struct {

@@ -173,8 +173,8 @@ acknowledgement.
 Draft edits are not live. A failed validation leaves the active revision and
 projection untouched. A projection that fails deterministically on an input
 records a local gap and detaches from later delivery; inspect
-`tailapp_status`, fix the source, and reset-activate because Tailapp v1 has no
-retained event log to replay the missing data.
+`tailapp_status`, fix the source, and reset-activate because the current
+`tailapp` engine has no retained event log to replay the missing data.
 
 ## Share dependencies
 
