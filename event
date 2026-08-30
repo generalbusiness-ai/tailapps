@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at tailapps/signal-counts","body":{"commit":"c43e7b3c2e59f30639b4dfd458a65a5aa5997219","path":"tailapps/signal-counts"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:14b7fd6e3efd54735cd98aa3539bb4d0651e893e","text":"Merge retired a covered predecessor; the successor is at scripts/demo.sh."}
