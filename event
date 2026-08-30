@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Canonical-record reference at the corrected promotion head, unchanged in this delta: the working-example link points at tailapps/signal-counts.","body":{"commit":"3aba33fbaad0bb95870f09a3150d9db83436c482","path":"docs/reference/otel-records.md"}}
+{"kind":"artifact","text":"Demo at the corrected promotion head, unchanged in this delta: signal-counts installs from its tailapps/signal-counts source directory.","body":{"commit":"3aba33fbaad0bb95870f09a3150d9db83436c482","path":"scripts/demo.sh"}}
