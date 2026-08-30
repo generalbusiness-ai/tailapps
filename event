@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"MCP tests at the metrics-corrected stage-2 head: the pinned metrics fragment follows the corrected prose.","body":{"commit":"46104b42441f16d7b0e4835b071edc5017f2538c","path":"internal/mcp/server_test.go"}}
+{"kind":"artifact","text":"Real-engine conformance test at the metrics-corrected stage-2 head: asserts the fresh-resident metrics shape - empty tailapps, zero pre-seeded per-signal intake counters, zero unrouted records, positive uptime.","body":{"commit":"46104b42441f16d7b0e4835b071edc5017f2538c","path":"internal/mcp/conformance_test.go"}}
