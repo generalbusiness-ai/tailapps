@@ -5,14 +5,12 @@ package query
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
 	"net/url"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -23,6 +21,8 @@ import (
 
 	"github.com/generalbusiness-ai/tailapps/internal/profile"
 	"github.com/generalbusiness-ai/tailapps/internal/projection"
+
+	"github.com/generalbusiness-ai/tailapps/jsonataddl"
 )
 
 const (
@@ -481,40 +481,27 @@ func columnType(statement *sqlite3.Stmt, index int) string {
 	}
 	return "DYNAMIC"
 }
+
+// columnValue delegates read-side conversion to the shared logical value
+// codec over a driver-decoupled column, which owns the boolean mapping,
+// exact-integer wrapper, JSON decoding, blob wrapper, and finiteness rules.
 func columnValue(statement *sqlite3.Stmt, index int, declared string) (any, error) {
+	column := jsonataddl.SQLiteColumn{}
 	switch statement.ColumnType(index) {
 	case sqlite3.NULL:
-		return nil, nil
+		column.Kind = jsonataddl.ColumnNull
 	case sqlite3.INTEGER:
-		value := statement.ColumnInt64(index)
-		if declared == "BOOLEAN" {
-			return value != 0, nil
-		}
-		if value < -(1<<53-1) || value > 1<<53-1 {
-			return map[string]string{"integer_decimal": strconv.FormatInt(value, 10)}, nil
-		}
-		return value, nil
+		column.Kind, column.Int = jsonataddl.ColumnInteger, statement.ColumnInt64(index)
 	case sqlite3.FLOAT:
-		value := statement.ColumnFloat(index)
-		if math.IsInf(value, 0) || math.IsNaN(value) {
-			return nil, errors.New("query returned non-finite number")
-		}
-		return value, nil
+		column.Kind, column.Float = jsonataddl.ColumnFloat, statement.ColumnFloat(index)
 	case sqlite3.TEXT:
-		value := statement.ColumnText(index)
-		if declared == "JSON" {
-			var decoded any
-			if err := json.Unmarshal([]byte(value), &decoded); err != nil {
-				return nil, err
-			}
-			return decoded, nil
-		}
-		return value, nil
+		column.Kind, column.Text = jsonataddl.ColumnText, statement.ColumnText(index)
 	case sqlite3.BLOB:
-		return map[string]string{"bytes_base64": base64.StdEncoding.EncodeToString(statement.ColumnBlob(index, nil))}, nil
+		column.Kind, column.Blob = jsonataddl.ColumnBlob, statement.ColumnBlob(index, nil)
 	default:
 		return nil, errors.New("query returned unsupported SQLite type")
 	}
+	return jsonataddl.LogicalColumnValue(column, jsonataddl.LogicalType(declared))
 }
 
 func queryError(ctx *budgetContext, err error) error {
