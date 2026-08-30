@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:48f2e2a83089918e6eb2e0041193f1a7857db97c","text":"Replace the invalid whole-repository artifact with effective per-file artifacts"}
+{"kind":"promise","text":"Checker claims #2108: independent review of clean checkout at exact head 63a9232f00e0696d1868c9a1bf93c8efd69e0b23 (atop main 4d859fcf) covering all 13 cited README/docs/catalog artifacts; one signed verdict follows."}
