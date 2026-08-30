@@ -51,7 +51,13 @@ export TAILAPP_HOME="$HOME/.local/share/tailapp"
   --idempotency-key install-agent-guard-v1 agent-guard
 ./tailapp apps install --bundle session-cost \
   --idempotency-key install-session-cost-v1 session-cost
+./tailapp apps install \
+  --idempotency-key install-daily-review-v1 \
+  daily-review tailapps/daily-review
 ```
+
+The last line installs `daily-review` from its source directory; it is not a
+built-in bundle.
 
 Next, configure [Claude Code](docs/harnesses/claude-code.md),
 [Codex](docs/harnesses/codex.md), [OpenCode](docs/harnesses/opencode.md), or
@@ -86,6 +92,7 @@ The included Tailapps are a starting kit, not a fixed catalog:
 | --- | --- |
 | [`activity-stats`](tailapps/activity-stats/README.md) | Privacy-preserving event, activity, token/cache, tool-frequency, and latency analytics across Claude Code, Codex, and OpenCode |
 | [`agent-guard`](tailapps/agent-guard/README.md) | Observed out-of-bounds evidence, explicit unknown coverage, repetition/no-progress signals, and stalled-session queries |
+| [`daily-review`](tailapps/daily-review/README.md) | Exact UTC-day volume, outcome, latency, token/cost, and sensitive-content-presence aggregates for routine operational and security reviews |
 | [`session-cost`](tailapps/session-cost/README.md) | Cumulative token and reported-cost totals by harness and session |
 | [`signal-counts`](tailapps/signal-counts/README.md) | Deliberately small canonical-record counts by source, signal, and event name |
 

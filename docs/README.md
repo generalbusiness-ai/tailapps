@@ -12,6 +12,8 @@ without changing that sequence.
   [Pi](harnesses/pi.md)
 - Shipped Tailapps: [activity stats](../tailapps/activity-stats/README.md),
   [agent guard](../tailapps/agent-guard/README.md),
+  [daily review](../tailapps/daily-review/README.md) (installed from its
+  source directory, not a built-in bundle),
   [session cost](../tailapps/session-cost/README.md), and
   [signal counts](../tailapps/signal-counts/README.md)
 
