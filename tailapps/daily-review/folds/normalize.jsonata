@@ -1,0 +1,144 @@
+(
+  $attrs := event.record.attributes ? event.record.attributes : {};
+  $resource := event.record.resource.attributes ? event.record.resource.attributes : {};
+  $semantic_name_raw := $lookup($attrs, "event.name");
+  $event_name := $exists($semantic_name_raw) and $string($semantic_name_raw) != "" ?
+    $string($semantic_name_raw) : event.name;
+  $harness := (event.source = "codex_cli_rs" or event.source = "codex_exec" or
+    event.source = "codex-app-server") ? "codex" : event.source;
+  $event_time := event.time_unix_nano ? event.time_unix_nano :
+    (event.observed_unix_nano ? event.observed_unix_nano : null);
+
+  $tool_event :=
+    $event_name = "claude_code.tool_result" or $event_name = "claude_code.tool_decision" or
+    $event_name = "codex.tool_result" or $event_name = "codex.tool_decision" or
+    $event_name = "codex.tool_call" or $event_name = "opencode.tool.execute.after" or
+    $event_name = "opencode.tool.execute.before" or
+    ($harness = "opencode" and event.signal = "log" and $event_name = "tool_result");
+  $api_event :=
+    $event_name = "claude_code.api_request" or $event_name = "codex.api_request" or
+    $event_name = "opencode.api_request" or
+    ($harness = "opencode" and event.signal = "log" and $event_name = "api_request");
+
+  $success_raw := $lookup($attrs, "success");
+  $status_code_raw := $exists($lookup($attrs, "status_code")) ? $lookup($attrs, "status_code") :
+    $lookup($attrs, "http.response.status_code");
+  $status_text_raw := $lookup($attrs, "status");
+  $status_text := $exists($status_text_raw) ? $lowercase($string($status_text_raw)) : "";
+  $status_number := $exists($status_code_raw) ? $number($status_code_raw) : 0;
+  $outcome_applicable := $tool_event or $api_event;
+  $success_state := $not($outcome_applicable) ? "not-applicable" :
+    ($exists($success_raw) ?
+      (($success_raw = true or $string($success_raw) = "true") ? "success" : "failure") :
+      (($status_text = "ok" or $status_text = "success" or $status_text = "completed" or
+        ($status_number >= 200 and $status_number < 400)) ? "success" :
+        (($status_text = "error" or $status_text = "failed" or $status_text = "failure" or
+          $status_number >= 400) ? "failure" : "unknown")));
+
+  $duration_raw := $exists($lookup($attrs, "duration_ms")) ? $lookup($attrs, "duration_ms") :
+    ($exists($lookup($attrs, "latency_ms")) ? $lookup($attrs, "latency_ms") :
+    ($exists($lookup($attrs, "request_latency_ms")) ? $lookup($attrs, "request_latency_ms") :
+    ($exists($lookup($attrs, "ttft_ms")) ? $lookup($attrs, "ttft_ms") :
+      $lookup($attrs, "duration_milliseconds"))));
+  $duration_known := $exists($duration_raw) and $number($duration_raw) >= 0;
+  $duration := $duration_known ? $round($number($duration_raw)) : 0;
+
+  $counter_present :=
+    $exists($lookup($attrs, "input_tokens")) or $exists($lookup($attrs, "input_token_count")) or
+    $exists($lookup($attrs, "output_tokens")) or $exists($lookup($attrs, "output_token_count")) or
+    $exists($lookup($attrs, "cached_input_tokens")) or $exists($lookup($attrs, "cache_read_tokens")) or
+    $exists($lookup($attrs, "cached_input_token_count")) or $exists($lookup($attrs, "cached_token_count")) or
+    $exists($lookup($attrs, "reasoning_output_tokens")) or
+    $exists($lookup($attrs, "reasoning_output_token_count")) or
+    $exists($lookup($attrs, "reasoning_token_count")) or $exists($lookup($attrs, "reasoning_tokens")) or
+    $exists($lookup($attrs, "cost_microusd")) or $exists($lookup($attrs, "cost_usd_micros")) or
+    $exists($lookup($attrs, "cost_usd"));
+  $usage_event :=
+    $event_name = "claude_code.api_request" or $event_name = "codex.api_request" or
+    ($event_name = "codex.sse_event" and $counter_present) or
+    $event_name = "opencode.api_request" or
+    ($harness = "opencode" and event.signal = "log" and $event_name = "api_request");
+  $input_raw := $exists($lookup($attrs, "input_tokens")) ? $lookup($attrs, "input_tokens") :
+    $lookup($attrs, "input_token_count");
+  $output_raw := $exists($lookup($attrs, "output_tokens")) ? $lookup($attrs, "output_tokens") :
+    $lookup($attrs, "output_token_count");
+  $cached_raw := $exists($lookup($attrs, "cached_input_tokens")) ? $lookup($attrs, "cached_input_tokens") :
+    ($exists($lookup($attrs, "cache_read_tokens")) ? $lookup($attrs, "cache_read_tokens") :
+    ($exists($lookup($attrs, "cached_input_token_count")) ? $lookup($attrs, "cached_input_token_count") :
+      $lookup($attrs, "cached_token_count")));
+  $reasoning_raw := $exists($lookup($attrs, "reasoning_output_tokens")) ?
+    $lookup($attrs, "reasoning_output_tokens") :
+    ($exists($lookup($attrs, "reasoning_output_token_count")) ?
+      $lookup($attrs, "reasoning_output_token_count") :
+    ($exists($lookup($attrs, "reasoning_token_count")) ? $lookup($attrs, "reasoning_token_count") :
+      $lookup($attrs, "reasoning_tokens")));
+  $cost_raw := $exists($lookup($attrs, "cost_microusd")) ? $lookup($attrs, "cost_microusd") :
+    $lookup($attrs, "cost_usd_micros");
+  $cost_usd_raw := $lookup($attrs, "cost_usd");
+
+  $session_raw := $lookup($attrs, "session.id") ? $lookup($attrs, "session.id") :
+    ($lookup($attrs, "conversation.id") ? $lookup($attrs, "conversation.id") :
+    ($lookup($attrs, "session_id") ? $lookup($attrs, "session_id") :
+      $lookup($resource, "service.instance.id")));
+  $identity_metadata := $exists($lookup($attrs, "user.email")) or
+    $exists($lookup($attrs, "user.account_id")) or $exists($lookup($attrs, "account_id"));
+  $auth_metadata := $exists($lookup($attrs, "auth_mode")) or
+    $exists($lookup($attrs, "auth.mode")) or $exists($lookup($attrs, "auth.header_attached")) or
+    $exists($lookup($attrs, "auth.env_codex_api_key_present")) or
+    $exists($lookup($attrs, "auth.env_openai_api_key_present")) or
+    $exists($lookup($attrs, "auth.env_refresh_token_url_override_present"));
+  $raw_prompt_content := $exists($lookup($attrs, "prompt")) or
+    $exists($lookup($attrs, "user_prompt")) or $exists($lookup($attrs, "assistant_response")) or
+    $exists($lookup($attrs, "input.value")) or $exists($lookup($attrs, "output.value"));
+  $raw_tool_content := $exists($lookup($attrs, "arguments")) or
+    $exists($lookup($attrs, "output")) or $exists($lookup($attrs, "tool_input")) or
+    $exists($lookup($attrs, "tool_parameters")) or $exists($lookup($attrs, "tool_content")) or
+    $exists($lookup($attrs, "full_command"));
+  $tool_name_raw := $lookup($attrs, "tool_name") ? $lookup($attrs, "tool_name") :
+    $lookup($attrs, "tool");
+  $tool_name := $exists($tool_name_raw) ? $lowercase($string($tool_name_raw)) : "";
+  $operation_raw := $lookup($attrs, "operation_kind");
+  $operation := $exists($operation_raw) ? $lowercase($string($operation_raw)) : "";
+  $target_raw := $lookup($attrs, "target") ? $lookup($attrs, "target") :
+    $lookup($attrs, "file_path");
+  $target := $exists($target_raw) ? $string($target_raw) : "";
+  $risky_action := $tool_name = "dangerous_shell" or $tool_name = "external_network" or
+    $operation = "destructive" or $operation = "network_external" or
+    $substring($target, 0, 9) = "/outside/";
+
+  $event_time ? {
+    "decision": "effective",
+    "facts": [],
+    "events": {"otel_event": [{
+      "day_utc": $floor($number($event_time) / 86400000000000),
+      "harness": $harness,
+      "signal": event.signal,
+      "tool_event": $tool_event ? 1 : 0,
+      "api_event": $api_event ? 1 : 0,
+      "success_state": $success_state,
+      "duration_observed": $duration_known ? 1 : 0,
+      "duration_milliseconds": $duration,
+      "input_tokens": $usage_event and $exists($input_raw) ? $round($number($input_raw)) : 0,
+      "cached_input_tokens": $usage_event and $exists($cached_raw) ? $round($number($cached_raw)) : 0,
+      "output_tokens": $usage_event and $exists($output_raw) ? $round($number($output_raw)) : 0,
+      "reasoning_output_tokens": $usage_event and $exists($reasoning_raw) ? $round($number($reasoning_raw)) : 0,
+      "cost_microusd": $usage_event ?
+        ($exists($cost_raw) ? $round($number($cost_raw)) :
+        ($exists($cost_usd_raw) ? $round($number($cost_usd_raw) / 0.000001) : 0)) : 0,
+      "session_unknown": $exists($session_raw) and $string($session_raw) != "" ? 0 : 1,
+      "identity_metadata": $identity_metadata ? 1 : 0,
+      "auth_metadata": $auth_metadata ? 1 : 0,
+      "raw_prompt_content": $raw_prompt_content ? 1 : 0,
+      "raw_tool_content": $raw_tool_content ? 1 : 0,
+      "risky_action": $risky_action ? 1 : 0,
+      "event_time_unix_nano": $string($event_time),
+      "source_position": meta.position
+    }]},
+    "tables": {}
+  } : {
+    "decision": "ineffective",
+    "facts": [],
+    "events": {},
+    "tables": {}
+  }
+)

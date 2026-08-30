@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"testing/fstest"
 
 	"github.com/generalbusiness-ai/tailapps/internal/profile"
 )
@@ -22,6 +23,24 @@ func TestBundledTailappsCompile(t *testing.T) {
 				t.Fatalf("incomplete identity: %#v", compiled)
 			}
 		})
+	}
+}
+
+func TestDailyReviewCompilesFromSourceDirectory(t *testing.T) {
+	files := fstest.MapFS{}
+	for _, name := range []string{"application.sql", "folds/normalize.jsonata", "folds/daily.jsonata"} {
+		content, err := os.ReadFile(filepath.Join("daily-review", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		files[name] = &fstest.MapFile{Data: content}
+	}
+	compiled, err := profile.Load(files, ".", "daily-review")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if compiled.Exports["daily_review"].Name != "daily_review" {
+		t.Fatalf("compiled profile = %#v", compiled)
 	}
 }
 
