@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:9545424aa65bb22b90e7e01b730ab0d3bf5a305f","text":"Merge retired a covered predecessor; the successor is at internal/mcp/server.go."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:aa39f48c2bdf02810d1832225723d86f82d81c64","text":"Merge retired a covered predecessor; the successor is at scripts/sanitize-remote.sh."}
