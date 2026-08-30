@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Project terminology and canonical Tailapps identity at internal/inbox/inbox.go","body":{"commit":"70952f24f5901084f4eaefe9d2aa734e3cd3bf89","path":"internal/inbox/inbox.go"}}
+{"kind":"artifact","text":"Project terminology and canonical Tailapps identity at internal/ingest/canonical.go","body":{"commit":"70952f24f5901084f4eaefe9d2aa734e3cd3bf89","path":"internal/ingest/canonical.go"}}
