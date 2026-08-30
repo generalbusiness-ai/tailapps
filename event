@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:3bbc46f389f70a603c02d3d8ccb794953f6918ac"}
+{"kind":"artifact","text":"Project README at the corrected promotion head: the run-locally section installs the shipped Tailapps, and signal-counts stands in the first-party table as a shipped app.","body":{"commit":"3aba33fbaad0bb95870f09a3150d9db83436c482","path":"README.md"}}
