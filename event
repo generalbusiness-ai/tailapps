@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"MCP tests at the rebased stage-2 head: static orientation tests pin titles, budgets, docs suffixes, and exact annotation sets alongside the stage-1 conformance assertions.","body":{"commit":"373e15435dc2dcaeed131ca424f34716718a3251","path":"internal/mcp/server_test.go"}}
+{"kind":"artifact","text":"MCP reference at the rebased stage-2 head: documents tool titles, the description shape with inert docs pointers, and the complete annotation contract.","body":{"commit":"373e15435dc2dcaeed131ca424f34716718a3251","path":"docs/reference/mcp.md"}}
