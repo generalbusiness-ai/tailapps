@@ -7,8 +7,19 @@ management.
 ## Transport and protocol
 
 - Transport: newline-delimited JSON-RPC 2.0 over stdin/stdout
-- Advertised MCP protocol version: `2025-06-18`
-- Server identity: `tailapp` version `0.1.0`
+- MCP protocol versions: `2024-11-05`, `2025-03-26`, and `2025-06-18`. The
+  `initialize` reply echoes the client's requested version when it is one of
+  these, and answers `2025-06-18` otherwise.
+- Server identity: `serverInfo` carries `name` (`tailapp`), `title`
+  (`Tailapp`), a one-line `description`, a build-derived `version` (the
+  module release tag when one names the build, otherwise the base version
+  annotated with the VCS revision and a `.dirty` marker for modified trees),
+  and `websiteUrl` when a public source location is known (a sanitized
+  GitHub remote stamped at release-build time, else derived from the module
+  path). The same version appears in the resident's `engine.json`.
+- The `initialize` reply carries server-wide `instructions`: a
+  self-contained orientation whose first paragraph fits harness truncation
+  budgets.
 - Capability: tools
 - Maximum input line: 1 MiB
 
@@ -16,8 +27,8 @@ The process is only an adapter. Start `tailapp serve` first and give the MCP
 process the same `TAILAPP_HOME` so it can reach `engine.sock`.
 
 Successful tool calls always return the complete value as JSON text in
-`content`. When the value is a JSON object, they also return it as the native
-JSON value in `structuredContent`:
+`content` and the same value as the native JSON object in
+`structuredContent`:
 
 ```json
 {
@@ -26,23 +37,29 @@ JSON value in `structuredContent`:
 }
 ```
 
-MCP constrains `structuredContent` to a JSON object. Array or scalar results
-therefore omit that optional field while retaining the complete value in the
-text content block. This preserves the engine operation's native result shape;
-in particular, `tailapps_list` remains an array rather than being wrapped in a
-new object contract.
+An engine operation whose native result is not a JSON object is wrapped in a
+named single-field object so every tool has a uniform object contract:
+`tailapps_list` returns `{"apps": [...]}`, and an empty engine returns
+`{"apps": []}`, never `null`. Every tool declares an `outputSchema` (plain
+JSON Schema 2020-12, no `$schema` marker) describing its
+`structuredContent`; the schemas name the stable core fields and stay open
+to additions.
 
-Engine/application errors are MCP tool results, not JSON-RPC failures:
+Engine/application errors are MCP tool results, not JSON-RPC failures. The
+text names the failing tool, substitutes `$TAILAPP_HOME` for the private
+engine-home path, and suggests the next step when the engine is not
+reachable:
 
 ```json
 {
   "isError": true,
-  "content": [{"type": "text", "text": "error message"}]
+  "content": [{"type": "text", "text": "tailapp_query failed: ..."}]
 }
 ```
 
-Malformed JSON-RPC, unknown methods, invalid call envelopes, and unknown tools
-use normal JSON-RPC errors.
+Malformed JSON-RPC, unknown methods, and invalid call envelopes use normal
+JSON-RPC errors; an unknown tool name is invalid params (`-32602`) and the
+message lists the valid tool names.
 
 ## Common values
 
@@ -92,7 +109,8 @@ Lists all local Tailapp definitions.
 
 Arguments: `{}`
 
-Result: array of [App](#app) objects ordered by name.
+Result: `{"apps": [...]}` — an array of [App](#app) objects ordered by name.
+An engine with no Tailapps returns `{"apps": []}`.
 
 ### `tailapp_get`
 

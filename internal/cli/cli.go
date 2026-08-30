@@ -20,6 +20,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/generalbusiness-ai/tailapps/internal/buildinfo"
 	"github.com/generalbusiness-ai/tailapps/internal/control"
 	"github.com/generalbusiness-ai/tailapps/internal/engine"
 	"github.com/generalbusiness-ai/tailapps/internal/ingest"
@@ -60,7 +61,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return serve(ctx, home, args[1:], stdout, stderr)
 	case "mcp":
 		client := control.NewClient(filepath.Join(home, "engine.sock"))
-		return (&mcp.Server{Client: client}).Serve(ctx, os.Stdin, os.Stdout)
+		return (&mcp.Server{Client: client, Home: home}).Serve(ctx, os.Stdin, os.Stdout)
 	case "health":
 		return call(stdout, home, "health", nil)
 	case "metrics":
@@ -146,7 +147,7 @@ func serve(ctx context.Context, home string, args []string, stdout, stderr io.Wr
 	defer otlpListener.Close()
 	actualOTLP := otlpListener.Addr().String()
 	otlpServer := &http.Server{Handler: resident.Receiver(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 30 * time.Second}
-	metadata, _ := json.Marshal(map[string]any{"pid": os.Getpid(), "started_at": time.Now().UTC().Format(time.RFC3339Nano), "otlp_http": "http://" + actualOTLP, "profile": statusProfile(resident, ctx), "version": "0.1.0"})
+	metadata, _ := json.Marshal(map[string]any{"pid": os.Getpid(), "started_at": time.Now().UTC().Format(time.RFC3339Nano), "otlp_http": "http://" + actualOTLP, "profile": statusProfile(resident, ctx), "version": buildinfo.Version()})
 	if err := os.WriteFile(filepath.Join(home, "engine.json"), metadata, 0o600); err != nil {
 		return err
 	}
