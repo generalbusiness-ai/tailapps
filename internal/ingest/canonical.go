@@ -2,12 +2,10 @@ package ingest
 
 import (
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
 	"strconv"
 
 	commonv1 "go.opentelemetry.io/proto/otlp/common/v1"
@@ -19,6 +17,8 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/generalbusiness-ai/tailapps/internal/inbox"
+
+	"github.com/generalbusiness-ai/tailapps/jsonataddl"
 )
 
 const MaxCanonicalRecordBytes = 256 << 10
@@ -255,17 +255,16 @@ func anyValue(value *commonv1.AnyValue) (any, error) {
 	case *commonv1.AnyValue_BoolValue:
 		return typed.BoolValue, nil
 	case *commonv1.AnyValue_IntValue:
-		if typed.IntValue < -(1<<53-1) || typed.IntValue > 1<<53-1 {
-			return map[string]any{"integer_decimal": strconv.FormatInt(typed.IntValue, 10)}, nil
-		}
-		return typed.IntValue, nil
+		// The shared codec owns the exact-integer bound and wrapper spelling.
+		return jsonataddl.WrapInteger(typed.IntValue), nil
 	case *commonv1.AnyValue_DoubleValue:
-		if math.IsNaN(typed.DoubleValue) || math.IsInf(typed.DoubleValue, 0) {
+		value, err := jsonataddl.FiniteNumber(typed.DoubleValue)
+		if err != nil {
 			return nil, errors.New("non-finite double")
 		}
-		return typed.DoubleValue, nil
+		return value, nil
 	case *commonv1.AnyValue_BytesValue:
-		return map[string]any{"bytes_base64": base64.StdEncoding.EncodeToString(typed.BytesValue)}, nil
+		return jsonataddl.WrapBytes(typed.BytesValue), nil
 	case *commonv1.AnyValue_ArrayValue:
 		result := make([]any, len(typed.ArrayValue.GetValues()))
 		for index, item := range typed.ArrayValue.GetValues() {
