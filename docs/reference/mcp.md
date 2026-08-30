@@ -51,8 +51,10 @@ MCP orientation, and nothing installs it as a side effect — only this
 explicit command writes it. Placement: Claude Code reads `.claude/skills/`
 (user or project), Codex reads `.agents/skills/` (project, walking up to
 the repository root, or `$HOME/.agents/skills`), and OpenCode reads its
-own directories plus both of the others — so one directory reachable as
-either name covers all three.
+own directories plus both of the others. A path under a single name
+covers only two harnesses; to cover all three, make one underlying
+directory reachable under both names (a symlink from one root to the
+other — Codex supports symlinked skill folders) or emit into both roots.
 
 The process is only an adapter. Start `tailapp serve` first and give the MCP
 process the same `TAILAPP_HOME` so it can reach `engine.sock`.
