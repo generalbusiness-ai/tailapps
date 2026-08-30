@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"MCP tests at the assertion-pinned stage-2 head, unchanged in this delta.","body":{"commit":"e5c774fc3cac1271e21b135659f7afb0773ba7d8","path":"internal/mcp/server_test.go"}}
+{"kind":"artifact","text":"Real-engine conformance test at the assertion-pinned stage-2 head: records_total must be the preseeded four-signal zero object exactly, and the goroutine and total-memory runtime gauges are pinned nonzero alongside uptime.","body":{"commit":"e5c774fc3cac1271e21b135659f7afb0773ba7d8","path":"internal/mcp/conformance_test.go"}}
