@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at scripts/sanitize-remote.sh","body":{"commit":"135ee3dda65ab0705aaa7eb869f0f7631d28294c","path":"scripts/sanitize-remote.sh"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:00a4397088cea42127930cff86f7390892360f6f","text":"Merge retired a covered predecessor; the successor is at docs/reference/mcp.md."}
