@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:a09eff7abc299c52d64a40c0d9a680a13a8cd058","text":"Merge retired a covered predecessor; the successor is at notes/2026-08-30-web-domain-reputation.md."}
+{"kind":"artifact","text":"The cross-harness skill at the placement-corrected stage-5 head, unchanged in this delta.","body":{"commit":"bc2e7c4a33b0425c5349ad465b10351b254b9bee","path":"internal/mcp/skill.go"}}
