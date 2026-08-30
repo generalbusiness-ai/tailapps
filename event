@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:f2b7e6d8bb4442a2a13bd3783de8ba4cf466f894"}
+{"kind":"artifact","text":"Evaluation is now safe for concurrent callers in fact: each compiled program owns its expression behind a lock (compiledExpression) shared by every Program copy, and the handle documentation states that evaluations of one program serialize.","body":{"commit":"f934363d4c5b3f740c9d8be6266fdb399e370606","path":"jsonataddl/application.go"}}
