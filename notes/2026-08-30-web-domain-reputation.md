@@ -96,13 +96,20 @@ Retaining full URLs is a real posture change from daily-review's
 aggregate-only philosophy, accepted for the local target model with two
 standing guards:
 
-- **Retention is local.** Full URLs (which routinely embed tokens, session
-  identifiers, and signed parameters) live only in the local projection.
-  The note keeps its warning: query results are sensitive; share
-  aggregates.
-- **Egress is filtered twice.** The exclusions table filters what the
+- **At-rest retention is local; transmission is not.** Full URLs (which
+  routinely embed tokens, session identifiers, and signed parameters) are
+  stored only in the local projection — but the design then sends the
+  selected, non-excluded URLs to the chosen reputation service, so
+  path-and-query secrets in those URLs **leave the machine** unless a
+  separate redaction rule strips them first. The internal-name exclusions
+  do not provide that redaction: they filter which hosts are checked at
+  all, not what a checked URL carries. Whether a secret-stripping rule
+  (drop query strings, or a deny-pattern for token-shaped parameters)
+  belongs in the companion script is an open question below. The note
+  keeps its warning: query results are sensitive; share aggregates.
+- **Egress is checked twice.** The exclusions table filters what the
   review queries surface for checking, and the companion script applies
-  the same exclusions before any URL leaves the machine for the
+  the same exclusions again before any URL leaves the machine for the
   reputation service. The eligibility constraints stand: Safe Browsing's
   free API is non-commercial (commercial use goes to Web Risk;
   https://developers.google.com/safe-browsing/reference/Appropriate.Usage)
@@ -122,10 +129,11 @@ standing guards:
    Operator policy; the adapter needs a home and a maintainer.
 2. The private-event and table shapes for the three input families, and
    whether one normalizer discriminating three record kinds stays within
-   the two-stage topology comfortably (single writer per table constrains
-   which folds materialize which tables; sibling folds cannot read each
-   other's tables, so the needs-checking query composes at review time or
-   the materializing folds share a writer).
+   the two-stage topology comfortably. Each table has exactly one writing
+   program and sibling folds cannot read each other's tables, so either
+   one owning program (the normalizer, or a single fold) materializes all
+   three tables, or separate writer-owned tables compose only at
+   review-query time through their exports.
 3. Verdict freshness policy: how old a verdict may be before rechecking,
    and whether it lives in the review instructions (flexible) or a
    materialized column (queryable).
@@ -134,6 +142,10 @@ standing guards:
    chosen service.
 5. Retention duration for URL rows, and whether activation-reset semantics
    suffice for pruning.
+6. Whether the companion script strips path-and-query secrets before
+   transmission (drop query strings entirely — at some verdict-precision
+   cost — or deny token-shaped parameters), the separate redaction rule
+   the at-rest-versus-transmission distinction requires.
 
 ## Design history
 
@@ -145,9 +157,14 @@ eligibility terms, the shared-attribute leak, Safe Browsing's URL-not-
 domain semantics), and the operator then redirected: domain granularity is
 too coarse for useful verdicts, and the cache, exclusions, and verdicts
 belong inside the pipeline as OTLP inputs. The domain-only retention
-posture and the side-cache are superseded by the loopback design above;
-the shared-attribute rejection, the eligibility constraints, and the
-two-layer exclusion of internal names carry forward unchanged.
+posture and the side-cache are superseded by the loopback design above.
+The shared-attribute rejection and the eligibility constraints carry
+forward unchanged; the exclusion mechanism carries forward only as a
+principle — two checks before egress — while its first layer **moved**:
+the first design excluded internal names before materialization so they
+were never retained, whereas the loopback design retains internal URLs
+locally like any others and applies the exclusions at review-query time
+and again in the companion script.
 
 ## Status
 
