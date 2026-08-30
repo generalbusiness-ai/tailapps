@@ -23,6 +23,8 @@ import (
 
 	"github.com/generalbusiness-ai/tailapps/internal/inbox"
 	"github.com/generalbusiness-ai/tailapps/internal/profile"
+
+	"github.com/generalbusiness-ai/tailapps/jsonataddl"
 )
 
 type Frontier struct {
@@ -601,41 +603,11 @@ func deleteRow(ctx context.Context, tx *sql.Tx, table profile.Table, row map[str
 	return nil
 }
 
+// sqliteValue delegates write-side conversion to the shared logical value
+// codec, which owns the JSON-first affinity rule and the number, boolean,
+// blob, text, and null conversions.
 func sqliteValue(value any, logical any) any {
-	if value == nil {
-		return nil
-	}
-	// JSON columns must always cross SQLite as JSON text. Handling json.Number
-	// before the logical type would give a top-level JSON number INTEGER/REAL
-	// affinity and make the next declared read reject otherwise valid state.
-	if profile.LogicalType(fmt.Sprint(logical)) == profile.TypeJSON {
-		encoded, _ := json.Marshal(value)
-		return string(encoded)
-	}
-	if number, ok := value.(json.Number); ok {
-		if integer, err := number.Int64(); err == nil {
-			return integer
-		}
-		if real, err := number.Float64(); err == nil {
-			return real
-		}
-		return number.String()
-	}
-	switch profile.LogicalType(fmt.Sprint(logical)) {
-	case profile.TypeBoolean:
-		if typed, ok := value.(bool); ok {
-			if typed {
-				return 1
-			}
-			return 0
-		}
-	case profile.TypeBlob:
-		if typed, ok := value.(string); ok {
-			decoded, _ := base64.StdEncoding.DecodeString(typed)
-			return decoded
-		}
-	}
-	return value
+	return jsonataddl.SQLiteBindValue(value, jsonataddl.LogicalType(fmt.Sprint(logical)))
 }
 
 func transientProcessError(ctx context.Context, err error) bool {
