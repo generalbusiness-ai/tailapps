@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"New regression: 16 goroutines evaluate the same program and a sibling program on one handle under the race detector, asserting identical outcomes; with the lock disabled it reports the original data race.","body":{"commit":"f934363d4c5b3f740c9d8be6266fdb399e370606","path":"jsonataddl/application_test.go"}}
+{"kind":"artifact","text":"Unchanged in this delta: source loading through the configured layout with runtime-seeded revision digest.","body":{"commit":"f934363d4c5b3f740c9d8be6266fdb399e370606","path":"jsonataddl/load.go"}}
