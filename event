@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Docs index at the promote-examples head: the five-minute signal-counts example links to tailapps/signal-counts.","body":{"commit":"2fdf86159bf79fccbb3c3bffc79c6f3ceddb418c","path":"docs/README.md"}}
+{"kind":"artifact","text":"CLI reference at the promote-examples head: signal-counts added to the built-in bundle names and the directory-install example path updated.","body":{"commit":"2fdf86159bf79fccbb3c3bffc79c6f3ceddb418c","path":"docs/reference/cli.md"}}
