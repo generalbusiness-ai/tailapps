@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"MCP reference at the stage-1 head: documents version negotiation, the identity and instructions fields, uniform object results with the apps wrapper, per-tool outputSchemas, and the tool-naming error contract.","body":{"commit":"66794458753c37029d51027824e191e17646be8b","path":"docs/reference/mcp.md"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:983c7f71641fa55511dde61f991c5f4eb18f116b"}
