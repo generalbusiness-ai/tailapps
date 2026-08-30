@@ -7,61 +7,61 @@
  "dialect": "tailapp/v1",
  "evaluations": [
   {
-   "error_contains": "undeclared event output",
+   "expect": "expected/undeclared-event.txt",
    "input": "inputs/generic-normalize.json",
    "name": "undeclared-event",
    "program": "normalize_wrong_event"
   },
   {
-   "error_contains": "analytic folds cannot emit events",
+   "expect": "expected/fold-cannot-emit.txt",
    "input": "inputs/generic-fold.json",
    "name": "fold-cannot-emit",
    "program": "fold_emits_event"
   },
   {
-   "error_contains": "write to undeclared table",
+   "expect": "expected/undeclared-table-write.txt",
    "input": "inputs/generic-fold.json",
    "name": "undeclared-table-write",
    "program": "fold_undeclared_table"
   },
   {
-   "error_contains": "ineffective decision cannot emit events or change tables",
+   "expect": "expected/ineffective-cannot-output.txt",
    "input": "inputs/generic-fold.json",
    "name": "ineffective-cannot-output",
    "program": "fold_ineffective_outputs"
   },
   {
-   "error_contains": "facts exceed 64",
+   "expect": "expected/facts-limit.txt",
    "input": "inputs/generic-fold.json",
    "name": "facts-limit",
    "program": "fold_too_many_facts"
   },
   {
-   "error_contains": "must be one JSON object with only decision, facts, events and tables",
+   "expect": "expected/unknown-result-field.txt",
    "input": "inputs/generic-fold.json",
    "name": "unknown-result-field",
    "program": "fold_unknown_field"
   },
   {
-   "error_contains": "undeclared column",
+   "expect": "expected/undeclared-column.txt",
    "input": "inputs/mode-undeclared-column.json",
    "name": "undeclared-column",
    "program": "fold_row_shapes"
   },
   {
-   "error_contains": "missing column",
+   "expect": "expected/missing-column.txt",
    "input": "inputs/mode-missing-column.json",
    "name": "missing-column",
    "program": "fold_row_shapes"
   },
   {
-   "error_contains": "must be an integer",
+   "expect": "expected/wrong-type.txt",
    "input": "inputs/mode-wrong-type.json",
    "name": "wrong-type",
    "program": "fold_row_shapes"
   },
   {
-   "error_contains": "must be an exactly representable JSON integer",
+   "expect": "expected/unrepresentable-integer.txt",
    "input": "inputs/mode-unrepresentable-integer.json",
    "name": "unrepresentable-integer",
    "program": "fold_row_shapes"

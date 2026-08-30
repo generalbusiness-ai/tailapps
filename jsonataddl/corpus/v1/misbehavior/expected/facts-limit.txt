@@ -1,0 +1,1 @@
+ERROR: program "fold_too_many_facts" output: facts exceed 64

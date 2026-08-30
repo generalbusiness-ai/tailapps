@@ -1,0 +1,1 @@
+ERROR: program "normalize_wrong_event" output: undeclared event output "wrong_event"

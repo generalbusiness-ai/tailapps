@@ -6,7 +6,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 )
 
@@ -30,12 +29,11 @@ type corpusManifest struct {
 		Diagnostic string `json:"diagnostic,omitempty"`
 	} `json:"compile"`
 	Evaluations []struct {
-		Name          string `json:"name"`
-		Program       string `json:"program"`
-		Input         string `json:"input"`
-		Expect        string `json:"expect,omitempty"`
-		ErrorContains string `json:"error_contains,omitempty"`
-		Repeat        int    `json:"repeat,omitempty"`
+		Name    string `json:"name"`
+		Program string `json:"program"`
+		Input   string `json:"input"`
+		Expect  string `json:"expect"`
+		Repeat  int    `json:"repeat,omitempty"`
 	} `json:"evaluations,omitempty"`
 }
 
@@ -95,26 +93,21 @@ func runCorpusCase(t *testing.T, compile compileFunc, caseDir string) {
 		t.Fatalf("manifest compile outcome %q is not ok or error", manifest.Compile.Outcome)
 	}
 
-	identity := corpusIdentity{
-		Revision:             compiled.Revision,
-		RuntimeProfile:       compiled.RuntimeProfile,
-		StorageSchemaDigest:  compiled.StorageSchemaDigest,
-		ExportContractDigest: compiled.ExportContractDigest,
-	}
+	identity := identityOf(compiled)
 	compareGoldenJSON(t, filepath.Join(caseDir, manifest.Compile.Identity), identity)
 
 	recompiled, err := compile(os.DirFS(appDir), ".", "corpus-app")
 	if err != nil {
 		t.Fatalf("recompile: %v", err)
 	}
-	if recompiled.Revision != compiled.Revision || recompiled.StorageSchemaDigest != compiled.StorageSchemaDigest || recompiled.ExportContractDigest != compiled.ExportContractDigest {
-		t.Fatalf("recompilation changed identity: %#v vs %#v", recompiled, compiled)
+	if identityOf(recompiled) != identity {
+		t.Fatalf("recompilation changed identity: %#v vs %#v", identityOf(recompiled), identity)
 	}
 
 	for _, evaluation := range manifest.Evaluations {
 		t.Run(evaluation.Name, func(t *testing.T) {
-			if (evaluation.Expect == "") == (evaluation.ErrorContains == "") {
-				t.Fatalf("evaluation must declare exactly one of expect or error_contains: %#v", evaluation)
+			if evaluation.Expect == "" {
+				t.Fatalf("evaluation must declare an expect golden: %#v", evaluation)
 			}
 			var input EvaluationInput
 			decodeFile(t, filepath.Join(caseDir, evaluation.Input), &input)
@@ -122,30 +115,42 @@ func runCorpusCase(t *testing.T, compile compileFunc, caseDir string) {
 			if repeats < 1 {
 				repeats = 1
 			}
-			var first []byte
+			first := ""
 			for attempt := 0; attempt < repeats; attempt++ {
-				result, err := compiled.Evaluate(evaluation.Program, input)
-				if evaluation.ErrorContains != "" {
-					if err == nil || !strings.Contains(err.Error(), evaluation.ErrorContains) {
-						t.Fatalf("error = %v, want containing %q", err, evaluation.ErrorContains)
-					}
-					return
-				}
-				if err != nil {
-					t.Fatalf("evaluate: %v", err)
-				}
-				encoded, err := json.MarshalIndent(result, "", " ")
-				if err != nil {
-					t.Fatal(err)
-				}
-				if first == nil {
-					first = encoded
-				} else if string(first) != string(encoded) {
-					t.Fatalf("repeated evaluation diverged:\n%s\nvs\n%s", first, encoded)
+				outcome := renderOutcome(t, compiled, evaluation.Program, input)
+				if attempt == 0 {
+					first = outcome
+				} else if first != outcome {
+					t.Fatalf("repeated evaluation diverged:\n%s\nvs\n%s", first, outcome)
 				}
 			}
-			compareGoldenText(t, filepath.Join(caseDir, evaluation.Expect), string(first)+"\n")
+			compareGoldenText(t, filepath.Join(caseDir, evaluation.Expect), first)
 		})
+	}
+}
+
+// renderOutcome gives success and failure one golden representation, so
+// -update-corpus regenerates both and any divergence — result values or
+// exact diagnostic text — fails the freeze.
+func renderOutcome(t *testing.T, compiled *Profile, program string, input EvaluationInput) string {
+	t.Helper()
+	result, err := compiled.Evaluate(program, input)
+	if err != nil {
+		return "ERROR: " + err.Error() + "\n"
+	}
+	encoded, marshalErr := json.MarshalIndent(result, "", " ")
+	if marshalErr != nil {
+		t.Fatal(marshalErr)
+	}
+	return string(encoded) + "\n"
+}
+
+func identityOf(compiled *Profile) corpusIdentity {
+	return corpusIdentity{
+		Revision:             compiled.Revision,
+		RuntimeProfile:       compiled.RuntimeProfile,
+		StorageSchemaDigest:  compiled.StorageSchemaDigest,
+		ExportContractDigest: compiled.ExportContractDigest,
 	}
 }
 

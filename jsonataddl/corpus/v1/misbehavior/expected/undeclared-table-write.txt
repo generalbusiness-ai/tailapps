@@ -1,0 +1,1 @@
+ERROR: program "fold_undeclared_table" output: write to undeclared table "other_table"

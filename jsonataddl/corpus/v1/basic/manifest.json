@@ -20,19 +20,19 @@
    "program": "normalize"
   },
   {
-   "error_contains": "must be an exactly representable JSON integer",
+   "expect": "expected/normalize-unrepresentable-integer.txt",
    "input": "inputs/normalize-overflow.json",
    "name": "normalize-unrepresentable-integer",
    "program": "normalize"
   },
   {
-   "error_contains": "must be boolean",
+   "expect": "expected/normalize-wrong-boolean.txt",
    "input": "inputs/normalize-wrong-flag.json",
    "name": "normalize-wrong-boolean",
    "program": "normalize"
   },
   {
-   "error_contains": "must be base64 text",
+   "expect": "expected/normalize-invalid-blob.txt",
    "input": "inputs/normalize-bad-blob.json",
    "name": "normalize-invalid-blob",
    "program": "normalize"
@@ -51,7 +51,7 @@
    "repeat": 3
   },
   {
-   "error_contains": "unknown program",
+   "expect": "expected/unknown-program.txt",
    "input": "inputs/accumulate-first.json",
    "name": "unknown-program",
    "program": "nope"

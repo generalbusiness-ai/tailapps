@@ -35,13 +35,15 @@ v1/<case>/
 - `application` — the source-set directory, relative to the case.
 - `compile.outcome` — `ok` or `error`. `ok` pins the compiled identity
   (`expected/identity.json`: revision, runtime profile, storage-schema and
-  export-contract digests) and the runner additionally asserts recompilation
-  determinism. `error` pins the exact diagnostic text
+  export-contract digests) and the runner asserts recompilation determinism
+  over all four fields. `error` pins the exact diagnostic text
   (`expected/diagnostic.txt`) — diagnostics are part of the frozen surface.
-- `evaluations[]` — each names a program, an input file, and exactly one of
-  `expect` (a golden `EvaluationResult` JSON) or `error_contains` (a stable
-  diagnostic substring). `repeat: N` asserts N identical evaluations
-  (determinism).
+- `evaluations[]` — each names a program, an input file, and an `expect`
+  golden. One golden mechanism covers success and failure: a successful
+  evaluation freezes its `EvaluationResult` JSON, a failed one freezes the
+  exact diagnostic as an `ERROR:` line, and `-update-corpus` regenerates
+  both, so any divergence in values or diagnostic text fails the freeze.
+  `repeat: N` asserts N identical outcomes (determinism).
 
 ## Current coverage
 
