@@ -16,12 +16,15 @@ experience: server identity and instructions, self-sufficient tools, an
 offline documentation resource catalog, build provenance, compatibility, and
 the privacy and approval posture.
 
-Evidence for the current surface is a captured stdio probe transcript against
-a binary built from exact revision `70952f24f5901084f4eaefe9d2aa734e3cd3bf89`
-(the commit of the live `internal/mcp/server.go` artifact) on 2026-08-30,
-driving `initialize`, `tools/list`, `resources/list`, `prompts/list`,
-`resources/read`, and `tools/call` against a fresh engine home. Protocol and
-harness claims cite their sources inline in section 2.
+Evidence for the current surface is two captured stdio probe transcripts
+against a binary built from exact revision
+`70952f24f5901084f4eaefe9d2aa734e3cd3bf89` (the commit of the live
+`internal/mcp/server.go` artifact) on 2026-08-30, together driving six
+methods — `initialize`, `tools/list`, `resources/list`, `prompts/list`,
+`resources/read`, and `tools/call` — against a fresh engine home; the exact
+eleven input lines (six in probe A, five in probe B) are reproduced in
+section 10. Protocol and harness claims cite their sources inline in
+section 2.
 
 ## 1. The wire-visible surface today
 
@@ -217,18 +220,19 @@ Code's 2KB truncation cap, and the critical orientation is complete within
 the first 512 characters — the request's own rule, which also survives the
 older reported ~4KB budget shared across all of a session's servers.
 
-Proposed instructions text. The first paragraph is the 512-character
-self-contained core (the draft below is 483 characters); the rest is
-progressive detail a non-truncating harness also gets:
+Proposed instructions text. The first paragraph is the self-contained core:
+read as one space-normalized line it measures 478 characters, inside the
+512 budget with margin; the rest is progressive detail a non-truncating
+harness also gets:
 
 > Tailapp turns local coding-agent OTLP telemetry into queryable SQLite
 > analytics. Observation is detective, never inline prevention. Read first:
-> tailapps_list, then tailapp_query (bounded read-only SQL against a named
-> Tailapp's exported tables). tailapp_status shows engine readiness;
-> tailapp_ineffective explains rejected records. Lifecycle tools
-> (create/put_element/validate/activate, or install as one step) change
-> state and take an idempotency_key; delete and reset-mode activation
-> discard materialized state.
+> tailapps_list, then tailapp_query (read-only SQL over a Tailapp's exported
+> tables). tailapp_status shows engine readiness; tailapp_ineffective
+> explains rejected records. Lifecycle tools
+> (create/put_element/validate/activate, or install as one step) take an
+> idempotency_key; delete and reset-mode activation discard materialized
+> state.
 >
 > Each tool's description states its result contract. The resource catalog
 > (resources/list) carries an overview and one Markdown page per tool; read
@@ -266,8 +270,10 @@ Per tool, the design requires:
   stated not defaulted, on the draft-only writers (`tailapp_create`,
   `tailapp_install`, `tailapp_put_element`, `tailapp_delete_element` — they
   create or edit drafts under optimistic revision control and never touch
-  materialized state); `idempotentHint: true` where an idempotency key makes
-  replays safe (create, install, delete, activate); `openWorldHint: false`
+  materialized state); `idempotentHint: true` on every mutation tool
+  (create, install, put_element, delete_element, delete, activate) — all
+  six take an idempotency key through the same idempotency ledger, so an
+  exact replay lands once; `openWorldHint: false`
   on all fourteen — the server talks only to the local engine. Annotations
   are advisory hints for approval UIs, spec-flagged as untrusted, never a
   security boundary; the descriptions keep stating the facts in prose.
@@ -387,11 +393,19 @@ Design, all via `runtime/debug.ReadBuildInfo()` at startup, computed once:
   Deterministic fallback when build info or VCS stamps are absent (e.g.
   `go run` outside a checkout): the bare base version `0.1.0`, never a
   guess.
-- **identity linkage**: website and source links derived from the module
-  path, `https://github.com/generalbusiness-ai/tailapps` — derivation from
-  the module path is inherently sanitized (no remote URLs are read at build
-  or run time, so no credentials, no private remote names). If the module
-  path is not a known forge host, omit the links rather than fabricate.
+- **identity linkage**, a two-step derivation satisfying the originating
+  requirement to link the GitHub remote when available at build time.
+  Primary: the release build stamps a sanitized remote via
+  `-ldflags "-X ...buildinfo.SourceURL=$(sanitized remote)"`, where the
+  sanitizer reads `git remote get-url origin`, accepts it only when it
+  parses as a github.com remote (ssh or https form), and normalizes it to
+  bare `https://github.com/OWNER/REPO` — user-info, credentials, ports, and
+  `.git` suffixes stripped; any non-GitHub or unparsable remote stamps
+  nothing. Fallback, when no stamp is present (a plain `go build` or
+  `go install`): derive the same URL from the module path when its first
+  element is a known forge host. Otherwise omit the links rather than
+  fabricate. Both steps are deterministic for a given build input; the
+  runtime never reads git state.
 - **surfacing**: `serverInfo` gains `title: "Tailapp"`, a one-line
   `description`, and `websiteUrl` (the spec's identity fields, §2a); the
   same version string replaces the constant in the resident metadata; the
@@ -447,8 +461,6 @@ protocol-tracking machine this project does not want to own — is taken at
 the stage where the protocol surface, not the product surface, is what
 grows.
 
-Independent of that verdict, two compatibility behaviors are required:
-
 Independent of the SDK verdict, two compatibility behaviors are required:
 
 - **Honest version negotiation**: respond with the client's requested
@@ -487,9 +499,30 @@ that as sensitive by default:
 
 ## 10. Representative wire contract
 
-Verbatim from the probe transcript (2026-08-30, revision `70952f24`),
-abridged to the shapes; this is the "before", and the designed "after" for
-the same three exchanges:
+The section 1 inventory comes from two stdio probes of `tailapp mcp`
+(2026-08-30, revision `70952f24`, fresh engine home, resident started with
+`--otlp-http 127.0.0.1:0`). These are the exact input lines, one JSON-RPC
+message per line, reproducible verbatim:
+
+```jsonc
+// probe A — catalog and absent surfaces (6 lines)
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"probe","version":"0"}}}
+{"jsonrpc":"2.0","method":"notifications/initialized"}
+{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}
+{"jsonrpc":"2.0","id":3,"method":"resources/list","params":{}}
+{"jsonrpc":"2.0","id":4,"method":"prompts/list","params":{}}
+{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"tailapps_list","arguments":{}}}
+
+// probe B — negotiation, live results, unknown resource (5 lines)
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"probe","version":"0"}}}
+{"jsonrpc":"2.0","method":"notifications/initialized"}
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"tailapps_list","arguments":{}}}
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"tailapp_metrics","arguments":{}}}
+{"jsonrpc":"2.0","id":4,"method":"resources/read","params":{"uri":"tailapp://docs/overview"}}
+```
+
+From those transcripts, abridged to the shapes: the "before", and the
+designed "after" for the same three exchanges:
 
 ```jsonc
 // today: initialize (client offered 2024-11-05)
@@ -568,8 +601,9 @@ Decided by this design:
   visible to existing scripts that parsed the raw array text), accepted for
   the uniform `structuredContent` contract; the engine's own control API is
   untouched.
-- Provenance derives from build info only; no runtime git, no environment
-  probing, omission over fabrication.
+- Provenance derives from Go build info plus an optional build-time-stamped
+  sanitized remote; no runtime git, no environment probing, omission over
+  fabrication.
 - Error text carries next steps but never absolute private paths.
 
 Tradeoffs called out:
@@ -637,5 +671,6 @@ on a later one.
    show at least one harness rewards it.
 
 Dependencies and dated sources are listed inline in section 2; the probe
-transcripts backing section 1 and section 10 are reproducible with the five
-JSON-RPC lines shown in section 10 against this note's named revision.
+transcripts backing section 1 and section 10 are reproducible with the two
+probe scripts — eleven JSON-RPC input lines — shown verbatim in section 10
+against this note's named revision.
