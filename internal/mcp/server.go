@@ -33,9 +33,24 @@ type rpcError struct {
 }
 type tool struct {
 	Name         string         `json:"name"`
+	Title        string         `json:"title"`
 	Description  string         `json:"description"`
 	InputSchema  map[string]any `json:"inputSchema"`
 	OutputSchema map[string]any `json:"outputSchema,omitempty"`
+	Annotations  annotations    `json:"annotations"`
+}
+
+// annotations carry the spec's tool behavior hints. Every field is emitted
+// explicitly because the spec defaults destructiveHint to true for any
+// non-read-only tool, and because at least one harness turns readOnlyHint
+// into auto-approval policy: a wrong value is a safety hole, an absent one
+// costs prompts. Hints are advisory for approval UIs, never a security
+// boundary; the descriptions state the same facts in prose.
+type annotations struct {
+	ReadOnlyHint    bool `json:"readOnlyHint"`
+	DestructiveHint bool `json:"destructiveHint"`
+	IdempotentHint  bool `json:"idempotentHint"`
+	OpenWorldHint   bool `json:"openWorldHint"`
 }
 
 // Server serves MCP over one stdio session. Home, when set, is the engine
@@ -66,7 +81,7 @@ const newestProtocolVersion = "2025-06-18"
 // object does not declare.
 const instructions = `Tailapp turns local coding-agent OTLP telemetry into queryable SQLite analytics. Observation is detective, never inline prevention. Read first: tailapps_list, then tailapp_query (read-only SQL over a Tailapp's exported tables). tailapp_status shows engine readiness; tailapp_ineffective explains rejected records. Lifecycle tools (create/put_element/validate/activate, or install as one step) take an idempotency_key; delete and reset-mode activation discard materialized state.
 
-Query, schema, and ineffective results derive from local telemetry and may contain session identifiers and file paths: treat them as sensitive, and prefer aggregate queries when sharing output.`
+Each tool's description states its result contract and empty-result shape, and ends with a stable docs: pointer. Query, schema, and ineffective results derive from local telemetry and may contain session identifiers and file paths: treat them as sensitive, and prefer aggregate queries when sharing output.`
 
 func (server *Server) Serve(ctx context.Context, input io.Reader, output io.Writer) error {
 	scanner := bufio.NewScanner(input)
@@ -271,34 +286,72 @@ func tools() []tool {
 		"idempotency_key": idempotencyKey,
 	}, "name", "idempotency_key")
 	install["oneOf"] = []map[string]any{{"required": []string{"bundle"}}, {"required": []string{"sources"}}}
+
+	// Safety hints, stated completely (see the annotations type). The
+	// draftWrite tools never destroy existing materialized state: three edit
+	// drafts under optimistic revision control, and tailapp_install
+	// first-activates a brand-new Tailapp (touching live state additively,
+	// create-only). The two destructive tools discard existing state.
+	readOnly := annotations{ReadOnlyHint: true, DestructiveHint: false, IdempotentHint: false, OpenWorldHint: false}
+	draftWrite := annotations{ReadOnlyHint: false, DestructiveHint: false, IdempotentHint: true, OpenWorldHint: false}
+	destructive := annotations{ReadOnlyHint: false, DestructiveHint: true, IdempotentHint: true, OpenWorldHint: false}
+
 	return []tool{
-		{"tailapps_list", "List local Tailapps and their draft/active revisions.", object(nil),
-			result(map[string]any{"apps": map[string]any{"type": "array", "items": appResult}}, "apps")},
-		{"tailapp_get", "Read one Tailapp draft and exact source revision. Draft edits are not live until activation.", object(map[string]any{"name": text}, "name"),
-			result(map[string]any{"app": appResult, "sources": anyObject}, "app", "sources")},
-		{"tailapp_create", "Create a Tailapp draft, optionally from a bundled source set. Reusing the same idempotency key replays the original outcome.", object(map[string]any{"name": text, "bundle": text, "idempotency_key": idempotencyKey}, "name", "idempotency_key"),
-			appResult},
-		{"tailapp_install", "Install and first-activate one new Tailapp from a complete source map or bundled example in one validated operation. Existing Tailapps are never replaced.", install,
-			result(map[string]any{"app": appResult, "profile": map[string]any{"type": []string{"object", "null"}}, "frontier": frontierResult}, "app", "frontier")},
-		{"tailapp_delete", "Delete one Tailapp definition and detach only its projection. Reusing the same idempotency key replays the original outcome.", object(map[string]any{"name": text, "idempotency_key": idempotencyKey}, "name", "idempotency_key"),
-			result(map[string]any{"deleted": boolean}, "deleted")},
-		{"tailapp_put_element", "Put a bounded source element using optimistic draft revision control; this does not activate it.", object(map[string]any{"name": text, "path": text, "content": map[string]any{"type": "string", "contentEncoding": "base64"}, "expected_revision": text, "idempotency_key": idempotencyKey}, "name", "path", "content", "expected_revision", "idempotency_key"),
-			appResult},
-		{"tailapp_delete_element", "Delete a draft element using optimistic revision control; this does not activate it.", object(map[string]any{"name": text, "path": text, "expected_revision": text, "idempotency_key": idempotencyKey}, "name", "path", "expected_revision", "idempotency_key"),
-			appResult},
-		{"tailapp_validate", "Compile the exact draft without changing live behavior.", object(map[string]any{"name": text, "expected_revision": text}, "name", "expected_revision"),
-			profileResult},
-		{"tailapp_activate", "Activate a validated draft at a delivery boundary. Reset discards prior materialized state and requires acknowledgement.", object(map[string]any{"name": text, "expected_revision": text, "mode": map[string]any{"type": "string", "enum": []string{"continue", "reset"}}, "acknowledge_reset": boolean, "idempotency_key": idempotencyKey}, "name", "expected_revision", "mode", "idempotency_key"),
-			frontierResult},
-		{"tailapp_status", "Read engine readiness, inbox bounds, exact projection frontiers and gaps.", object(nil),
-			result(map[string]any{"profile": text, "ingestion_ready": boolean, "inbox": anyObject, "apps": anyObject, "unavailable": anyObject}, "profile", "ingestion_ready", "inbox", "apps")},
-		{"tailapp_metrics", "Read the versioned, payload-free active-use performance snapshot: intake, queueing, per-Tailapp processing, query/control latency, durable totals, backlog gauges, and Go runtime gauges.", object(nil),
-			result(map[string]any{"version": text, "reset_semantics": text, "started_at": text, "generated_at": text, "uptime_seconds": number, "inbox": anyObject, "tailapps": anyObject, "active_tailapps": integer, "unavailable_tailapps": integer, "upgrade_pending_tailapps": integer, "omitted_tailapps": integer}, "version", "inbox", "tailapps")},
-		{"tailapp_ineffective", "Inspect the bounded, memory-only buffer of recent canonical records rejected by one Tailapp normalizer. Records can contain sensitive telemetry.", object(map[string]any{"name": text}, "name"),
-			result(map[string]any{"tailapp": text, "revision": text, "capacity": integer, "ineffective_records": integer, "available_records": integer, "unavailable_records": integer, "records": anyArray}, "tailapp", "revision", "capacity", "records")},
-		{"tailapp_schema", "Read one active Tailapp's private schema, writers, event and explicit exports.", object(map[string]any{"name": text}, "name"),
-			profileResult},
-		{"tailapp_query", "Run bounded read-only SQL. Mounted aliases expose only explicit exports; this is detective observation, not inline prevention.", object(map[string]any{"name": text, "sql": text, "parameters": map[string]any{"type": "array", "maxItems": 64}, "mounts": map[string]any{"type": "object", "additionalProperties": text}, "expected_revision": text, "expected_position": map[string]any{"type": "integer"}, "row_limit": map[string]any{"type": "integer", "minimum": 1, "maximum": 1000}}, "name", "sql"),
-			result(map[string]any{"tailapp": text, "revision": text, "delivery_head": integer, "interpreted_position": integer, "ineffective_records": integer, "schemas": anyArray, "complete": boolean, "columns": anyArray, "rows": anyArray, "result_bytes": integer, "truncated": boolean}, "tailapp", "revision", "complete", "columns", "rows")},
+		{Name: "tailapps_list", Title: "List Tailapps", Annotations: readOnly,
+			Description:  "List every local Tailapp with its draft and active revisions. Returns {\"apps\": [...]}; an empty engine returns {\"apps\": []}, never null. Start here, then read data with tailapp_query. docs: tailapp://docs/tools/tailapps_list",
+			InputSchema:  object(nil),
+			OutputSchema: result(map[string]any{"apps": map[string]any{"type": "array", "items": appResult}}, "apps")},
+		{Name: "tailapp_get", Title: "Read a Tailapp draft", Annotations: readOnly,
+			Description:  "Read one Tailapp's definition and complete source map at its exact draft revision. Returns {app, sources} with base64 source values; a just-created empty draft returns {} sources. Use the returned draft_revision as expected_revision for draft edits; draft edits are not live until tailapp_activate. docs: tailapp://docs/tools/tailapp_get",
+			InputSchema:  object(map[string]any{"name": text}, "name"),
+			OutputSchema: result(map[string]any{"app": appResult, "sources": anyObject}, "app", "sources")},
+		{Name: "tailapp_create", Title: "Create a Tailapp draft", Annotations: draftWrite,
+			Description:  "Create a new Tailapp draft, empty or copied from a built-in bundle. A draft only: nothing runs until validated and activated. Returns the app; a fresh empty draft has only name and draft_revision, no active fields. Follow with tailapp_put_element, then tailapp_validate and tailapp_activate; replaying the same idempotency_key returns the original outcome. docs: tailapp://docs/tools/tailapp_create",
+			InputSchema:  object(map[string]any{"name": text, "bundle": text, "idempotency_key": idempotencyKey}, "name", "idempotency_key"),
+			OutputSchema: appResult},
+		{Name: "tailapp_install", Title: "Install a Tailapp", Annotations: draftWrite,
+			Description:  "Validate a complete source set and first-activate one new Tailapp in a single request, from either a built-in bundle or a base64 source map (exactly one). Create-only: an existing name is refused, never replaced, and there is no partial success - failure installs nothing. Returns {app, profile, frontier} for the activated app. The one-step alternative to the create/put/validate/activate sequence; replaying the same idempotency_key returns the original outcome. docs: tailapp://docs/tools/tailapp_install",
+			InputSchema:  install,
+			OutputSchema: result(map[string]any{"app": appResult, "profile": map[string]any{"type": []string{"object", "null"}}, "frontier": frontierResult}, "app", "frontier")},
+		{Name: "tailapp_delete", Title: "Delete a Tailapp", Annotations: destructive,
+			Description:  "Delete one Tailapp definition and detach only its projection; the materialized analytics leave live query reach. Returns {deleted: true}, its only shape - an unknown name is an error, not an empty result. The end of a Tailapp's lifecycle; replaying the same idempotency_key returns the original outcome. docs: tailapp://docs/tools/tailapp_delete",
+			InputSchema:  object(map[string]any{"name": text, "idempotency_key": idempotencyKey}, "name", "idempotency_key"),
+			OutputSchema: result(map[string]any{"deleted": boolean}, "deleted")},
+		{Name: "tailapp_put_element", Title: "Write a draft element", Annotations: draftWrite,
+			Description:  "Write one bounded source element (application.sql or folds/*.jsonata, base64) into a Tailapp draft under optimistic revision control: expected_revision must match the current draft. Returns the app with its new draft_revision and no other change - the draft is not live until tailapp_activate. Sits between tailapp_create and tailapp_validate in the draft loop. docs: tailapp://docs/tools/tailapp_put_element",
+			InputSchema:  object(map[string]any{"name": text, "path": text, "content": map[string]any{"type": "string", "contentEncoding": "base64"}, "expected_revision": text, "idempotency_key": idempotencyKey}, "name", "path", "content", "expected_revision", "idempotency_key"),
+			OutputSchema: appResult},
+		{Name: "tailapp_delete_element", Title: "Delete a draft element", Annotations: draftWrite,
+			Description:  "Remove one source element from a Tailapp draft under optimistic revision control (expected_revision). Returns the app with its new draft_revision; removing the last element leaves a valid empty draft. Draft-only, between create and validate; not live until tailapp_activate. docs: tailapp://docs/tools/tailapp_delete_element",
+			InputSchema:  object(map[string]any{"name": text, "path": text, "expected_revision": text, "idempotency_key": idempotencyKey}, "name", "path", "expected_revision", "idempotency_key"),
+			OutputSchema: appResult},
+		{Name: "tailapp_validate", Title: "Validate a draft", Annotations: readOnly,
+			Description:  "Compile the exact draft at expected_revision without changing live behavior. Returns the full compiled profile (identity digests, event and table schemas, exports); a draft that does not compile returns the diagnostic as an error result, never a partial profile. Run before tailapp_activate. docs: tailapp://docs/tools/tailapp_validate",
+			InputSchema:  object(map[string]any{"name": text, "expected_revision": text}, "name", "expected_revision"),
+			OutputSchema: profileResult},
+		{Name: "tailapp_activate", Title: "Activate a draft", Annotations: destructive,
+			Description:  "Activate a validated draft at a delivery boundary. First activation and mode reset discard materialized state and require acknowledge_reset true; mode continue preserves tables across compatible revisions. Returns the projection {frontier}; a healthy new frontier has complete true and no gap fields. The last step of the draft loop; replaying the same idempotency_key returns the original outcome. docs: tailapp://docs/tools/tailapp_activate",
+			InputSchema:  object(map[string]any{"name": text, "expected_revision": text, "mode": map[string]any{"type": "string", "enum": []string{"continue", "reset"}}, "acknowledge_reset": boolean, "idempotency_key": idempotencyKey}, "name", "expected_revision", "mode", "idempotency_key"),
+			OutputSchema: frontierResult},
+		{Name: "tailapp_status", Title: "Engine status", Annotations: readOnly,
+			Description:  "Read engine readiness, inbox bounds, and every Tailapp's exact projection frontier and gaps. Returns {profile, ingestion_ready, inbox, apps, unavailable}; with no Tailapps installed, apps is {}. Start here when telemetry seems missing, before tailapp_ineffective. docs: tailapp://docs/tools/tailapp_status",
+			InputSchema:  object(nil),
+			OutputSchema: result(map[string]any{"profile": text, "ingestion_ready": boolean, "inbox": anyObject, "apps": anyObject, "unavailable": anyObject}, "profile", "ingestion_ready", "inbox", "apps")},
+		{Name: "tailapp_metrics", Title: "Runtime metrics", Annotations: readOnly,
+			Description:  "Read the versioned, payload-free performance snapshot. Returns a flat object of counters and gauges with per-Tailapp processing stats ({version, inbox, tailapps, ...}); counters are cumulative for the resident lifetime - a fresh never-used resident shows an empty tailapps map and zero intake activity while uptime and runtime gauges are already nonzero - and no field ever carries telemetry content. Pair with tailapp_status for operational triage. docs: tailapp://docs/tools/tailapp_metrics",
+			InputSchema:  object(nil),
+			OutputSchema: result(map[string]any{"version": text, "reset_semantics": text, "started_at": text, "generated_at": text, "uptime_seconds": number, "inbox": anyObject, "tailapps": anyObject, "active_tailapps": integer, "unavailable_tailapps": integer, "upgrade_pending_tailapps": integer, "omitted_tailapps": integer}, "version", "inbox", "tailapps")},
+		{Name: "tailapp_ineffective", Title: "Inspect rejected records", Annotations: readOnly,
+			Description:  "Inspect the bounded, memory-only buffer of recent canonical records one Tailapp's normalizer rejected, for adapter-shape diagnosis. Returns {tailapp, revision, capacity, ineffective_records, records}; a Tailapp with no rejections returns records: [] with ineffective_records 0. Records can contain sensitive telemetry: read locally, share aggregates. Use after tailapp_status shows intake but a query stays empty. docs: tailapp://docs/tools/tailapp_ineffective",
+			InputSchema:  object(map[string]any{"name": text}, "name"),
+			OutputSchema: result(map[string]any{"tailapp": text, "revision": text, "capacity": integer, "ineffective_records": integer, "available_records": integer, "unavailable_records": integer, "records": anyArray}, "tailapp", "revision", "capacity", "records")},
+		{Name: "tailapp_schema", Title: "Read a Tailapp schema", Annotations: readOnly,
+			Description:  "Read one active Tailapp's compiled shape: private tables and their writers, the event schema, and the explicit exports queryable through tailapp_query. Returns the compiled profile object; derived from compiled source, never from telemetry, so it is stable between activations. Read before writing SQL for tailapp_query. docs: tailapp://docs/tools/tailapp_schema",
+			InputSchema:  object(map[string]any{"name": text}, "name"),
+			OutputSchema: profileResult},
+		{Name: "tailapp_query", Title: "Run read-only SQL", Annotations: readOnly,
+			Description:  "Run bounded read-only SQL against one Tailapp's explicit exports; mounts expose other Tailapps' exports as named aliases. Detective observation, never inline prevention. Returns {columns, rows, complete, truncated} with the exact projection position; an empty projection returns rows: [] with columns still describing the selected shape, not an error. Results derive from local telemetry and may identify sessions: prefer aggregates when sharing. The main read tool, after tailapps_list. docs: tailapp://docs/tools/tailapp_query",
+			InputSchema:  object(map[string]any{"name": text, "sql": text, "parameters": map[string]any{"type": "array", "maxItems": 64}, "mounts": map[string]any{"type": "object", "additionalProperties": text}, "expected_revision": text, "expected_position": map[string]any{"type": "integer"}, "row_limit": map[string]any{"type": "integer", "minimum": 1, "maximum": 1000}}, "name", "sql"),
+			OutputSchema: result(map[string]any{"tailapp": text, "revision": text, "delivery_head": integer, "interpreted_position": integer, "ineffective_records": integer, "schemas": anyArray, "complete": boolean, "columns": anyArray, "rows": anyArray, "result_bytes": integer, "truncated": boolean}, "tailapp", "revision", "complete", "columns", "rows")},
 	}
 }

@@ -221,6 +221,95 @@ func TestParseErrorKeepsSessionAlive(t *testing.T) {
 	}
 }
 
+func TestEveryToolCarriesOrientation(t *testing.T) {
+	for _, item := range tools() {
+		if item.Title == "" {
+			t.Fatalf("%s has no title", item.Name)
+		}
+		if len(item.Description) >= 2048 {
+			t.Fatalf("%s description is %d bytes; the 2KB harness truncation cap requires fewer", item.Name, len(item.Description))
+		}
+		if !strings.HasSuffix(item.Description, "docs: tailapp://docs/tools/"+item.Name) {
+			t.Fatalf("%s description must end with its stable docs URI: %q", item.Name, item.Description)
+		}
+	}
+}
+
+// TestEveryDescriptionStatesItsSemanticClauses pins the three clauses the
+// design requires of every description - the result contract, the
+// empty-result (or failure-absence) shape, and the workflow position - as
+// exact per-tool fragments, so removing or weakening any clause fails.
+func TestEveryDescriptionStatesItsSemanticClauses(t *testing.T) {
+	clauses := map[string]struct{ contract, empty, workflow string }{
+		"tailapps_list":          {`Returns {"apps": [...]}`, `an empty engine returns {"apps": []}, never null`, "Start here"},
+		"tailapp_get":            {"Returns {app, sources}", "empty draft returns {} sources", "draft edits are not live until tailapp_activate"},
+		"tailapp_create":         {"Returns the app", "a fresh empty draft has only name and draft_revision", "Follow with tailapp_put_element"},
+		"tailapp_install":        {"Returns {app, profile, frontier}", "no partial success - failure installs nothing", "one-step alternative to the create/put/validate/activate sequence"},
+		"tailapp_delete":         {"Returns {deleted: true}", "an unknown name is an error, not an empty result", "end of a Tailapp's lifecycle"},
+		"tailapp_put_element":    {"Returns the app with its new draft_revision", "no other change", "between tailapp_create and tailapp_validate"},
+		"tailapp_delete_element": {"Returns the app with its new draft_revision", "removing the last element leaves a valid empty draft", "between create and validate"},
+		"tailapp_validate":       {"Returns the full compiled profile", "never a partial profile", "before tailapp_activate"},
+		"tailapp_activate":       {"Returns the projection {frontier}", "complete true and no gap fields", "last step of the draft loop"},
+		"tailapp_status":         {"Returns {profile, ingestion_ready, inbox, apps, unavailable}", "with no Tailapps installed, apps is {}", "Start here when telemetry seems missing"},
+		"tailapp_metrics":        {"Returns a flat object of counters and gauges", "a fresh never-used resident shows an empty tailapps map and zero intake activity while uptime and runtime gauges are already nonzero", "operational triage"},
+		"tailapp_ineffective":    {"Returns {tailapp, revision, capacity, ineffective_records, records}", "no rejections returns records: []", "after tailapp_status shows intake"},
+		"tailapp_schema":         {"Returns the compiled profile object", "stable between activations", "before writing SQL for tailapp_query"},
+		"tailapp_query":          {"Returns {columns, rows, complete, truncated}", "an empty projection returns rows: []", "after tailapps_list"},
+	}
+	seen := 0
+	for _, item := range tools() {
+		expected, known := clauses[item.Name]
+		if !known {
+			t.Fatalf("tool %s has no pinned semantic clauses", item.Name)
+		}
+		seen++
+		for clause, fragment := range map[string]string{"result contract": expected.contract, "empty-result shape": expected.empty, "workflow position": expected.workflow} {
+			if !strings.Contains(item.Description, fragment) {
+				t.Fatalf("%s description lost its %s clause (%q): %q", item.Name, clause, fragment, item.Description)
+			}
+		}
+	}
+	if seen != len(clauses) {
+		t.Fatalf("pinned %d tools, saw %d", len(clauses), seen)
+	}
+}
+
+func TestToolAnnotationsMatchSafetyContract(t *testing.T) {
+	readOnly := map[string]bool{
+		"tailapps_list": true, "tailapp_get": true, "tailapp_validate": true,
+		"tailapp_status": true, "tailapp_metrics": true, "tailapp_ineffective": true,
+		"tailapp_schema": true, "tailapp_query": true,
+	}
+	destructive := map[string]bool{"tailapp_delete": true, "tailapp_activate": true}
+	idempotent := map[string]bool{
+		"tailapp_create": true, "tailapp_install": true, "tailapp_delete": true,
+		"tailapp_put_element": true, "tailapp_delete_element": true, "tailapp_activate": true,
+	}
+	seen := 0
+	for _, item := range tools() {
+		seen++
+		hints := item.Annotations
+		if hints.OpenWorldHint {
+			t.Fatalf("%s claims an open world; the server talks only to the local engine", item.Name)
+		}
+		if hints.ReadOnlyHint != readOnly[item.Name] {
+			t.Fatalf("%s readOnlyHint = %v; a wrong value is auto-approval policy on some harnesses", item.Name, hints.ReadOnlyHint)
+		}
+		if hints.DestructiveHint != destructive[item.Name] {
+			t.Fatalf("%s destructiveHint = %v", item.Name, hints.DestructiveHint)
+		}
+		if hints.IdempotentHint != idempotent[item.Name] {
+			t.Fatalf("%s idempotentHint = %v; every mutation tool replays through the idempotency ledger", item.Name, hints.IdempotentHint)
+		}
+		if hints.ReadOnlyHint && (hints.DestructiveHint || hints.IdempotentHint) {
+			t.Fatalf("%s mixes read-only with mutation hints", item.Name)
+		}
+	}
+	if seen != 14 {
+		t.Fatalf("tools = %d, want 14", seen)
+	}
+}
+
 func TestMutationToolsRequireIdempotencyKeys(t *testing.T) {
 	mutations := map[string]bool{
 		"tailapp_create":         true,

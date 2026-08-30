@@ -118,7 +118,43 @@ func TestRealToolResultsMatchDeclaredOutputSchemas(t *testing.T) {
 		t.Fatalf("fresh engine apps = %#v, want empty array", empty["apps"])
 	}
 	call("tailapp_status", `{}`)
-	call("tailapp_metrics", `{}`)
+	// The described fresh-resident shape: cumulative counters exist but the
+	// never-used resident shows an empty tailapps map and zero intake
+	// activity, while uptime is already nonzero.
+	metrics := call("tailapp_metrics", `{}`)
+	if tailapps, ok := metrics["tailapps"].(map[string]any); !ok || len(tailapps) != 0 {
+		t.Fatalf("fresh resident tailapps = %#v, want empty map", metrics["tailapps"])
+	}
+	intake, _ := metrics["intake"].(map[string]any)
+	if unrouted, ok := intake["unrouted_records_total"].(float64); !ok || unrouted != 0 {
+		t.Fatalf("fresh resident intake activity = %#v, want zero", intake["unrouted_records_total"])
+	}
+	records, ok := intake["records_total"].(map[string]any)
+	if !ok {
+		t.Fatalf("fresh resident records_total = %#v, want the preseeded signal object", intake["records_total"])
+	}
+	for _, signal := range []string{"log", "span", "metric", "unknown"} {
+		count, present := records[signal]
+		if !present || count != float64(0) {
+			t.Fatalf("fresh resident records_total[%s] = %#v (present %v), want preseeded zero", signal, count, present)
+		}
+	}
+	if len(records) != 4 {
+		t.Fatalf("fresh resident records_total keys = %#v, want exactly the four signals", records)
+	}
+	if uptime, ok := metrics["uptime_seconds"].(float64); !ok || uptime <= 0 {
+		t.Fatalf("fresh resident uptime = %#v; cumulative gauges are nonzero even before use", metrics["uptime_seconds"])
+	}
+	// The runtime gauges the description claims nonzero.
+	runtime, ok := metrics["runtime"].(map[string]any)
+	if !ok {
+		t.Fatalf("fresh resident runtime = %#v, want the gauge object", metrics["runtime"])
+	}
+	for _, gauge := range []string{"goroutines", "total_memory_bytes"} {
+		if value, ok := runtime[gauge].(float64); !ok || value <= 0 {
+			t.Fatalf("fresh resident runtime.%s = %#v, want nonzero", gauge, runtime[gauge])
+		}
+	}
 
 	// Full draft lifecycle on a probe app.
 	call("tailapp_create", `{"name":"probe","idempotency_key":"conf-create-1"}`)
@@ -274,4 +310,3 @@ func matchesType(property map[string]any, value any) error {
 	}
 	return nil
 }
-
