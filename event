@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"MCP adapter at the assertion-pinned stage-2 head, unchanged in this delta.","body":{"commit":"e5c774fc3cac1271e21b135659f7afb0773ba7d8","path":"internal/mcp/server.go"}}
+{"kind":"artifact","text":"MCP tests at the assertion-pinned stage-2 head, unchanged in this delta.","body":{"commit":"e5c774fc3cac1271e21b135659f7afb0773ba7d8","path":"internal/mcp/server_test.go"}}
