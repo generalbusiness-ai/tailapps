@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Language-behavior tests retarget the public surface; invalid-output probes of the removed validator are covered by the corpus misbehavior cases through real programs.","body":{"commit":"b68253cca3cad6e963794d778e2fd2623adb3a0b","path":"internal/profile/compiler_test.go"}}
+{"kind":"artifact","text":"The corpus runner collapses to the single remaining implementation; the frozen goldens are the standing proof the extraction preserved semantics.","body":{"commit":"b68253cca3cad6e963794d778e2fd2623adb3a0b","path":"internal/profile/corpus_test.go"}}
