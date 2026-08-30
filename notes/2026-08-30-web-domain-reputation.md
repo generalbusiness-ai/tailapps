@@ -124,12 +124,17 @@ domains) to a third-party reputation service. Directions discussed:
 
 ## Open questions
 
-1. Capture route: `OTEL_LOG_TOOL_DETAILS` (broad) or a URL-only adapter
-   (narrow)? Operator policy; the adapter needs a home and a maintainer.
-2. Registrable-domain derivation needs public-suffix logic; shipping a PSL
-   dependency in the engine conflicts with its dependency-light stance —
-   derivation may belong in the adapter or the cron layer instead of the
-   fold.
+1. Capture route: `OTEL_LOG_TOOL_DETAILS` (broad, with its own data-policy
+   cost) or the domain-minimizing adapter (narrow, the design above)?
+   Operator policy; the adapter needs a home and a maintainer.
+2. The domain-minimizing adapter owns public-suffix derivation: it emits an
+   already-minimized registrable domain, applying PSL logic and the default
+   exclusions *before* anything reaches telemetry or the materialized
+   table, so neither the engine (dependency-light, no PSL) nor the cron
+   layer derives from URLs. A cron-layer derivation alternative would mean
+   full URLs flowing through telemetry and the table — the route the
+   capture correction rejects — and is not on the table; the open question
+   is only where the adapter itself lives and how its PSL data is updated.
 3. Safe Browsing or VirusTotal (scoped to these two, instructions-only):
    which one, given the eligibility constraints above (non-commercial-only
    free tiers; Web Risk or VT premium for commercial contexts), how the API
