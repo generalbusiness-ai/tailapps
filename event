@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at internal/query/query.go","body":{"commit":"a04c9ee8ea1189cc845be0dc57adc3c3f9046f13","path":"internal/query/query.go"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:6d130386c19876be6a33a0a03025cd495f6782cb","text":"Merge retired a covered predecessor; the successor is at internal/query/query.go."}
