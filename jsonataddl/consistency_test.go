@@ -1,7 +1,10 @@
 package jsonataddl_test
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"testing/fstest"
@@ -153,14 +156,14 @@ func TestDialectLayoutAndEventNamesAreLoadBearing(t *testing.T) {
 
 func TestDialectEnvelopeNamesAreLoadBearing(t *testing.T) {
 	dialect := jsonataddl.Tailapp()
-	if len(dialect.HostEvent.ScalarFields) == 0 {
+	if len(dialect.HostEvent.Fields()) == 0 {
 		t.Fatal("the Tailapp dialect declares no envelope fields")
 	}
 	// A normalizer-owned table read whose parameters use every declared
 	// envelope field must compile: the declared names are exactly the
 	// parameter vocabulary profile admits for host-event programs.
-	conditions := make([]string, 0, len(dialect.HostEvent.ScalarFields))
-	for _, field := range dialect.HostEvent.ScalarFields {
+	conditions := make([]string, 0, len(dialect.HostEvent.Fields()))
+	for _, field := range dialect.HostEvent.Fields() {
 		conditions = append(conditions, "key = :event."+field.Name)
 	}
 	build := func(where string) fstest.MapFS {
@@ -328,4 +331,54 @@ WRITES totals;
 `, dialect.PrivateEvent.Name, program(dialect, "accumulate"))
 	doubled := strings.Replace(standardDefinition(dialect), "CREATE EXPORT", secondWriter+"\nCREATE EXPORT", 1)
 	mustFail(t, application(dialect, doubled, standardPrograms(dialect)), "multiple writers", "two writers for one table")
+}
+
+// TestDialectEnvelopeTypesMatchObservedCanonicalRecords binds each declared
+// envelope field's type and nullability to the canonical host-record
+// contract as actually produced: the observed harness fixtures under
+// tailapps/testdata carry real captured otlp_record events. Every declared
+// TEXT field must arrive as a string, null only where the dialect declares
+// nullable, and non-nullable fields must be present and non-null in every
+// record.
+func TestDialectEnvelopeTypesMatchObservedCanonicalRecords(t *testing.T) {
+	dialect := jsonataddl.Tailapp()
+	fixtures, err := filepath.Glob("../tailapps/testdata/*.json")
+	if err != nil || len(fixtures) == 0 {
+		t.Fatalf("no observed fixtures found: %v", err)
+	}
+	records := 0
+	for _, fixture := range fixtures {
+		encoded, err := os.ReadFile(fixture)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var inputs map[string]profile.EvaluationInput
+		if err := json.Unmarshal(encoded, &inputs); err != nil {
+			t.Fatalf("%s: %v", fixture, err)
+		}
+		for name, input := range inputs {
+			event := input.Event
+			if event["signal"] == nil || event["record"] == nil {
+				continue // not an otlp_record-shaped fixture entry
+			}
+			records++
+			for _, field := range dialect.HostEvent.Fields() {
+				value, present := event[field.Name]
+				if value == nil {
+					if !field.Nullable && present {
+						t.Fatalf("%s/%s: non-nullable envelope field %q is null", fixture, name, field.Name)
+					}
+					continue
+				}
+				if field.Type == "TEXT" {
+					if _, ok := value.(string); !ok {
+						t.Fatalf("%s/%s: envelope field %q = %T, dialect declares TEXT", fixture, name, field.Name, value)
+					}
+				}
+			}
+		}
+	}
+	if records == 0 {
+		t.Fatal("no otlp_record-shaped fixture events were checked")
+	}
 }

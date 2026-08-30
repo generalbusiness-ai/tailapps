@@ -105,10 +105,17 @@ func TestDialectComponentBindsEverySemanticField(t *testing.T) {
 	// Changing any semantic field changes the component value mechanically,
 	// with no version bump required: the digest of the canonical form
 	// participates in the composed identity.
+	reviseEnvelope := func(d *Dialect, revise func([]EnvelopeField) []EnvelopeField) {
+		d.HostEvent = NewEventContract(d.HostEvent.Name, revise(d.HostEvent.Fields())...)
+	}
 	mutations := map[string]func(*Dialect){
-		"layout":        func(d *Dialect) { d.Layout.ProgramSuffix = ".changed" },
-		"envelope name": func(d *Dialect) { d.HostEvent.ScalarFields[0].Name = "changed" },
-		"envelope type": func(d *Dialect) { d.HostEvent.ScalarFields[0].Nullable = !d.HostEvent.ScalarFields[0].Nullable },
+		"layout": func(d *Dialect) { d.Layout.ProgramSuffix = ".changed" },
+		"envelope name": func(d *Dialect) {
+			reviseEnvelope(d, func(fields []EnvelopeField) []EnvelopeField { fields[0].Name = "changed"; return fields })
+		},
+		"envelope nullability": func(d *Dialect) {
+			reviseEnvelope(d, func(fields []EnvelopeField) []EnvelopeField { fields[0].Nullable = !fields[0].Nullable; return fields })
+		},
 		"private event": func(d *Dialect) { d.PrivateEvent.Name = "changed" },
 		"topology":      func(d *Dialect) { d.Topology.AtLeastOneFold = false },
 		"authority":     func(d *Dialect) { d.Authority.FoldReads = ReadOwnTables },
@@ -121,8 +128,22 @@ func TestDialectComponentBindsEverySemanticField(t *testing.T) {
 			t.Fatalf("changing the %s did not change the dialect component", name)
 		}
 	}
-	// Value semantics: mutating one value never affects a fresh one.
+	// Immutability through encapsulation: the envelope is only reachable as
+	// a copy, so no holder of any Dialect copy - including a plain struct
+	// copy, which aliases unexported state - can mutate the shared contract.
+	original := Tailapp()
+	aliased := original
+	leaked := aliased.HostEvent.Fields()
+	leaked[0].Name = "corrupted"
+	if original.HostEvent.Fields()[0].Name == "corrupted" || DialectComponent(original).Value != base.Value {
+		t.Fatal("mutating a Fields() copy reached the shared contract")
+	}
 	if DialectComponent(Tailapp()).Value != base.Value {
 		t.Fatal("Tailapp() does not return an independent value")
+	}
+	// The full digest participates: the component carries the complete
+	// sha256, not a truncation.
+	if got := len(strings.TrimPrefix(base.Value, "tailapp-otlp/1+sha256:")); got != 64 {
+		t.Fatalf("dialect component digest is %d hex characters, want the full 64", got)
 	}
 }

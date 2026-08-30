@@ -64,10 +64,27 @@ type EnvelopeField struct {
 
 // EventContract describes the host event a normalizer receives: its name
 // and the typed scalar envelope programs may read directly (as read
-// parameters and program input).
+// parameters and program input). The envelope is encapsulated: Fields
+// returns a copy, so no holder of any Dialect copy can mutate the shared
+// contract through aliasing.
 type EventContract struct {
 	Name         string
-	ScalarFields []EnvelopeField
+	scalarFields []EnvelopeField
+}
+
+// NewEventContract builds an event contract from a defensive copy of the
+// given fields.
+func NewEventContract(name string, fields ...EnvelopeField) EventContract {
+	owned := make([]EnvelopeField, len(fields))
+	copy(owned, fields)
+	return EventContract{Name: name, scalarFields: owned}
+}
+
+// Fields returns a copy of the typed scalar envelope.
+func (contract EventContract) Fields() []EnvelopeField {
+	owned := make([]EnvelopeField, len(contract.scalarFields))
+	copy(owned, contract.scalarFields)
+	return owned
 }
 
 // PrivateEventPolicy constrains the application-declared private event.
@@ -148,20 +165,17 @@ func Tailapp() Dialect {
 			ProgramRoot:    "folds",
 			ProgramSuffix:  ".jsonata",
 		},
-		HostEvent: EventContract{
-			Name: "otlp_record",
-			ScalarFields: []EnvelopeField{
-				{Name: "id", Type: "TEXT", Nullable: false},
-				{Name: "signal", Type: "TEXT", Nullable: false},
-				{Name: "name", Type: "TEXT", Nullable: false},
-				{Name: "source", Type: "TEXT", Nullable: false},
-				{Name: "time_unix_nano", Type: "TEXT", Nullable: false},
-				{Name: "observed_unix_nano", Type: "TEXT", Nullable: true},
-				{Name: "trace_id", Type: "TEXT", Nullable: true},
-				{Name: "span_id", Type: "TEXT", Nullable: true},
-				{Name: "content_digest", Type: "TEXT", Nullable: false},
-			},
-		},
+		HostEvent: NewEventContract("otlp_record",
+			EnvelopeField{Name: "id", Type: "TEXT", Nullable: false},
+			EnvelopeField{Name: "signal", Type: "TEXT", Nullable: false},
+			EnvelopeField{Name: "name", Type: "TEXT", Nullable: false},
+			EnvelopeField{Name: "source", Type: "TEXT", Nullable: false},
+			EnvelopeField{Name: "time_unix_nano", Type: "TEXT", Nullable: true},
+			EnvelopeField{Name: "observed_unix_nano", Type: "TEXT", Nullable: true},
+			EnvelopeField{Name: "trace_id", Type: "TEXT", Nullable: true},
+			EnvelopeField{Name: "span_id", Type: "TEXT", Nullable: true},
+			EnvelopeField{Name: "content_digest", Type: "TEXT", Nullable: false},
+		),
 		PrivateEvent: PrivateEventPolicy{Name: "otel_event", ExactlyOne: true},
 		Topology: TopologyPolicy{
 			ExactlyOneNormalizer: true,
@@ -203,7 +217,7 @@ func (dialect Dialect) Canonical() string {
 	write("layout.program-root", dialect.Layout.ProgramRoot)
 	write("layout.program-suffix", dialect.Layout.ProgramSuffix)
 	write("host-event.name", dialect.HostEvent.Name)
-	for _, field := range dialect.HostEvent.ScalarFields {
+	for _, field := range dialect.HostEvent.Fields() {
 		write("host-event.field."+field.Name, field.Type+"/nullable="+fmt.Sprint(field.Nullable))
 	}
 	write("private-event.name", dialect.PrivateEvent.Name)
@@ -229,12 +243,13 @@ func (dialect Dialect) Canonical() string {
 }
 
 // DialectComponent renders a dialect as its runtime identity component:
-// the name and version for readers, plus the canonical digest so every
-// semantic field mechanically participates in the composed identity.
+// the name and version for readers, plus the complete canonical digest so
+// every semantic field mechanically participates in the composed identity
+// at full strength.
 func DialectComponent(dialect Dialect) Component {
 	sum := sha256.Sum256([]byte(dialect.Canonical()))
 	return Component{
 		Key:   "dialect",
-		Value: dialect.Identity.Name + "/" + dialect.Identity.Version + "+sha256:" + hex.EncodeToString(sum[:])[:12],
+		Value: dialect.Identity.Name + "/" + dialect.Identity.Version + "+sha256:" + hex.EncodeToString(sum[:]),
 	}
 }
