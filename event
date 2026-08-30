@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:e594784ae966d81ee5fa757706743f586c2b43ae","text":"Merge retired a covered predecessor; the successor is at internal/query/query_test.go."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:e6b5487d3bd33de0610516ac5b2cce88e2f6bf63","text":"Merge retired a covered predecessor; the successor is at docs/harnesses/opencode.md."}
