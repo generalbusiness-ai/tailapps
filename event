@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Release upgrade README guidance at reviewed upgrade head","body":{"commit":"9be94e8c697d44404ad1a85e0d8e91eb1f5e9e5f","path":"README.md","sha256":"cc46ede38252a588e48241adef7a7c6bf5bf45c211be7e5f909e3b6a16e8ab02"}}
+{"kind":"artifact","text":"Release upgrade documentation at reviewed upgrade head","body":{"commit":"9be94e8c697d44404ad1a85e0d8e91eb1f5e9e5f","path":"docs/reference/releases.md","sha256":"93c1ef309914926e5b90fe962856e8db4b03d29b54806a0091f1d97833f90cd0"}}
