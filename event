@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:3b6bfaba7751891e4699d955c61cb5b6eaa1348f","text":"Merge retired a covered predecessor; the successor is at .github/workflows/release.yml."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:4e03dd19ec096bc1862250122ee8936b36881822","text":"Merge retired a covered predecessor; the successor is at docs/harnesses/vscode-copilot-chat.md."}
