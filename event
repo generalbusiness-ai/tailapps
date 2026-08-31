@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will prove the XDG-isolated fixture on Ubuntu, obtain checker review, merge and push it, publish v0.1.3, and verify the signed pinned distribution end to end."}
+{"kind":"artifact","text":"Linux release fixture isolates XDG config at exact head ac011a5.","body":{"blob":"5fee214858d236d92a63bc3bab0360b9ec56cd95","commit":"ac011a5173fc127878564fbd4e522f7d8a23723c","path":"scripts/release_test.go","sha256":"73c012fd7dcae29f9ff5d15d8e3bec0564c72605f5ad6eeadc1b3fcd1c065add"}}
