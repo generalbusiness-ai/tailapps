@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will publish per-file provenance and obtain a guarded review for the telemetry/timestamp composition."}
+{"kind":"artifact","text":"Current-main telemetry/timestamp composition: README.md","body":{"commit":"d53bfc20c561b19a4df94ba78c194babdf2c265a","path":"README.md"}}
