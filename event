@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Observed VS Code Copilot mapping regression coverage","body":{"commit":"de5b0e1","path":"tailapps/embed_test.go"}}
+{"kind":"request","text":"Review VS Code Copilot Chat OTLP mapping at exact commit de5b0e1","body":{"conditions":"Verify the fixture-driven mapping against current VS Code OTLP documentation and the observed fields; ensure logs are the sole token source, trace duplication is rejected, session caveats are honest, and the setup guide is accurate.","to":"d50369731a941ee752b3a07cd33b8c7e9b4dbf1ead69532463a3df851bf2bd2f"}}
