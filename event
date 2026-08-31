@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Release upgrade dry-run asset check at reviewed upgrade head","body":{"commit":"9be94e8c697d44404ad1a85e0d8e91eb1f5e9e5f","path":".github/workflows/release.yml","sha256":"cf24705ca4be1dc99dfc334e9546970d3bc511d8e222b367be7ac916636f8f0a"}}
+{"kind":"artifact","text":"Release upgrade README guidance at reviewed upgrade head","body":{"commit":"9be94e8c697d44404ad1a85e0d8e91eb1f5e9e5f","path":"README.md","sha256":"cc46ede38252a588e48241adef7a7c6bf5bf45c211be7e5f909e3b6a16e8ab02"}}
