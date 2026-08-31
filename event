@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:d4026b06ee51e465b64eabf65ab3776779c61537","text":"Merge retired a covered predecessor; the successor is at go.mod."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:ec4a455193d2efbb30591f3f20312d1ab6073ca4","text":"Merge retired a covered predecessor; the successor is at docs/reference/otel-records.md."}
