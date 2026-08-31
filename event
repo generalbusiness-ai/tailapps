@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Safe demo cleanup without prohibited recursive removals","body":{"commit":"c9d802b2c0a1d29eac44e05d2b2d4bb680789f55","path":"scripts/demo.sh"}}
+{"kind":"artifact","text":"Validated runtime release version stamping","body":{"commit":"867c4882fb2658d07c52a393c54172f1ea681a6d","path":"internal/buildinfo/buildinfo.go"}}
