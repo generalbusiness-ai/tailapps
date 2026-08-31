@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Release runtime identity tests","body":{"commit":"867c4882fb2658d07c52a393c54172f1ea681a6d","path":"internal/buildinfo/buildinfo_test.go"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:6a755ad862cf81702e17500d63b953a0c8395dde","text":"Superseded by corrected full-head artifact 867c4882fb2658d07c52a393c54172f1ea681a6d."}
