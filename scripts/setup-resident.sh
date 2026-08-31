@@ -154,7 +154,24 @@ validate_existing_service() {
   esac
 }
 
+validate_existing_link() {
+  [ -e "$bin_link" ] || [ -L "$bin_link" ] || return 0
+  [ -L "$bin_link" ] || {
+    echo "$bin_link exists but is not a symlink; refusing to replace an untracked binary" >&2
+    exit 65
+  }
+  existing_target=$(readlink "$bin_link")
+  case "$existing_target" in
+    /*) ;;
+    *)
+      echo "$bin_link must use an absolute target; refusing to replace it" >&2
+      exit 65
+      ;;
+  esac
+}
+
 validate_existing_service
+validate_existing_link
 
 if [ "$dry_run" = true ]; then
   printf '%s\n' "would build $source_root into a versioned binary under $lib_dir"

@@ -36,10 +36,12 @@ Some Linux hosts forbid lingering by policy; the command reports that condition
 instead of claiming boot persistence it could not establish.
 
 The script refuses to overwrite a service whose binary path, engine home, or
-receiver differs from its requested configuration. Re-running with the same
-configuration is idempotent: it starts the service, preserves existing custom
-Tailapps, and installs only missing built-in bundles. It never activates,
-resets, updates, or deletes an existing Tailapp.
+receiver differs from its requested configuration. It also refuses to replace
+an existing `~/.local/bin/tailapp` unless it is an absolute symlink, protecting
+a manually installed binary. Re-running with the same configuration is
+idempotent: it starts the service, preserves existing custom Tailapps, and
+installs only missing built-in bundles. It never activates, resets, updates,
+or deletes an existing Tailapp.
 
 Check the result with:
 
