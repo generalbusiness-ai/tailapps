@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:dd70fc3b859114dc3174092ea5d6ac8de9478c99","text":"Superseded by corrected full-head artifact 867c4882fb2658d07c52a393c54172f1ea681a6d."}
+{"kind":"artifact","text":"Apache-2.0 redistribution license","body":{"commit":"867c4882fb2658d07c52a393c54172f1ea681a6d","path":"LICENSE"}}
