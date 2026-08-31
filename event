@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Demo cleanup avoids prohibited recursive removals","body":{"commit":"4b93320968609e6587cace35a7f023bfff9fd309","path":"scripts/demo.sh"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:2f4314266879caaf6d3017bda456a52a066678bf","text":"Superseded by corrected full-head artifact 4b93320968609e6587cace35a7f023bfff9fd309."}
