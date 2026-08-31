@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:f8f1bcb950bba06612920c13024d9c34807f1774","text":"Merge retired a covered predecessor; the successor is at docs/reference/first-time-setup.md."}
+{"kind":"artifact","text":"Release upgrade dry-run asset check at reviewed upgrade head","body":{"commit":"9be94e8c697d44404ad1a85e0d8e91eb1f5e9e5f","path":".github/workflows/release.yml","sha256":"cf24705ca4be1dc99dfc334e9546970d3bc511d8e222b367be7ac916636f8f0a"}}
