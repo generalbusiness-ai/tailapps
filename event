@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Reproducible dependency and vulnerability checks","body":{"commit":"4b93320968609e6587cace35a7f023bfff9fd309","path":"docs/reference/dependency-security.md"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:c633a4e464ace34c33345f7785f9552d01889f0f","text":"Superseded by corrected full-head artifact 4b93320968609e6587cace35a7f023bfff9fd309."}
