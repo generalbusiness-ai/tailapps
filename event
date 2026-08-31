@@ -1,1 +1,1 @@
-{"kind":"request","text":"Re-review safe macOS Tailapp resident upgrade at exact commit 90fdb2ae68e37752c118e375c0583496378c71be","body":{"conditions":"Verify full immutable artifact commits; preserve prior approval findings; test, vet, race, shell syntax, local dry run; no runtime deployment.","to":"d50369731a941ee752b3a07cd33b8c7e9b4dbf1ead69532463a3df851bf2bd2f"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:2541292d014d0d66ec35719a3710328c92a9f0bd","text":"Replaced by the full-head re-review request after checker findings."}
