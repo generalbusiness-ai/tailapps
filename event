@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:e55616067d5a6687fb6bd032d6c87a7abd6b445e","text":"v0.1.3 published successfully, but independent inspection found dirty=true because the workflow built inside the checkout. Continue with clean-metadata successor v0.1.4."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:ea589116999b2d4dbbd52b3a2c6e919a0c70fc54","text":"v0.1.3 is signed and installable but carries dirty build metadata; immutable successor v0.1.4 must build outside the checkout and verify dirty=false."}
