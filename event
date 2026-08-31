@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will implement the url-reputation built-in bundle from the ratified Stage 1 contract, including tests, documentation, registration, and the specified compatibility and quality gates."}
+{"kind":"promise","text":"Checker claims #2743: supersede umbrella 99b1db48 (harness coverage; dcc608c4 contained in main via eab88b77) as its requester. Umbrella 9bf357c0 (url-capture) will NOT be superseded now: the open Stage 2 request a68f3a4f rests on it as the live lifecycle basis, and superseding it would stale Stage 2; it closes when stage 4 merges."}
