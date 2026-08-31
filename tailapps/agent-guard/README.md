@@ -89,8 +89,9 @@ calls to the same tool can satisfy the repetition threshold.
 This release changes the runtime identity, so an existing resident still holds
 ingestion closed until every active Tailapp is explicitly continued or reset.
 Follow [Upgrading an existing resident](../../docs/reference/cli.md#upgrading-an-existing-resident);
-continuing `agent-guard` preserves its prior rows and begins failed-call detail
-at the activation boundary.
+this version's timestamp columns change existing table shapes, so upgrading
+`agent-guard` requires the reset activation documented below rather than a
+continue activation.
 
 `bounded-no-progress` requires an observed `progress_fingerprint`. The native
 Claude Code, Codex, and OpenCode telemetry shapes documented here do not

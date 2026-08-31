@@ -190,10 +190,10 @@ reports `ingestion_ready: false`. Existing projections remain queryable, and a
 Tailapp frontier can still say `complete: true`: completeness describes its
 stored delivery frontier, not whether intake has reopened.
 
-This release changes the JSONata evaluation and orchestration identity and
-therefore places every existing Tailapp in that state. Before replacing the
-binary, keep a checkout of the matching release available for the changed
-built-in sources. After starting the new resident:
+This release changes the JSONata evaluation, orchestration, and projection
+metadata identity and therefore places every existing Tailapp in that state.
+Before replacing the binary, keep a checkout of the matching release available
+for the changed built-in sources. After starting the new resident:
 
 1. Run `tailapp apps get APP` and record its `draft_revision`.
 2. For `agent-guard`, put `application.sql`, `folds/normalize.jsonata`, and
@@ -204,14 +204,19 @@ built-in sources. After starting the new resident:
    `tailapp apps put --expected REV --idempotency-key KEY APP PATH FILE` for
    each file, replacing `REV` with the new draft revision returned by the
    preceding put.
-3. Run `tailapp apps validate --expected REV APP`, then
-   `tailapp apps activate --mode continue --expected REV --idempotency-key KEY APP`.
-   Continue activation preserves compatible history and begins newly added
-   detail at the activation boundary.
-4. The unchanged `activity-stats` and `signal-counts` sources need no puts.
-   Read each current `draft_revision` with `apps get`, then activate that exact
-   draft with the same `--mode continue` command.
-5. Repeat until `tailapp health` reports `ingestion_ready: true`, then resume
+3. For `signal-counts`, put `application.sql` and `folds/count.jsonata` from
+   `tailapps/signal-counts/`, chaining the returned revisions in the same way.
+4. Validate each final draft with `tailapp apps validate --expected REV APP`.
+   Activate `daily-review` and `session-cost` with
+   `tailapp apps activate --mode continue --expected REV --idempotency-key KEY APP`;
+   their compatible history is preserved and new detail begins at the
+   activation boundary. The added timestamp columns change existing writable
+   table shapes in `agent-guard` and `signal-counts`, so those two require
+   `--mode reset --ack-reset` and discard their prior projections.
+5. The unchanged `activity-stats` source needs no puts. Read its current
+   `draft_revision` with `apps get`, then activate that exact draft with
+   `--mode continue`.
+6. Repeat until `tailapp health` reports `ingestion_ready: true`, then resume
    exporters. If an application source intentionally changes an existing table
    shape, use reset only after accepting its documented data loss and add
    `--ack-reset`; do not substitute reset for the compatible steps above.
