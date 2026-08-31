@@ -190,8 +190,10 @@ reports `ingestion_ready: false`. Existing projections remain queryable, and a
 Tailapp frontier can still say `complete: true`: completeness describes its
 stored delivery frontier, not whether intake has reopened.
 
-This release changes the JSONata evaluation, orchestration, and projection
-metadata identity and therefore places every existing Tailapp in that state.
+This release changes the JSONata evaluation and orchestration identity and
+therefore places every existing Tailapp in that state. The additive frontier
+timestamps do not change interpretation and do not introduce another identity
+transition.
 Before replacing the binary, keep a checkout of the matching release available
 for the changed built-in sources. After starting the new resident:
 

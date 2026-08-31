@@ -16,7 +16,7 @@ There are five built-in bundles:
 | --- | --- |
 | [`daily-review`](tailapps/daily-review/README.md) | What happened today? How many records, failures, slow operations, tokens, reported costs, risky actions, or sensitive fields were observed per harness? |
 | [`activity-stats`](tailapps/activity-stats/README.md) | Which tools and endpoints are used? What are the request volumes, latency buckets, outcome rates, token totals, and cache rates? |
-| [`agent-guard`](tailapps/agent-guard/README.md) | Did the telemetry show an out-of-bounds action, repeated failures, repeated actions, no progress, or missing evidence needed to decide? |
+| [`agent-guard`](tailapps/agent-guard/README.md) | When did telemetry show an out-of-bounds action, repeated failures, repeated actions, no progress, or missing evidence needed to decide? Findings and coverage are time-anchored. |
 | [`session-cost`](tailapps/session-cost/README.md) | How many input, cached, output, and reasoning tokens—and how much reported cost—has each session accumulated? |
 | [`signal-counts`](tailapps/signal-counts/README.md) | Are logs, spans, and metric points arriving from each source, and which event names are present? |
 
