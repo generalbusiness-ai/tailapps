@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Release installer dry-run workflow at reviewed release head","body":{"commit":"0bac8fd1d512323e329731a192802454483925fe","path":".github/workflows/release.yml","sha256":"fa7768646bea9fc3eff486fb0ef8d8dcf2a043fc49a4210eae35597a5bcf0355"}}
+{"kind":"artifact","text":"Release installer README guidance at reviewed release head","body":{"commit":"0bac8fd1d512323e329731a192802454483925fe","path":"README.md","sha256":"c0b3eec9a371b0925fdb0dff93c049f1f1a787578eabefab349944f47d8be93e"}}
