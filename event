@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Versioned multi-platform archives with license notices","body":{"commit":"867c4882fb2658d07c52a393c54172f1ea681a6d","path":"scripts/release.sh"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:909be04db89d7f505b772ebbf6812a8aa966894f","text":"Superseded by corrected full-head artifact 867c4882fb2658d07c52a393c54172f1ea681a6d."}
