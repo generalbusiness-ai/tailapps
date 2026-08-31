@@ -100,6 +100,9 @@ func TestEngineLifecycleIngestionProjectionQueryAndIsolation(t *testing.T) {
 	if samples.Capacity != IneffectiveBufferCapacity || samples.IneffectiveRecords != 1 || samples.AvailableRecords != 1 || samples.UnavailableRecords != 0 || len(samples.Records) != 1 || samples.Records[0].Name != "event <scrubbed-codex-callsite>" || len(samples.Records[0].Record) == 0 {
 		t.Fatalf("guard ineffective samples = %#v", samples)
 	}
+	if samples.Records[0].ObservedUnixNano == nil || *samples.Records[0].ObservedUnixNano != "200" || samples.Records[0].ReceivedUnixNano == "" {
+		t.Fatalf("ineffective sample timestamps = %#v", samples.Records[0])
+	}
 	performance, err := engine.Metrics(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -454,6 +457,16 @@ CREATE EXPORT bad AS SELECT id, status FROM bad;`)
 	}
 	if status.Apps["failing"].GapPosition == nil || status.Apps["session-cost"].InterpretedPosition != 1 || status.Inbox.Records != 0 {
 		t.Fatalf("gap isolation=%#v", status)
+	}
+	if status.Apps["failing"].GapObservedUnixNano == nil || status.Apps["failing"].GapReason == nil {
+		t.Fatalf("gap status has no observed time or reason: %#v", status.Apps["failing"])
+	}
+	metrics, err := resident.Metrics(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if metrics.Tailapps["failing"].GapObservedUnixNano == nil {
+		t.Fatalf("gap metrics have no observed time: %#v", metrics.Tailapps["failing"])
 	}
 	nextConsumers, err := resident.consumers(ctx)
 	if err != nil {

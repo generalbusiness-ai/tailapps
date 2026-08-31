@@ -8,6 +8,8 @@
       "signal": event.signal,
       "event_name": event.event_name,
       "event_count": $old ? $old.event_count + 1 : 1,
+      "first_seen_unix_nano": $old ? $old.first_seen_unix_nano : event.event_time_unix_nano,
+      "last_seen_unix_nano": event.event_time_unix_nano,
       "last_source_position": event.source_position
     }]}}
   }

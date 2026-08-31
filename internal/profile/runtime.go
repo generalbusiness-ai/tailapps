@@ -31,7 +31,7 @@ func hostComponents() []jsonataddl.Component {
 		{Key: "host.canonicalization", Value: "otlp-1.8-json-v1"},
 		// One delivery, one transaction: normalizer, its writes and
 		// emissions, folds over each emission, then frontier and stats.
-		{Key: "host.orchestration", Value: "two-stage-txn/1"},
+		{Key: "host.orchestration", Value: "two-stage-txn/2"},
 		// Externally observable projection and query value conversion.
 		{Key: "host.projection", Value: "query-values/1"},
 	}

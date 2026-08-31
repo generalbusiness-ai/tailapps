@@ -14,9 +14,11 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/ncruces/go-sqlite3"
 	sqlitedriver "github.com/ncruces/go-sqlite3/driver"
@@ -35,6 +37,8 @@ type Frontier struct {
 	Complete            bool    `json:"complete"`
 	GapPosition         *int64  `json:"gap_position,omitempty"`
 	GapReason           *string `json:"gap_reason,omitempty"`
+	GapObservedUnixNano *string `json:"gap_observed_unix_nano,omitempty"`
+	LastRecordUnixNano  *string `json:"last_record_time_unix_nano,omitempty"`
 }
 
 type Result struct {
@@ -171,7 +175,41 @@ func openExisting(ctx context.Context, path string, compiled *profile.Profile, e
 		database.Close()
 		return nil, errors.New("projection identity does not match compiled profile")
 	}
+	if err := ensureFrontierTimestampColumns(ctx, database); err != nil {
+		database.Close()
+		return nil, err
+	}
 	return projection, nil
+}
+
+func ensureFrontierTimestampColumns(ctx context.Context, database *sql.DB) error {
+	rows, err := database.QueryContext(ctx, `PRAGMA table_info(tailapp_frontier)`)
+	if err != nil {
+		return fmt.Errorf("inspect projection frontier schema: %w", err)
+	}
+	present := map[string]bool{}
+	for rows.Next() {
+		var cid, notNull, primaryKey int
+		var name, kind string
+		var defaultValue any
+		if err := rows.Scan(&cid, &name, &kind, &notNull, &defaultValue, &primaryKey); err != nil {
+			rows.Close()
+			return err
+		}
+		present[name] = true
+	}
+	if err := rows.Close(); err != nil {
+		return err
+	}
+	for _, column := range []string{"gap_observed_unix_nano", "last_record_time_unix_nano"} {
+		if present[column] {
+			continue
+		}
+		if _, err := database.ExecContext(ctx, `ALTER TABLE tailapp_frontier ADD COLUMN `+quote(column)+` TEXT`); err != nil {
+			return fmt.Errorf("add projection frontier column %q: %w", column, err)
+		}
+	}
+	return nil
 }
 
 func openDatabase(path string, guard *readGuard) (*sql.DB, error) {
@@ -224,7 +262,8 @@ func (p *Projection) initialize(ctx context.Context, boundary int64, mode string
 )`, `CREATE TABLE tailapp_frontier (
  singleton INTEGER PRIMARY KEY CHECK (singleton=1), activation_boundary INTEGER NOT NULL,
  interpreted_position INTEGER NOT NULL, last_event_id TEXT NOT NULL,
- complete INTEGER NOT NULL, gap_position INTEGER, gap_reason TEXT
+ complete INTEGER NOT NULL, gap_position INTEGER, gap_reason TEXT,
+ gap_observed_unix_nano TEXT, last_record_time_unix_nano TEXT
 )`, `CREATE TABLE tailapp_stats (
  singleton INTEGER PRIMARY KEY CHECK (singleton=1), consumed_records INTEGER NOT NULL,
  ineffective_records INTEGER NOT NULL, emitted_events INTEGER NOT NULL
@@ -237,7 +276,7 @@ func (p *Projection) initialize(ctx context.Context, boundary int64, mode string
 	if _, err := tx.ExecContext(ctx, `INSERT INTO tailapp_projection_identity VALUES (1,?,?,?,?)`, p.name, p.profile.Revision, p.profile.RuntimeProfile, mode); err != nil {
 		return fmt.Errorf("create projection identity: %w", err)
 	}
-	if _, err := tx.ExecContext(ctx, `INSERT INTO tailapp_frontier VALUES (1,?,?,'',1,NULL,NULL)`, boundary, boundary); err != nil {
+	if _, err := tx.ExecContext(ctx, `INSERT INTO tailapp_frontier VALUES (1,?,?,'',1,NULL,NULL,NULL,NULL)`, boundary, boundary); err != nil {
 		return fmt.Errorf("create projection frontier: %w", err)
 	}
 	if _, err := tx.ExecContext(ctx, `INSERT INTO tailapp_stats VALUES (1,0,0,0)`); err != nil {
@@ -309,7 +348,7 @@ func (p *Projection) Continue(ctx context.Context, next *profile.Profile, bounda
 	if _, err := tx.ExecContext(ctx, `UPDATE tailapp_projection_identity SET revision=?,runtime_profile=?,activation_mode='continue' WHERE singleton=1`, next.Revision, next.RuntimeProfile); err != nil {
 		return err
 	}
-	if _, err := tx.ExecContext(ctx, `UPDATE tailapp_frontier SET activation_boundary=?,interpreted_position=?,last_event_id='',complete=1,gap_position=NULL,gap_reason=NULL WHERE singleton=1`, boundary, boundary); err != nil {
+	if _, err := tx.ExecContext(ctx, `UPDATE tailapp_frontier SET activation_boundary=?,interpreted_position=?,last_event_id='',complete=1,gap_position=NULL,gap_reason=NULL,gap_observed_unix_nano=NULL,last_record_time_unix_nano=NULL WHERE singleton=1`, boundary, boundary); err != nil {
 		return err
 	}
 	if err := tx.Commit(); err != nil {
@@ -384,7 +423,11 @@ func (p *Projection) Process(ctx context.Context, delivery inbox.Delivery) (resu
 	if normalized.Decision == "ineffective" {
 		ineffective = 1
 	}
-	if _, err := tx.ExecContext(ctx, `UPDATE tailapp_frontier SET interpreted_position=?,last_event_id=?,complete=1,gap_position=NULL,gap_reason=NULL WHERE singleton=1`, delivery.Position, delivery.EventID); err != nil {
+	lastRecordTime := delivery.TimeUnixNano
+	if lastRecordTime == nil {
+		lastRecordTime = delivery.ObservedUnixNano
+	}
+	if _, err := tx.ExecContext(ctx, `UPDATE tailapp_frontier SET interpreted_position=?,last_event_id=?,complete=1,gap_position=NULL,gap_reason=NULL,gap_observed_unix_nano=NULL,last_record_time_unix_nano=? WHERE singleton=1`, delivery.Position, delivery.EventID, pointerValue(lastRecordTime)); err != nil {
 		return Result{}, err
 	}
 	if _, err := tx.ExecContext(ctx, `UPDATE tailapp_stats SET consumed_records=consumed_records+1,ineffective_records=ineffective_records+?,emitted_events=emitted_events+? WHERE singleton=1`, ineffective, len(emitted)); err != nil {
@@ -613,6 +656,9 @@ func transientProcessError(ctx context.Context, err error) bool {
 	if ctx.Err() != nil || errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 		return true
 	}
+	if jsonataddl.IsEvaluationTimeout(err) {
+		return true
+	}
 	var code sqlite3.ErrorCode
 	if !errors.As(err, &code) {
 		return false
@@ -656,9 +702,10 @@ func (p *Projection) Frontier(ctx context.Context) (Frontier, error) {
 	var complete int
 	var gapPosition sql.NullInt64
 	var gapReason sql.NullString
-	if err := p.db.QueryRowContext(ctx, `SELECT i.revision,f.activation_boundary,f.interpreted_position,f.last_event_id,f.complete,f.gap_position,f.gap_reason
+	var gapObserved, lastRecordTime sql.NullString
+	if err := p.db.QueryRowContext(ctx, `SELECT i.revision,f.activation_boundary,f.interpreted_position,f.last_event_id,f.complete,f.gap_position,f.gap_reason,f.gap_observed_unix_nano,f.last_record_time_unix_nano
  FROM tailapp_projection_identity i CROSS JOIN tailapp_frontier f WHERE i.singleton=1 AND f.singleton=1`).Scan(
-		&result.Revision, &result.ActivationBoundary, &result.InterpretedPosition, &result.LastEventID, &complete, &gapPosition, &gapReason); err != nil {
+		&result.Revision, &result.ActivationBoundary, &result.InterpretedPosition, &result.LastEventID, &complete, &gapPosition, &gapReason, &gapObserved, &lastRecordTime); err != nil {
 		return Frontier{}, err
 	}
 	result.Complete = complete != 0
@@ -668,6 +715,12 @@ func (p *Projection) Frontier(ctx context.Context) (Frontier, error) {
 	if gapReason.Valid {
 		result.GapReason = &gapReason.String
 	}
+	if gapObserved.Valid {
+		result.GapObservedUnixNano = &gapObserved.String
+	}
+	if lastRecordTime.Valid {
+		result.LastRecordUnixNano = &lastRecordTime.String
+	}
 	return result, nil
 }
 
@@ -675,6 +728,7 @@ func (p *Projection) recordGap(ctx context.Context, position int64, reason strin
 	if len(reason) > 1024 {
 		reason = reason[:1024]
 	}
-	_, err := p.db.ExecContext(ctx, `UPDATE tailapp_frontier SET complete=0,gap_position=?,gap_reason=? WHERE singleton=1 AND gap_position IS NULL`, position, reason)
+	observed := strconv.FormatInt(time.Now().UnixNano(), 10)
+	_, err := p.db.ExecContext(ctx, `UPDATE tailapp_frontier SET complete=0,gap_position=?,gap_reason=?,gap_observed_unix_nano=? WHERE singleton=1 AND gap_position IS NULL`, position, reason, observed)
 	return err
 }

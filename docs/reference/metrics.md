@@ -91,7 +91,9 @@ Tailapp entry; the intake-level total remains visible across app deletion.
 `tailapps` contains snapshot gauges and durable projection totals:
 
 - delivery head, interpreted position, and `lag_positions`;
-- completeness and optional gap position; and
+- completeness; optional gap position and gap-observed wall-clock
+  timestamp; the last successfully consumed record timestamp when supplied;
+  and
 - durable consumed-record, ineffective-record, and emitted-event totals.
 
 Deleted Tailapp names leave no metrics tombstones. To bound response size and

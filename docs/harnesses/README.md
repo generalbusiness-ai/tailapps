@@ -27,6 +27,15 @@ The OpenCode and Pi producers are not uniform wire contracts. Follow the named
 compatibility profile, then use ineffective-record samples to inspect any
 different producer's shape.
 
+## Not yet routable to Tailapp
+
+Kiro CLI v3 and the Kiro IDE document vendor telemetry controls and, for
+enterprise use, activity reports, but no operator-configurable local OTLP
+export. They therefore have no Tailapp profile yet. VS Code Copilot Chat is
+covered separately by its [current OTLP guide](vscode-copilot-chat.md). See
+the [evidence note](../../notes/2026-08-31-harness-coverage-stage-0.md) for
+the official Kiro sources and the coverage boundary.
+
 ## Verify transport, then interpretation
 
 After one model response and tool call:
@@ -75,6 +84,12 @@ loopback or give untrusted processes access to the MCP command.
 The shipped guard is detective, not preventive. Export batching adds latency,
 and a silent or terminated harness cannot emit the event needed to diagnose
 it. Keep harness-native permission and sandbox controls in place.
+
+When failed tool calls expose them in OTLP, `agent-guard` retains commands,
+arguments, project paths, and explicit error or failure-message attributes for
+the same local OS user. These fields can include secrets or proprietary source
+context even though successful-call payloads and generic tool output are not
+retained. Configure each harness's content gates accordingly.
 
 The five shipped Tailapps are a starting kit. Agents and operators can
 [author and install their own](../authoring.md), including a normalizer for a

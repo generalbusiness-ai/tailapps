@@ -46,8 +46,8 @@ mcp_session() {
   expected=$(printf '%s\n' "$requests" | grep -c '"id"')
   fifo="$demo_tmp/mcp_fifo"
   out="$demo_tmp/mcp_out"
-  unlink "$fifo" 2>/dev/null || true
-  unlink "$out" 2>/dev/null || true
+  [ ! -p "$fifo" ] || unlink "$fifo"
+  [ ! -f "$out" ] || unlink "$out"
   mkfifo "$fifo"
   "$binary" mcp < "$fifo" > "$out" &
   mcp_pid=$!
@@ -63,7 +63,7 @@ mcp_session() {
   done
   exec 9>&-
   wait "$mcp_pid" 2>/dev/null || true
-  unlink "$fifo" 2>/dev/null || true
+  [ ! -p "$fifo" ] || unlink "$fifo"
   cat "$out"
 }
 
