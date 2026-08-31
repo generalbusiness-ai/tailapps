@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5f667c725cd3b4e420de51448f338d0f0628b516","text":"Replaced by a full-head re-review after the approved dependency review found explicit compatibility hardening."}
+{"kind":"promise","text":"Checker claims the re-review: hardened Go dependency refresh at 4b93320968609e6587cace35a7f023bfff9fd309 (strindex rejection, scan, mod verify, battery, demo); clean detached worktree; one guarded verdict follows."}
