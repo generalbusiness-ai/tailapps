@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:99b1db487e0106066a19ca416cc2a4c78760ff21","text":"Superseded by the current-main harness-evidence reconciliation; review the successor exact head instead."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:db042f72a3b6c4cf4baa3626e8d8243c378600fb","text":"Superseded by the richer current-main telemetry and timestamp composition, which carries the implemented cost/failure dimensions and review-facing analytics; the newer user-owned gap-analysis draft remains intentionally untouched."}
