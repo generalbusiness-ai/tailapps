@@ -56,7 +56,7 @@ Example prompt - copy this into an agent connected to Tailapp, or use it as a CL
 
 **Sample result:** (click and download to see a full report example)
 
-<a href="docs/assets/visual-report-sample.html"><img src="docs/assets/visual-report-sample.png" alt="Sample visual report, truncated: arrival timeline with per-session bars" width="640"></a>
+<a href="https://htmlpreview.github.io/?https://github.com/generalbusiness-ai/tailapps/blob/main/docs/assets/visual-report-sample.html"><img src="docs/assets/visual-report-sample.png" alt="Sample visual report, truncated: arrival timeline with per-session bars" width="640"></a>
 
 ## Install and connect
 
