@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"String-table ingestion rejection coverage","body":{"commit":"4b93320968609e6587cace35a7f023bfff9fd309","path":"internal/ingest/receiver_test.go"}}
+{"kind":"artifact","text":"Canonical OTLP string-table boundary documentation","body":{"commit":"4b93320968609e6587cace35a7f023bfff9fd309","path":"docs/reference/otel-records.md"}}
