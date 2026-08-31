@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Telemetry-only analytics now retain model/project cost dimensions, readable session labels, and failed-tool command detail; Claude normalization and timeout gap handling are fixed. Full go test, vet, race, and normalizer benchmarks pass.","body":{"commit":"36d1a68968d5ce715bfd1f261df6a410f488a809","path":"."}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:b606a87dade8399759d8606e5a3843e341a9cb26","text":"Corrected an accidental mistyped commit ID; the successor names the actual exact head."}
