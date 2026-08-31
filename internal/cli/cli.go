@@ -22,6 +22,7 @@ import (
 
 	"github.com/generalbusiness-ai/tailapps/internal/buildinfo"
 	"github.com/generalbusiness-ai/tailapps/internal/control"
+	"github.com/generalbusiness-ai/tailapps/internal/definition"
 	"github.com/generalbusiness-ai/tailapps/internal/engine"
 	"github.com/generalbusiness-ai/tailapps/internal/ingest"
 	"github.com/generalbusiness-ai/tailapps/internal/mcp"
@@ -32,11 +33,15 @@ func Home() (string, error) {
 	if value := os.Getenv("TAILAPP_HOME"); value != "" {
 		return filepath.Abs(value)
 	}
-	root, err := os.UserConfigDir()
+	root, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(root, "tailapp"), nil
+	return defaultHome(root), nil
+}
+
+func defaultHome(userHome string) string {
+	return filepath.Join(userHome, ".local", "share", "tailapp")
 }
 
 func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
@@ -65,6 +70,8 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return output(stdout, map[string]any{"home": home})
 	case "serve":
 		return serve(ctx, home, args[1:], stdout, stderr)
+	case "setup":
+		return setup(stdout, stderr, home, args[1:])
 	case "mcp":
 		if len(args) > 1 && args[1] == "emit-skill" {
 			if len(args) != 3 {
@@ -122,6 +129,7 @@ SQLite projections you can inspect over CLI or MCP.
 Usage:
   tailapp init
   tailapp serve [--otlp-http IP:PORT]
+  tailapp setup [--bundles LIST|none] [--interactive]
   tailapp apps install [--bundle BUNDLE] --idempotency-key KEY NAME [DIRECTORY]
   tailapp apps <list|create|get|put|rm|validate|activate|delete|status|schema>
   tailapp query --sql SQL [options] APP
@@ -133,6 +141,98 @@ Usage:
   tailapp mcp
 
 Start with: tailapp init, keep tailapp serve running, then install a Tailapp.`)
+}
+
+var builtInBundles = []string{"activity-stats", "agent-guard", "daily-review", "session-cost", "signal-counts"}
+
+// SetupResult is the machine-readable outcome of installing requested
+// built-ins through the resident's normal create-only control operation.
+type SetupResult struct {
+	Home           string   `json:"home"`
+	Requested      []string `json:"requested"`
+	Installed      []string `json:"installed"`
+	AlreadyPresent []string `json:"already_present"`
+}
+
+func setup(stdout, stderr io.Writer, home string, args []string) error {
+	flags := flag.NewFlagSet("setup", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	bundles := flags.String("bundles", strings.Join(builtInBundles, ","), "comma-separated built-in bundles, or none")
+	interactive := flags.Bool("interactive", false, "confirm bundle selection through /dev/tty")
+	if err := flags.Parse(args); err != nil {
+		return err
+	}
+	if flags.NArg() != 0 {
+		return errors.New("setup accepts only --bundles and --interactive")
+	}
+	requested, err := setupBundles(*bundles)
+	if err != nil {
+		return err
+	}
+	if *interactive {
+		tty, err := os.OpenFile("/dev/tty", os.O_RDWR, 0)
+		if err != nil {
+			return errors.New("setup --interactive requires a readable and writable /dev/tty")
+		}
+		defer tty.Close()
+		if _, err := fmt.Fprintf(tty, "Install missing built-in Tailapps (%s)? [y/N] ", strings.Join(requested, ", ")); err != nil {
+			return err
+		}
+		var answer string
+		if _, err := fmt.Fscanln(tty, &answer); err != nil || strings.ToLower(answer) != "y" {
+			return errors.New("interactive setup was not confirmed")
+		}
+	}
+	client := control.NewClient(filepath.Join(home, "engine.sock"))
+	var apps []definition.App
+	if err := client.Call(context.Background(), "apps_list", nil, &apps); err != nil {
+		return err
+	}
+	present := make(map[string]bool, len(apps))
+	for _, app := range apps {
+		present[app.Name] = true
+	}
+	result := SetupResult{Home: home, Requested: requested}
+	for _, bundle := range requested {
+		if present[bundle] {
+			result.AlreadyPresent = append(result.AlreadyPresent, bundle)
+			continue
+		}
+		var installed engine.InstallResult
+		if err := client.Call(context.Background(), "app_install", control.InstallArgs{
+			Name: bundle, Bundle: bundle, IdempotencyKey: "setup-" + bundle + "-v1",
+		}, &installed); err != nil {
+			return err
+		}
+		result.Installed = append(result.Installed, bundle)
+	}
+	return output(stdout, result)
+}
+
+func setupBundles(value string) ([]string, error) {
+	if value == "none" {
+		return []string{}, nil
+	}
+	if value == "" {
+		return nil, errors.New("setup --bundles must name built-ins or none")
+	}
+	known := make(map[string]bool, len(builtInBundles))
+	for _, bundle := range builtInBundles {
+		known[bundle] = true
+	}
+	seen := make(map[string]bool, len(builtInBundles))
+	var selected []string
+	for _, bundle := range strings.Split(value, ",") {
+		if !known[bundle] {
+			return nil, fmt.Errorf("unknown built-in bundle %q", bundle)
+		}
+		if seen[bundle] {
+			return nil, fmt.Errorf("built-in bundle %q was selected more than once", bundle)
+		}
+		seen[bundle] = true
+		selected = append(selected, bundle)
+	}
+	return selected, nil
 }
 
 func serve(ctx context.Context, home string, args []string, stdout, stderr io.Writer) error {
