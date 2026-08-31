@@ -1,1 +1,1 @@
-{"kind":"promise","text":"Builder: add the compact, scrubbed visual-report sample screenshot and README link, with reproducible rendering evidence."}
+{"kind":"artifact","text":"README visual-report sample prompt and link","body":{"commit":"d079fc0bb8681e55b4b324810d1c3c1221d43c73","path":"README.md"}}
