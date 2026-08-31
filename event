@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will establish evidence-backed Kiro CLI, Kiro application, and VS Code telemetry coverage in staged form."}
+{"kind":"artifact","text":"Kiro and VS Code telemetry evidence at dcc608c","body":{"commit":"dcc608c4f6e0e4c8f547def7c7c811b976db1d6a","path":"notes/2026-08-31-harness-coverage-stage-0.md"}}
