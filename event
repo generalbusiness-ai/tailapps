@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Combined observed-timestamp successor plus telemetry review corrections at exact head 6e8e7dc450ef9a77e28faa9e3a20bfb7131c22e4; full tests, vet, race, and demo pass","body":{"commit":"6e8e7dc450ef9a77e28faa9e3a20bfb7131c22e4","path":"tailapps"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:cbb48f6eb8d6cc6420edfd54e08e1d4690aef877","text":"Re-anchored the same exact-head successor on the live timestamp promise and telemetry correction artifact after the prior successor inherited staleness from its retired basis."}
