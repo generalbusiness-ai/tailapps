@@ -132,11 +132,16 @@ func TestReleaseAssetsAreVersionPinnedAndInstallable(t *testing.T) {
 		t.Fatalf("installed version = %#v", version)
 	}
 
-	// A present-but-unusable launchd boundary must not discard the verified
+	// A present-but-unusable host service manager must not discard the verified
 	// binary or selected bundles. The release installer makes the persistence
 	// gap explicit and returns nonzero unless --no-service was selected.
 	launchctl := filepath.Join(fakeBin, "launchctl")
-	if err := os.WriteFile(launchctl, []byte("#!/bin/sh\nexit 1\n"), 0o700); err != nil {
+	serviceManager := "launchctl"
+	if runtime.GOOS == "linux" {
+		serviceManager = "systemctl"
+	}
+	unusableServiceManager := filepath.Join(fakeBin, serviceManager)
+	if err := os.WriteFile(unusableServiceManager, []byte("#!/bin/sh\nexit 1\n"), 0o700); err != nil {
 		t.Fatal(err)
 	}
 	fallbackRoot := filepath.Join(t.TempDir(), "local")
