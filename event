@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Release asset builder including upgrade consumer at reviewed upgrade head","body":{"commit":"9be94e8c697d44404ad1a85e0d8e91eb1f5e9e5f","path":"scripts/release.sh","sha256":"c8a91c6cd0ff870c32c93ff5b69dd213ff5ded83b87a95cef8006ae12c534eb9"}}
+{"kind":"artifact","text":"Mocked upgrade and rollback tests at reviewed upgrade head","body":{"commit":"9be94e8c697d44404ad1a85e0d8e91eb1f5e9e5f","path":"scripts/release_test.go","sha256":"85c5e04f23df43099241ce65883a371f8ac81d0e7e8ca01ef9803f9f1db90b1b"}}
