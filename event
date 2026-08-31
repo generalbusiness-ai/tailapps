@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:f132802518edc683514fdad1dd9f72f1850c7260","text":"Merge retired a covered predecessor; the successor is at README.md."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:fada8d4bfbcc763ef16d454bd9f75087918e8e66","text":"Merge retired a covered predecessor; the successor is at scripts/upgrade-resident-macos.sh."}
