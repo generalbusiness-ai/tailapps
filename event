@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Harness-coverage Stage 0 reproducible demo safety cleanup","body":{"commit":"dcc608c4f6e0e4c8f547def7c7c811b976db1d6a","path":"scripts/demo.sh"}}
+{"kind":"request","text":"Review Harness Coverage Stage 0 inventory and VS Code qualification at exact commit dcc608c4","body":{"conditions":"Check the documented Kiro and VS Code routes against their sources; confirm claims do not overstate coverage; assess the operator-safe demo cleanup.","to":"d50369731a941ee752b3a07cd33b8c7e9b4dbf1ead69532463a3df851bf2bd2f"}}
