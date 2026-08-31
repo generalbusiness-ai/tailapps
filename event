@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"First-time setup documentation at reviewed setup head","body":{"commit":"c234cbf661f37b1af9b95e330886b0a953ece525","path":"docs/reference/first-time-setup.md","sha256":"0f35cb130f83ce945b7c52b6388f5b5d6c5c2ec89173c3721f33832b9dc529bf"}}
+{"kind":"artifact","text":"Release installer option documentation at reviewed setup head","body":{"commit":"c234cbf661f37b1af9b95e330886b0a953ece525","path":"docs/reference/releases.md","sha256":"63bf92034ea7e4263c8a90dbfb966aaf2a8464aa587a7f30ee8297b57561c941"}}
