@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Release setup README guidance at reviewed setup head","body":{"commit":"c234cbf661f37b1af9b95e330886b0a953ece525","path":"README.md","sha256":"7384cbf0799d120efc20b98e6963a6a422aa5d5e0101b3424922d9e350b4a28f"}}
+{"kind":"artifact","text":"Setup CLI documentation at reviewed setup head","body":{"commit":"c234cbf661f37b1af9b95e330886b0a953ece525","path":"docs/reference/cli.md","sha256":"033a01058fbd4905cf37051d7c44cfc9c667a7e7a4379c8545297b0365b6ae2f"}}
