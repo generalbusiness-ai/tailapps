@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Verified release installation documentation at reviewed release head","body":{"commit":"0bac8fd1d512323e329731a192802454483925fe","path":"docs/reference/releases.md","sha256":"721232b9a018600c637eda2f9ac8520de375ee8e4da6c21f1c45b7aa94a62c46"}}
+{"kind":"artifact","text":"Build identity implementation at reviewed release head","body":{"commit":"0bac8fd1d512323e329731a192802454483925fe","path":"internal/buildinfo/buildinfo.go","sha256":"133ead096339217ca9373cf2cfa55effaf4cd5a7903fed39a30718ad04c623d0"}}
