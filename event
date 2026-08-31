@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Cross-platform versioned release archive builder and checksum manifest","body":{"commit":"385ff5c","path":"scripts/release.sh"}}
+{"kind":"artifact","text":"Release build stamps validated semantic version identity","body":{"commit":"385ff5c","path":"scripts/build.sh"}}
