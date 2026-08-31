@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:34f547b97067d66f58215cf9ef010657c316ff2c","text":"Completed and replaced by the independently reviewed R1 README correction at 7ec1a18d, merged into main at 274578a; retire this obsolete initial promise."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:b015869b4705c628243cd03fa70d0dffe7eaa425","text":"Replaced by the guarded per-file telemetry review 34ae6cf9 and its merge into main at a838bfc; retire this earlier review record and its obsolete candidate."}
