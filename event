@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:fc90f210a69a8bf4faafc65af6edd061e37e5176","text":"Merge retired a covered predecessor; the successor is at scripts/release_test.go."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:8670aa9a5fd67358c5993794145fc2d12cef00a4","text":"Withdraw the v0.1.1 publication promise after GitHub run 33436972060 exposed a second Linux portability gap in the upgrade scenarios and failed before publication."}
