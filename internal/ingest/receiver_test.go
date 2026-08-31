@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	collectorlogsv1 "go.opentelemetry.io/proto/otlp/collector/logs/v1"
@@ -117,6 +118,24 @@ func TestCanonicalBytesAndDigestAreStable(t *testing.T) {
 	}
 	if !bytes.Contains(first[0].JSON, []byte(`"integer_decimal":"1152921504606846976"`)) {
 		t.Fatalf("large integer lost precision: %s", first[0].JSON)
+	}
+}
+
+func TestCanonicalizationRejectsProfilingStringTableReferences(t *testing.T) {
+	keyReference := logRequest("codex", "codex.tool_result", "s1")
+	keyReference.ResourceLogs[0].ScopeLogs[0].LogRecords[0].Attributes = []*commonv1.KeyValue{{
+		KeyStrindex: 1, Value: stringValue("ignored"),
+	}}
+	if _, err := flattenLogs(keyReference.GetResourceLogs()); err == nil || !strings.Contains(err.Error(), "string-table attribute keys") {
+		t.Fatalf("key string-table reference = %v, want explicit rejection", err)
+	}
+
+	valueReference := logRequest("codex", "codex.tool_result", "s1")
+	valueReference.ResourceLogs[0].ScopeLogs[0].LogRecords[0].Attributes = []*commonv1.KeyValue{kv("tool_name", &commonv1.AnyValue{
+		Value: &commonv1.AnyValue_StringValueStrindex{StringValueStrindex: 1},
+	})}
+	if _, err := flattenLogs(valueReference.GetResourceLogs()); err == nil || !strings.Contains(err.Error(), "string-table attribute values") {
+		t.Fatalf("value string-table reference = %v, want explicit rejection", err)
 	}
 }
 

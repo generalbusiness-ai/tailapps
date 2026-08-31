@@ -163,7 +163,10 @@ OTLP strings, booleans, finite doubles, arrays, and key/value lists map to the
 corresponding JSON values. Integers within JavaScript's exact range map to JSON
 integers. Larger integers become `{"integer_decimal": "..."}`. Bytes become
 `{"bytes_base64": "..."}`. Duplicate or empty attribute keys and non-finite
-doubles are rejected at ingestion rather than silently rewritten.
+doubles are rejected at ingestion rather than silently rewritten. The receiver
+also explicitly rejects `key_strindex` and `string_value_strindex`: they are
+profiling-signal string-table references, which cannot identify a log, trace,
+or metric attribute without that signal’s dictionary.
 
 ## Limits
 
