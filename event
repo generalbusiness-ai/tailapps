@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Corrected MCP upgrade procedure at 1640844","body":{"commit":"164084464a6797c5595a7bb97abe55a2bf7e21c8","path":"docs/reference/mcp.md"}}
+{"kind":"artifact","text":"Complete signal-counts upgrade source list at 1640844","body":{"commit":"164084464a6797c5595a7bb97abe55a2bf7e21c8","path":"tailapps/signal-counts/README.md"}}
