@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Current-main telemetry/timestamp composition: docs/reference/metrics.md","body":{"commit":"d53bfc20c561b19a4df94ba78c194babdf2c265a","path":"docs/reference/metrics.md"}}
+{"kind":"artifact","text":"Current-main telemetry/timestamp composition: docs/reference/otel-records.md","body":{"commit":"d53bfc20c561b19a4df94ba78c194babdf2c265a","path":"docs/reference/otel-records.md"}}
