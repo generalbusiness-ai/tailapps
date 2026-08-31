@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Resident upgrade documentation at reviewed upgrade head","body":{"commit":"9be94e8c697d44404ad1a85e0d8e91eb1f5e9e5f","path":"docs/reference/resident-upgrade.md","sha256":"286ea02d77c7b766e00487f955e11cee5ddb2cae8c6de5b0c34c5bc5fc3912f9"}}
+{"kind":"artifact","text":"Release asset builder including upgrade consumer at reviewed upgrade head","body":{"commit":"9be94e8c697d44404ad1a85e0d8e91eb1f5e9e5f","path":"scripts/release.sh","sha256":"c8a91c6cd0ff870c32c93ff5b69dd213ff5ded83b87a95cef8006ae12c534eb9"}}
