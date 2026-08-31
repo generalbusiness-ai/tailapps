@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Build identity tests at reviewed release head","body":{"commit":"0bac8fd1d512323e329731a192802454483925fe","path":"internal/buildinfo/buildinfo_test.go","sha256":"1b4ce6e7ddd16fe325b5c0cc95b3719a054f8c9013b1461a483490338ce6415b"}}
+{"kind":"artifact","text":"Version CLI implementation at reviewed release head","body":{"commit":"0bac8fd1d512323e329731a192802454483925fe","path":"internal/cli/cli.go","sha256":"1df87c4a397d6f58a45452dc0ccfae16eb0fa8937d6e03f4a906d43a89581261"}}
