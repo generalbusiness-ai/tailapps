@@ -1,11 +1,13 @@
 # Verified GitHub releases
 
 Pushing an exact semantic-version tag such as `v0.1.0` runs the release
-workflow. It tests the tagged source, builds `darwin/arm64`, `darwin/amd64`,
-`linux/arm64`, and `linux/amd64` archives, publishes them with `checksums.txt`,
-and attaches a keyless Cosign signature and bundle for that checksum manifest.
-The workflow also creates GitHub build-provenance attestations for every
-archive.
+workflow only when that tag’s commit is already reachable from `main`. Cut
+releases from merged `main`, not from a feature branch. The workflow tests the
+tagged source, builds `darwin/arm64`, `darwin/amd64`, `linux/arm64`, and
+`linux/amd64` archives, publishes them with `checksums.txt`, and attaches a
+keyless Cosign signature and bundle for that checksum manifest. Every archive
+contains the `tailapp` binary, `LICENSE`, and `NOTICE`. The workflow also
+creates GitHub build-provenance attestations for every archive.
 
 Download the archive matching your operating system and CPU together with
 `checksums.txt`, `checksums.txt.sig`, and `checksums.txt.bundle` from the same

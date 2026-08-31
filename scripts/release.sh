@@ -1,5 +1,5 @@
 #!/bin/sh
-# Build deterministic, versioned Tailapps release archives for the supported
+# Build versioned Tailapps release archives for the supported
 # macOS and Linux targets. Publishing and signing happen in GitHub Actions;
 # this script only produces local artifacts and their checksums.
 #
@@ -40,8 +40,12 @@ archive_for() {
   stage_dir=$(mktemp -d "$output_dir/.tailapps-${goos}-${goarch}.XXXXXX")
   GOOS="$goos" GOARCH="$goarch" CGO_ENABLED=0 TAILAPPS_VERSION="$version" \
     "$repo_root/scripts/build.sh" "$stage_dir/tailapp"
-  tar -C "$stage_dir" -czf "$archive" tailapp
+  cp "$repo_root/LICENSE" "$stage_dir/LICENSE"
+  cp "$repo_root/NOTICE" "$stage_dir/NOTICE"
+  tar -C "$stage_dir" -czf "$archive" tailapp LICENSE NOTICE
   unlink "$stage_dir/tailapp"
+  unlink "$stage_dir/LICENSE"
+  unlink "$stage_dir/NOTICE"
   rmdir "$stage_dir"
 }
 
