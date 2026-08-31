@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will provide deterministic first-time Tailapps setup and a no-sudo persistent user resident for macOS and Linux."}
+{"kind":"artifact","text":"Deterministic macOS and Linux no-sudo resident setup command","body":{"commit":"d385c97","path":"scripts/setup-resident.sh"}}
