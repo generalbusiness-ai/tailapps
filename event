@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:faf508eed36126c208ea8feff8493228a87f9003","text":"Merge retired a covered predecessor; the successor is at internal/cli/cli_test.go."}
+{"kind":"artifact","text":"Release setup README guidance at reviewed setup head","body":{"commit":"c234cbf661f37b1af9b95e330886b0a953ece525","path":"README.md","sha256":"7384cbf0799d120efc20b98e6963a6a422aa5d5e0101b3424922d9e350b4a28f"}}
