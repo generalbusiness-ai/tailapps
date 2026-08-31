@@ -1,1 +1,1 @@
-{"kind":"promise","text":"Checker claims the review: signed versioned GitHub release distribution at exact commit 385ff5c (tag gating, archive contents, checksum/signature/provenance flow, Action permissions and ordering, semver stamp validation, no publish from branch or PR traffic); battery in a clean detached worktree plus a local release.sh dry run; verdict follows (as report if the artifacts still carry short commit IDs)."}
+{"kind":"artifact","text":"Patched compatible Go module graph and locked checksums","body":{"commit":"b808dc8","path":"go.mod"}}
