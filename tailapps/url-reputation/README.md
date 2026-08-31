@@ -5,13 +5,12 @@ provider verdicts from three explicit OTLP log families. It makes the local
 state queryable; this Stage 2 Tailapp performs no network requests and sends no
 data anywhere.
 
-Install and activate it explicitly:
+Install it explicitly. Installation first-activates the new Tailapp with reset
+semantics:
 
 ```sh
 tailapp apps install --bundle url-reputation \
   --idempotency-key install-url-reputation-v1 url-reputation
-tailapp apps activate --mode reset --ack-reset \
-  --idempotency-key activate-url-reputation-v1 url-reputation
 ```
 
 ## Inputs
