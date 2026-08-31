@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Setup CLI documentation at reviewed setup head","body":{"commit":"c234cbf661f37b1af9b95e330886b0a953ece525","path":"docs/reference/cli.md","sha256":"033a01058fbd4905cf37051d7c44cfc9c667a7e7a4379c8545297b0365b6ae2f"}}
+{"kind":"artifact","text":"First-time setup documentation at reviewed setup head","body":{"commit":"c234cbf661f37b1af9b95e330886b0a953ece525","path":"docs/reference/first-time-setup.md","sha256":"0f35cb130f83ce945b7c52b6388f5b5d6c5c2ec89173c3721f33832b9dc529bf"}}
