@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at scripts/setup-resident.sh","body":{"commit":"9dcae3db02314725a2d63f313941e33b6d30589d","path":"scripts/setup-resident.sh"}}
+{"kind":"artifact","text":"Merge published the current artifact at scripts/upgrade-resident-macos.sh","body":{"commit":"9dcae3db02314725a2d63f313941e33b6d30589d","path":"scripts/upgrade-resident-macos.sh"}}
