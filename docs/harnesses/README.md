@@ -21,6 +21,7 @@ resident.
 | [Codex](codex.md) | Native OTLP/HTTP logs | Native client |
 | [OpenCode](opencode.md) | Third-party plugin | Native client |
 | [Pi](pi.md) | Third-party extension | Third-party adapter |
+| [VS Code Copilot Chat](vscode-copilot-chat.md) | Built-in local OTLP | VS Code MCP client |
 
 The OpenCode and Pi producers are not uniform wire contracts. Follow the named
 compatibility profile, then use ineffective-record samples to inspect any

@@ -50,7 +50,18 @@ position, ready for people, agents, and automation.
 
 ## Install and connect
 
-On macOS or Linux with Go 1.26.7 or later, build and start the resident:
+On macOS or Linux with Go 1.26.7 or later, the fastest durable setup is:
+
+```sh
+scripts/setup-resident.sh
+```
+
+It builds the binary, links `~/.local/bin/tailapp`, starts a no-sudo user
+resident, and installs all five built-in bundles. See
+[first-time resident setup](docs/reference/first-time-setup.md) for its dry
+run and platform details.
+
+To build and start the resident manually instead:
 
 ```sh
 go build -o tailapp ./cmd/tailapp
@@ -85,6 +96,15 @@ After a model request and tool call, confirm intake and projection health:
 
 If intake rises but a result stays empty, `./tailapp ineffective APP` shows
 recent records that app did not recognize.
+
+Versioned macOS and Linux binaries are published as signed GitHub release
+archives. See [verified releases](docs/reference/releases.md) to verify their
+checksums, keyless signature, and GitHub provenance before using one.
+
+On macOS, once this is running as the standard per-user LaunchAgent, use
+[`scripts/upgrade-resident-macos.sh`](docs/reference/resident-upgrade.md) to
+build the current checkout, atomically switch the resident binary, verify its
+control socket, and automatically roll back if it does not become healthy.
 
 ## Create your own
 

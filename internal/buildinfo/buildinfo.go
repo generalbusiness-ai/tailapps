@@ -23,17 +23,30 @@ const baseVersion = "0.1.0"
 // `go build` leaves it empty and the module path supplies the fallback.
 var stampedSourceURL string
 
+// stampedVersion is set only by the release packaging path. A development
+// build continues to derive its version from Go's VCS build settings, so a
+// tag-like environment value cannot silently become a release identity.
+var stampedVersion string
+
 var githubURL = regexp.MustCompile(`^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$`)
+var releaseVersion = regexp.MustCompile(`^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$`)
 
 // Version reports the binary's version: a real module tag when one names the
 // build, otherwise the base version annotated with the VCS revision and a
 // .dirty marker, otherwise the bare base version.
 func Version() string {
 	info, ok := debug.ReadBuildInfo()
-	return version(info, ok)
+	return versionWithStamp(stampedVersion, info, ok)
 }
 
 func version(info *debug.BuildInfo, ok bool) string {
+	return versionWithStamp("", info, ok)
+}
+
+func versionWithStamp(stamped string, info *debug.BuildInfo, ok bool) string {
+	if releaseVersion.MatchString(stamped) {
+		return stamped
+	}
 	if !ok || info == nil {
 		return baseVersion
 	}
