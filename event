@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will add the compact data-directed HTML report prompt to the value-first README and verify every named export against the shipped bundles."}
+{"kind":"artifact","text":"README adds one compact, copy-pasteable, privacy-preserving HTML report prompt grounded in every shipped analytics export; export/column audit and full tests, vet, race pass","body":{"commit":"e16c8260198f5c2f766bdb6e5fb493e8b9b10b36","path":"README.md"}}
