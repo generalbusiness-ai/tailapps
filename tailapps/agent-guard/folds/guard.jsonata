@@ -63,6 +63,22 @@
       "last_distinct_progress_unix_nano": $distinct
     }
   }] : [];
+  $failure_rows := $failed ? [{
+    "source_position": event.source_position,
+    "event_time_unix_nano": event.event_time_unix_nano,
+    "harness": event.harness,
+    "session_id": event.session_id,
+    "session_id_prefix": event.session_id_prefix,
+    "project": event.project,
+    "model": event.model,
+    "tool": event.tool ? event.tool : "unknown",
+    "command": event.command,
+    "tool_arguments": event.tool_arguments,
+    "target": event.target ? event.target : "",
+    "failure_detail": event.failure_detail,
+    "detail_coverage": event.command != "" and event.failure_detail != "" ? "observed" :
+      ((event.command != "" or event.tool_arguments != "" or event.failure_detail != "" or event.target) ? "partial" : "unknown")
+  }] : [];
 
   {
     "decision": "effective",
@@ -83,7 +99,8 @@
         "last_source_position": event.source_position
       }]},
       "policy_findings": {"upsert": $policy_rows},
-      "loop_findings": {"upsert": $loop_rows}
+      "loop_findings": {"upsert": $loop_rows},
+      "tool_failure_detail": {"upsert": $failure_rows}
     }
   }
 )

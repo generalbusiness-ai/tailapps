@@ -3,8 +3,10 @@
 `agent-guard` is a reference detective-policy Tailapp. It normalizes selected
 tool events from Claude Code, Codex, and OpenCode into one private action
 vocabulary, then folds each short-lived event into durable coverage, policy,
-loop, and session-progress tables. Raw OTLP records and normalized events are
-not retained.
+loop, session-progress, and failed-tool detail tables. It does not retain the
+source OTLP stream. For observed failures it does retain available command,
+arguments, error detail, project, and model so a local same-user review can
+explain the failure rather than merely count it.
 
 The model separates an observed violation from missing evidence. A result can
 prove that a named action occurred, but an absent or redacted target cannot
@@ -36,7 +38,7 @@ The normalizer accepts these event names:
 
 It reads session identity from `session.id`, `conversation.id`, `session_id`,
 or `service.instance.id`; tool identity from `tool_name` or `tool`; target from
-`target`, `file_path`, or `full_command`; and optional `success`,
+`target`, `file_path`, or `full_command`; and optional `success`/`tool.success`,
 `operation_kind`, `argument_digest`, and `progress_fingerprint` attributes.
 The normalizer prefers a nonempty semantic `event.name` attribute over the
 OTLP log-record name, which accommodates Codex's tracing-callsite envelope.
@@ -48,10 +50,11 @@ normalized to `codex`. Event time uses the
 source timestamp when present and otherwise the observed timestamp. A
 recognized event with neither timestamp remains ineffective.
 
-Raw `arguments` are deliberately not interpreted or copied into normalized
-events. When Codex provides tool identity but target detail exists only inside
-that raw field, the action is still recorded with `target_coverage = unknown`,
-and only the canonical record digest is retained as `argument_digest`.
+For an observed `success = false`, the normalizer retains up to 8 KiB each of
+available command, tool arguments, and failure detail in
+`tool_failure_detail`. Structured values are retained as their JSON string.
+Successful and unknown-outcome calls do not retain these payloads. The detail
+comes only from OTLP attributes; no harness session store is consulted.
 
 Do not emit both an OpenCode `before` and `after` record for one completed call
 unless two counted actions are intended. Prefer `after` for completed calls and
@@ -98,6 +101,8 @@ The queryable tables and exports are:
 - `session_progress`: rolling counters and progress timestamps per session;
 - `policy_findings`: per-position violations plus stable per-session unknowns;
 - `loop_findings`: latest evidence per session and loop kind.
+- `tool_failure_detail`: one row per observed failed tool call, including raw
+  telemetry detail and explicit observed/partial/unknown coverage.
 
 ## Query recipes
 
@@ -123,6 +128,15 @@ Loop evidence:
 SELECT harness, session_id, finding_kind, repeat_count,
        consecutive_failures, no_progress_count, evidence
 FROM loop_findings
+ORDER BY source_position DESC;
+```
+
+Failed commands and tool details:
+
+```sql
+SELECT event_time_unix_nano, harness, session_id_prefix, project, model,
+       tool, command, tool_arguments, target, failure_detail, detail_coverage
+FROM tool_failure_detail
 ORDER BY source_position DESC;
 ```
 

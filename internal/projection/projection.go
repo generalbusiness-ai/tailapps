@@ -613,6 +613,9 @@ func transientProcessError(ctx context.Context, err error) bool {
 	if ctx.Err() != nil || errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 		return true
 	}
+	if jsonataddl.IsEvaluationTimeout(err) {
+		return true
+	}
 	var code sqlite3.ErrorCode
 	if !errors.As(err, &code) {
 		return false

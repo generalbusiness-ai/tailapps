@@ -190,6 +190,91 @@ func TestSessionCostMapsClaudeNativeCost(t *testing.T) {
 	}
 }
 
+func TestDailyReviewMapsObservedClaudeNativeNames(t *testing.T) {
+	review, err := Load("daily-review")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"tool_result", "api_request"} {
+		normalized, err := review.Evaluate("normalize_review_event", observedClaudeInputs(t)[name])
+		if err != nil {
+			t.Fatal(err)
+		}
+		events := normalized.Events["otel_event"]
+		if normalized.Decision != "effective" || len(events) != 1 {
+			t.Fatalf("%s normalized = %#v", name, normalized)
+		}
+		if name == "tool_result" && fmt.Sprint(events[0]["tool_event"]) != "1" {
+			t.Fatalf("tool event = %#v", events[0])
+		}
+		if name == "api_request" && (fmt.Sprint(events[0]["api_event"]) != "1" || fmt.Sprint(events[0]["input_tokens"]) != "2") {
+			t.Fatalf("usage event = %#v", events[0])
+		}
+	}
+}
+
+func TestSessionCostRetainsTelemetryDimensions(t *testing.T) {
+	cost, err := Load("session-cost")
+	if err != nil {
+		t.Fatal(err)
+	}
+	normalized, err := cost.Evaluate("normalize_usage", harnessInput(12, "codex", "codex.api_request", map[string]any{
+		"conversation.id": "0198aabbccddeeff", "model": "gpt-5.6", "cwd": "/work/tailapps",
+		"input_tokens": 100, "output_tokens": 25, "cost_microusd": 7,
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	event := normalized.Events["otel_event"][0]
+	if event["session_id_prefix"] != "0198aabbccdd" || event["model"] != "gpt-5.6" || event["project"] != "/work/tailapps" {
+		t.Fatalf("dimensions = %#v", event)
+	}
+	result, err := cost.Evaluate("accumulate_cost", profile.EvaluationInput{
+		Meta:  map[string]any{"position": 12, "event_id": "local:12", "event_type": "otel_event", "emission_ordinal": 0},
+		Event: event,
+		Rows:  map[string]any{"prior": nil, "detail": nil},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	detail := result.Tables["session_cost_detail"].Upsert[0]
+	if detail["model"] != "gpt-5.6" || detail["project"] != "/work/tailapps" || fmt.Sprint(detail["cost_microusd"]) != "7" {
+		t.Fatalf("detail = %#v", detail)
+	}
+}
+
+func TestAgentGuardRetainsFailedToolTelemetry(t *testing.T) {
+	guard, err := Load("agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	normalized, err := guard.Evaluate("normalize_harness_event", harnessInput(13, "codex", "codex.tool_result", map[string]any{
+		"conversation.id": "0198aabbccddeeff", "tool_name": "exec_command", "success": false,
+		"cwd": "/work/tailapps", "model": "gpt-5.6", "full_command": "go test ./...",
+		"arguments": `{"cmd":"go test ./..."}`, "error.message": "exit status 1",
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	event := normalized.Events["otel_event"][0]
+	result, err := guard.Evaluate("update_guard_analytics", profile.EvaluationInput{
+		Meta:  map[string]any{"position": 13, "event_id": "local:13", "event_type": "otel_event", "emission_ordinal": 0},
+		Event: event,
+		Rows:  map[string]any{"prior": nil},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows := result.Tables["tool_failure_detail"].Upsert
+	if len(rows) != 1 {
+		t.Fatalf("failure rows = %#v", rows)
+	}
+	row := rows[0]
+	if row["command"] != "go test ./..." || row["tool_arguments"] != `{"cmd":"go test ./..."}` || row["failure_detail"] != "exit status 1" || row["project"] != "/work/tailapps" {
+		t.Fatalf("failure detail = %#v", row)
+	}
+}
+
 func TestAgentGuardMapsObservedClaudeOTLPShape(t *testing.T) {
 	guard, err := Load("agent-guard")
 	if err != nil {
@@ -446,7 +531,7 @@ func TestAgentGuardMapsObservedCodexOTLPShape(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if strings.Contains(string(encoded), "arguments") || strings.Contains(string(encoded), "<scrubbed>") {
+			if strings.Contains(string(encoded), "<scrubbed>") || event["tool_arguments"] != "" {
 				t.Fatalf("raw arguments escaped normalized output: %s", encoded)
 			}
 		})
@@ -701,6 +786,32 @@ func TestSessionCostRejectsCounterlessAPIRequest(t *testing.T) {
 	}
 	if normalized.Decision != "ineffective" || len(normalized.Events["otel_event"]) != 0 {
 		t.Fatalf("counterless api_request = %#v", normalized)
+	}
+}
+
+func BenchmarkTelemetryNormalizers(b *testing.B) {
+	inputs := []struct {
+		bundle  string
+		program string
+		input   profile.EvaluationInput
+	}{
+		{"activity-stats", "normalize_activity", harnessInput(1, "codex", "codex.tool_result", map[string]any{"conversation.id": "bench", "tool_name": "exec_command", "success": false, "arguments": `{"cmd":"go test ./..."}`})},
+		{"daily-review", "normalize_review_event", harnessInput(2, "claude-code", "claude_code.api_request", map[string]any{"session.id": "bench", "input_tokens": 100, "output_tokens": 20})},
+		{"agent-guard", "normalize_harness_event", harnessInput(3, "codex", "codex.tool_result", map[string]any{"conversation.id": "bench", "tool_name": "exec_command", "success": false, "full_command": "go test ./...", "error.message": "exit status 1"})},
+		{"session-cost", "normalize_usage", harnessInput(4, "codex", "codex.api_request", map[string]any{"conversation.id": "bench", "model": "gpt-5.6", "cwd": "/work/tailapps", "input_tokens": 100, "output_tokens": 20})},
+	}
+	for _, item := range inputs {
+		compiled, err := Load(item.bundle)
+		if err != nil {
+			b.Fatal(err)
+		}
+		b.Run(item.bundle, func(b *testing.B) {
+			for range b.N {
+				if _, err := compiled.Evaluate(item.program, item.input); err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
 	}
 }
 

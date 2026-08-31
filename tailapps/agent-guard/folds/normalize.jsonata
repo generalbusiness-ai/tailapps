@@ -26,6 +26,16 @@
     ($lookup($resource, "session.id") ? $lookup($resource, "session.id") : $lookup($resource, "service.instance.id")))));
   $session_known := $exists($session_raw) and $session_raw != "";
   $session := $session_known ? $string($session_raw) : "unknown:" & $harness;
+  $project_raw := $exists($lookup($attrs, "project")) ? $lookup($attrs, "project") :
+    ($exists($lookup($attrs, "project.name")) ? $lookup($attrs, "project.name") :
+    ($exists($lookup($attrs, "project_path")) ? $lookup($attrs, "project_path") :
+    ($exists($lookup($attrs, "cwd")) ? $lookup($attrs, "cwd") :
+    ($exists($lookup($attrs, "working_directory")) ? $lookup($attrs, "working_directory") :
+      $lookup($attrs, "workspace.root")))));
+  $model_raw := $exists($lookup($attrs, "model")) ? $lookup($attrs, "model") :
+    ($exists($lookup($attrs, "gen_ai.request.model")) ? $lookup($attrs, "gen_ai.request.model") :
+    ($exists($lookup($attrs, "gen_ai.response.model")) ? $lookup($attrs, "gen_ai.response.model") :
+      $lookup($attrs, "model_name")));
   $tool_raw := $lookup($attrs, "tool_name") ? $lookup($attrs, "tool_name") :
     ($lookup($attrs, "tool") ? $lookup($attrs, "tool") : $lookup($attrs, "gen_ai.tool.name"));
   $tool_known := $exists($tool_raw) and $string($tool_raw) != "";
@@ -35,11 +45,23 @@
     $lookup($attrs, "full_command"));
   $target_known := $exists($target_raw) and $string($target_raw) != "" and $string($target_raw) != "<redacted>";
   $target := $target_known ? $string($target_raw) : null;
-  $success_raw := $lookup($attrs, "success");
+  $success_raw := $exists($lookup($attrs, "success")) ? $lookup($attrs, "success") :
+    $lookup($attrs, "tool.success");
   $success_known := $exists($success_raw);
   $success := $success_known ? ($success_raw = true or $string($success_raw) = "true") : null;
   $argument_digest_raw := $lookup($attrs, "argument_digest");
   $argument_digest := $exists($argument_digest_raw) ? $string($argument_digest_raw) : event.content_digest;
+  $arguments_raw := $exists($lookup($attrs, "arguments")) ? $lookup($attrs, "arguments") :
+    ($exists($lookup($attrs, "tool_input")) ? $lookup($attrs, "tool_input") :
+    ($exists($lookup($attrs, "tool_parameters")) ? $lookup($attrs, "tool_parameters") :
+      $lookup($attrs, "tool_content")));
+  $command_raw := $exists($lookup($attrs, "full_command")) ? $lookup($attrs, "full_command") :
+    ($exists($lookup($attrs, "command")) ? $lookup($attrs, "command") : $lookup($attrs, "cmd"));
+  $failure_raw := $exists($lookup($attrs, "error.message")) ? $lookup($attrs, "error.message") :
+    ($exists($lookup($attrs, "error")) ? $lookup($attrs, "error") :
+    ($exists($lookup($attrs, "failure_reason")) ? $lookup($attrs, "failure_reason") :
+    ($exists($lookup($attrs, "message")) ? $lookup($attrs, "message") :
+    ($exists($lookup($attrs, "output")) ? $lookup($attrs, "output") : $lookup($attrs, "tool_content")))));
   $operation := $lookup($attrs, "operation_kind") ? $string($lookup($attrs, "operation_kind")) : "tool";
 	$progress_raw := $lookup($attrs, "progress_fingerprint");
 	$progress_known := $exists($progress_raw) and $string($progress_raw) != "" and $string($progress_raw) != "<redacted>";
@@ -60,10 +82,16 @@
       "otel_event": [{
         "harness": $harness,
         "session_id": $session,
+        "session_id_prefix": $substring($session, 0, 12),
+        "project": $exists($project_raw) and $string($project_raw) != "" ? $substring($string($project_raw), 0, 4096) : "unknown",
+        "model": $exists($model_raw) and $string($model_raw) != "" ? $substring($string($model_raw), 0, 1024) : "unknown",
         "kind": "tool-activity",
         "operation_kind": $operation,
         "tool": $tool,
         "target": $target,
+        "command": $success = false and $exists($command_raw) ? $substring($string($command_raw), 0, 8192) : "",
+        "tool_arguments": $success = false and $exists($arguments_raw) ? $substring($string($arguments_raw), 0, 8192) : "",
+        "failure_detail": $success = false and $exists($failure_raw) ? $substring($string($failure_raw), 0, 8192) : "",
         "argument_digest": $argument_digest,
         "success": $success,
         "event_time_unix_nano": $string($event_time),

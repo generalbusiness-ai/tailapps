@@ -3,8 +3,9 @@
 `session-cost` is a compact cumulative-usage Tailapp. It recognizes selected
 API-request and completed-stream log events, normalizes their token and cost
 fields into a private event, and folds those values into one durable row per
-harness and session. It retains aggregates, not the source OTLP stream or
-per-request history.
+harness and session. A second export retains model, project, readable session
+prefix, and first/last timestamps when those dimensions are present in OTLP.
+It does not read harness session stores or retain per-request history.
 
 ## Input model
 
@@ -27,6 +28,13 @@ OTLP source, normally `service.name`; Codex's native `codex_cli_rs`,
 `codex_exec`, and `codex-app-server` values are normalized to `codex`. Event
 time uses the source timestamp when present and otherwise the observed
 timestamp.
+
+Model uses `model`, `gen_ai.request.model`, `gen_ai.response.model`,
+`request.model`, or `model_name`. Project uses `project`, `project.name`,
+`project_path`, `cwd`, `working_directory`, or `workspace.root`. These values
+are retained as supplied because Tailapp runs locally for the same user. Each
+dimension has an explicit `observed`/`unknown` coverage field; it is never
+inferred from a local session store.
 
 Generic numeric attributes are `input_tokens`, `output_tokens`,
 `cached_input_tokens`, and `reasoning_output_tokens`. Native Codex
@@ -60,7 +68,7 @@ engine contract.
 
 ## Table and export
 
-`session_cost` is both the table and export. Its primary key is
+`session_cost` remains the compact compatibility table and export. Its primary key is
 `(harness, session_id)`, and each effective event adds to:
 
 - `input_tokens`
@@ -72,6 +80,11 @@ engine contract.
 `last_event_time_unix_nano` records the source timestamp or its observed-time
 fallback. `last_source_position` identifies the latest consumed inbox
 position.
+
+`session_cost_detail` adds `session_id_prefix`, model, project, coverage, and
+first/last event timestamps while keeping the same `(harness, session_id)`
+grain. A later event can fill an earlier unknown model or project for its
+session.
 
 ## Query recipes
 
@@ -100,6 +113,29 @@ GROUP BY harness
 ORDER BY harness;
 ```
 
+Cost by model and project, with unknown coverage visible:
+
+```sql
+SELECT harness, model, project, model_coverage, project_coverage,
+       SUM(cost_microusd) / 1000000.0 AS cost_usd,
+       SUM(input_tokens) AS input_tokens,
+       SUM(cached_input_tokens) AS cached_input_tokens,
+       SUM(output_tokens) AS output_tokens
+FROM session_cost_detail
+GROUP BY harness, model, project, model_coverage, project_coverage
+ORDER BY cost_usd DESC, harness, model, project;
+```
+
+Readable session labels without inventing names:
+
+```sql
+SELECT harness, session_id_prefix, first_event_time_unix_nano,
+       last_event_time_unix_nano, project, model,
+       cost_microusd / 1000000.0 AS cost_usd
+FROM session_cost_detail
+ORDER BY first_event_time_unix_nano DESC, harness, session_id_prefix;
+```
+
 Join the export into `agent-guard` by mounting it as `cost`:
 
 ```sh
@@ -118,6 +154,5 @@ records: already-materialized rows keep their previous harness label. Reset
 activation would apply the new label to subsequently received records, but it
 also discards the existing projection history; the `tailapp` engine cannot
 replay that history, so a normalizer update does not force a reset.
-Updating an older installed copy to this schema requires reset activation
-because the materialized table gains cached-input, reasoning-output, and
-last-event-time columns.
+The detailed table is additive, so a continue activation preserves the compact
+history and begins detailed coverage at the activation boundary.

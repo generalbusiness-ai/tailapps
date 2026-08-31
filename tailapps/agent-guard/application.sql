@@ -1,10 +1,16 @@
 CREATE EVENT otel_event (
   harness TEXT NOT NULL,
   session_id TEXT NOT NULL,
+  session_id_prefix TEXT NOT NULL,
+  project TEXT NOT NULL,
+  model TEXT NOT NULL,
   kind TEXT NOT NULL,
   operation_kind TEXT NOT NULL,
   tool TEXT,
   target TEXT,
+  command TEXT NOT NULL,
+  tool_arguments TEXT NOT NULL,
+  failure_detail TEXT NOT NULL,
   argument_digest TEXT NOT NULL,
   success BOOLEAN,
   event_time_unix_nano TEXT NOT NULL,
@@ -15,6 +21,22 @@ CREATE EVENT otel_event (
   tool_coverage TEXT NOT NULL,
   target_coverage TEXT NOT NULL,
   coverage_reason TEXT NOT NULL
+);
+
+CREATE TABLE tool_failure_detail (
+  source_position INTEGER PRIMARY KEY,
+  event_time_unix_nano TEXT NOT NULL,
+  harness TEXT NOT NULL,
+  session_id TEXT NOT NULL,
+  session_id_prefix TEXT NOT NULL,
+  project TEXT NOT NULL,
+  model TEXT NOT NULL,
+  tool TEXT NOT NULL,
+  command TEXT NOT NULL,
+  tool_arguments TEXT NOT NULL,
+  target TEXT NOT NULL,
+  failure_detail TEXT NOT NULL,
+  detail_coverage TEXT NOT NULL CHECK (detail_coverage IN ('observed', 'partial', 'unknown'))
 );
 
 CREATE TABLE telemetry_coverage (
@@ -91,7 +113,7 @@ READ prior OPTIONAL ONE AS
   FROM session_progress
   WHERE harness = :event.harness AND session_id = :event.session_id
 USING 'folds/guard.jsonata'
-WRITES session_progress, policy_findings, loop_findings;
+WRITES session_progress, policy_findings, loop_findings, tool_failure_detail;
 
 CREATE EXPORT telemetry_coverage AS
   SELECT harness, capability, state, reason, last_source_position
@@ -113,3 +135,9 @@ CREATE EXPORT loop_findings AS
   SELECT finding_id, finding_kind, harness, session_id, source_position,
          repeat_count, consecutive_failures, no_progress_count, evidence
   FROM loop_findings;
+
+CREATE EXPORT tool_failure_detail AS
+  SELECT source_position, event_time_unix_nano, harness, session_id,
+         session_id_prefix, project, model, tool, command, tool_arguments,
+         target, failure_detail, detail_coverage
+  FROM tool_failure_detail;

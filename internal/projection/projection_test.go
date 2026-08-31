@@ -9,6 +9,8 @@ import (
 	"testing"
 	"testing/fstest"
 
+	jsonatav206 "github.com/jsonata-go/jsonata/v206"
+
 	"github.com/generalbusiness-ai/tailapps/internal/inbox"
 	"github.com/generalbusiness-ai/tailapps/internal/profile"
 	"github.com/generalbusiness-ai/tailapps/tailapps"
@@ -152,6 +154,13 @@ func TestCancelledProcessingLeavesDeliveryPendingWithoutGap(t *testing.T) {
 	}
 	if frontier.GapPosition != nil || !frontier.Complete || frontier.InterpretedPosition != 0 {
 		t.Fatalf("cancelled processing changed frontier: %#v", frontier)
+	}
+}
+
+func TestEvaluationTimeoutIsTransient(t *testing.T) {
+	err := fmt.Errorf("evaluate normalizer: %w", &jsonatav206.JSONataError{Code: "U1002", Message: "evaluation timeout exceeded"})
+	if !transientProcessError(context.Background(), err) {
+		t.Fatal("evaluation timeout would open a permanent projection gap")
 	}
 }
 

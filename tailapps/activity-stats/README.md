@@ -49,12 +49,10 @@ numeric `response_length`, `prompt_length`, `content_length`,
 a length by reading content. Durations use numeric `duration_ms`, `latency_ms`,
 `request_latency_ms`, `ttft_ms`, or `duration_milliseconds` attributes.
 
-The shipped OTLP profiles do not currently provide model, project/cwd, MCP
-server, parent/subagent, git, retry, command text, or safe file-target fields.
-Therefore by-model and by-project cost, MCP counts, one-shot/retry and
-delegation rates, git-yield correlation, and command-type breakdown are
-explicitly unavailable here. They require the opt-in disk sidecar designed in
-`notes/2026-08-28-disk-session-ingestion.md`; this bundle does not infer them.
+This compact bundle intentionally omits high-cardinality model, project, and
+command dimensions. The complementary `session-cost` and `agent-guard`
+exports retain those values when OTLP supplies them, with explicit unknown
+coverage. None of the built-in analytics reads harness session stores.
 
 ## Tables and coverage
 
