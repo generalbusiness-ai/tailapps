@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Release asset builder at reviewed release head","body":{"commit":"0bac8fd1d512323e329731a192802454483925fe","path":"scripts/release.sh","sha256":"4e73b751ee13aa6b71aeeb89dbba848699a371db46515a6e52b6054155be6a91"}}
+{"kind":"artifact","text":"Release asset and installer tests at reviewed release head","body":{"commit":"0bac8fd1d512323e329731a192802454483925fe","path":"scripts/release_test.go","sha256":"b1ff71e199a349df817768784f02f02385be21f955abfe73cf1a5ea8833dea40"}}
