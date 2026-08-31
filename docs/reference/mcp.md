@@ -158,7 +158,13 @@ with `ingestion_not_ready` until every active Tailapp is explicitly continued
 or reset. Use `tailapp_get`, chain changed sources through `tailapp_put`, then
 call `tailapp_validate` and `tailapp_activate`; unchanged drafts still require
 an explicit continue activation. The [CLI upgrade procedure](cli.md#upgrading-an-existing-resident)
-lists the changed built-in source paths for this release.
+lists the changed built-in source paths for this release. It derives them from
+`git diff --name-only main..HEAD -- tailapps`, retaining only `application.sql`
+and `folds/*.jsonata`: `agent-guard` needs `application.sql`,
+`folds/normalize.jsonata`, and `folds/guard.jsonata`; `session-cost` needs
+`application.sql`, `folds/normalize.jsonata`, and `folds/cost.jsonata`;
+`daily-review` needs `folds/normalize.jsonata`; and `signal-counts` needs
+`application.sql`, `folds/normalize.jsonata`, and `folds/count.jsonata`.
 
 ### Idempotency key
 

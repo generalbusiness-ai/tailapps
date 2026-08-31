@@ -27,3 +27,10 @@ Tailapp.
 Adding the timestamp columns changes this writable table's storage shape. An
 older installed copy therefore requires reset activation to upgrade, which
 discards its prior counts.
+
+For this release, upgrade the complete changed source set: `application.sql`,
+`folds/normalize.jsonata`, and `folds/count.jsonata`. The canonical upgrade
+procedure derives every release's source set mechanically from
+`git diff --name-only main..HEAD -- tailapps`, retaining only `application.sql`
+and `folds/*.jsonata`; follow the [resident upgrade procedure](../../docs/reference/cli.md#upgrading-an-existing-resident)
+rather than putting only the files suggested by a table change.

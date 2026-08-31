@@ -195,7 +195,11 @@ therefore places every existing Tailapp in that state. The additive frontier
 timestamps do not change interpretation and do not introduce another identity
 transition.
 Before replacing the binary, keep a checkout of the matching release available
-for the changed built-in sources. After starting the new resident:
+for the changed built-in sources. The source lists below are derived
+mechanically with `git diff --name-only main..HEAD -- tailapps`: keep only
+changed executable sources (`application.sql` and `folds/*.jsonata`) and group
+them by bundle. Re-run that command for every release rather than inferring a
+partial list from its schema changes. After starting the new resident:
 
 1. Run `tailapp apps get APP` and record its `draft_revision`.
 2. For `agent-guard`, put `application.sql`, `folds/normalize.jsonata`, and
@@ -206,8 +210,9 @@ for the changed built-in sources. After starting the new resident:
    `tailapp apps put --expected REV --idempotency-key KEY APP PATH FILE` for
    each file, replacing `REV` with the new draft revision returned by the
    preceding put.
-3. For `signal-counts`, put `application.sql` and `folds/count.jsonata` from
-   `tailapps/signal-counts/`, chaining the returned revisions in the same way.
+3. For `signal-counts`, put `application.sql`, `folds/normalize.jsonata`, and
+   `folds/count.jsonata` from `tailapps/signal-counts/`, chaining the returned
+   revisions in the same way.
 4. Validate each final draft with `tailapp apps validate --expected REV APP`.
    Activate `daily-review` and `session-cost` with
    `tailapp apps activate --mode continue --expected REV --idempotency-key KEY APP`;
