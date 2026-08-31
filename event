@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Verified Copilot service identity and setting guide","body":{"commit":"24a6a2f93f2d8fd1d92ea4b849ecede7828f3777","path":"docs/harnesses/vscode-copilot-chat.md"}}
+{"kind":"artifact","text":"Dependency-upgraded canonical OTLP boundary","body":{"commit":"24a6a2f93f2d8fd1d92ea4b849ecede7828f3777","path":"internal/ingest/canonical.go"}}
