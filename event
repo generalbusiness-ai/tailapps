@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:892503798b2b318f3b0c5e72311ee9c06705bb3f","text":"Retired immediately: the body cited a guessed non-existent full commit instead of verified exact head 854f9239501a129584dabe11d981bd214fa2faf3. A corrected record follows."}
+{"kind":"artifact","text":"Corrected release upgrader at verified exact head: loaded-service gate, no-op result, failure cleanup, and preserved rollback.","body":{"commit":"854f9239501a129584dabe11d981bd214fa2faf3","path":"scripts/upgrade.sh"}}
