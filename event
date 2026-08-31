@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Mocked upgrade and rollback tests at reviewed upgrade head","body":{"commit":"9be94e8c697d44404ad1a85e0d8e91eb1f5e9e5f","path":"scripts/release_test.go","sha256":"85c5e04f23df43099241ce65883a371f8ac81d0e7e8ca01ef9803f9f1db90b1b"}}
+{"kind":"artifact","text":"Verified release-consuming upgrade and rollback script at reviewed upgrade head","body":{"commit":"9be94e8c697d44404ad1a85e0d8e91eb1f5e9e5f","path":"scripts/upgrade.sh","sha256":"c491512bb72d0ed43d97070c347abc4e594adaaa36f96f46a28d276d52ed25e9"}}
