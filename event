@@ -1,1 +1,1 @@
-{"kind":"promise","text":"Builder: deliver the corrected README visual-report guidance at the current-main head and request independent re-review."}
+{"kind":"artifact","text":"Corrected current-main visual-report README guidance","body":{"commit":"7ec1a18d20c81a0b239d9449fa63848c123b64df","path":"README.md"}}
