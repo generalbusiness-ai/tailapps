@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:6f86a577186209e0ba3e09c356798eed7af52c93","text":"Superseded by corrected full-head artifact 4b93320968609e6587cace35a7f023bfff9fd309."}
+{"kind":"artifact","text":"CI vulnerability scan after static verification","body":{"commit":"4b93320968609e6587cace35a7f023bfff9fd309","path":".github/workflows/ci.yml"}}
