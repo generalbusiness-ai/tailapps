@@ -76,6 +76,12 @@ The shipped guard is detective, not preventive. Export batching adds latency,
 and a silent or terminated harness cannot emit the event needed to diagnose
 it. Keep harness-native permission and sandbox controls in place.
 
+When failed tool calls expose them in OTLP, `agent-guard` retains commands,
+arguments, project paths, and explicit error or failure-message attributes for
+the same local OS user. These fields can include secrets or proprietary source
+context even though successful-call payloads and generic tool output are not
+retained. Configure each harness's content gates accordingly.
+
 The five shipped Tailapps are a starting kit. Agents and operators can
 [author and install their own](../authoring.md), including a normalizer for a
 different adapter vocabulary.

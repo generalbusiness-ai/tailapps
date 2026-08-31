@@ -54,7 +54,11 @@ For an observed `success = false`, the normalizer retains up to 8 KiB each of
 available command, tool arguments, and failure detail in
 `tool_failure_detail`. Structured values are retained as their JSON string.
 Successful and unknown-outcome calls do not retain these payloads. The detail
-comes only from OTLP attributes; no harness session store is consulted.
+comes only from OTLP attributes; no harness session store is consulted. Failure
+detail is limited to explicit error, failure-reason, or message attributes;
+generic tool output and `tool_content` are not used as failure detail. Command,
+arguments, project paths, and error messages can still contain sensitive local
+content and are intentionally queryable to the same OS user.
 
 Do not emit both an OpenCode `before` and `after` record for one completed call
 unless two counted actions are intended. Prefer `after` for completed calls and
@@ -81,6 +85,12 @@ evidence marks `action_fingerprint_coverage` as `degraded` and carries an
 `action_fingerprint_reason`. For example, without target detail the fingerprint
 can distinguish tools but not their arguments or targets, so three consecutive
 calls to the same tool can satisfy the repetition threshold.
+
+This release changes the runtime identity, so an existing resident still holds
+ingestion closed until every active Tailapp is explicitly continued or reset.
+Follow [Upgrading an existing resident](../../docs/reference/cli.md#upgrading-an-existing-resident);
+continuing `agent-guard` preserves its prior rows and begins failed-call detail
+at the activation boundary.
 
 `bounded-no-progress` requires an observed `progress_fingerprint`. The native
 Claude Code, Codex, and OpenCode telemetry shapes documented here do not

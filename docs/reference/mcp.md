@@ -151,6 +151,15 @@ source record timestamp, with observed-time fallback, of the last successfully
 consumed record and can be absent when the gap occurred at the activation
 boundary or the producer supplied no timestamp.
 
+`tailapp_status` can also report `ingestion_ready: false` while a runtime
+upgrade is pending. In that state existing projections remain queryable and
+their frontier may still be `complete: true`, but OTLP intake is held closed
+with `ingestion_not_ready` until every active Tailapp is explicitly continued
+or reset. Use `tailapp_get`, chain changed sources through `tailapp_put`, then
+call `tailapp_validate` and `tailapp_activate`; unchanged drafts still require
+an explicit continue activation. The [CLI upgrade procedure](cli.md#upgrading-an-existing-resident)
+lists the changed built-in source paths for this release.
+
 ### Idempotency key
 
 All mutating tools require `idempotency_key`: 1 to 128 printable ASCII

@@ -82,9 +82,11 @@ fallback. `last_source_position` identifies the latest consumed inbox
 position.
 
 `session_cost_detail` adds `session_id_prefix`, model, project, coverage, and
-first/last event timestamps while keeping the same `(harness, session_id)`
-grain. A later event can fill an earlier unknown model or project for its
-session.
+first/last event timestamps at `(harness, session_id, model)` grain. A session
+that uses multiple models therefore has one row per model rather than having
+all of its usage attributed to the last model observed. Events without a model
+remain in an explicit `unknown` row. Project stays a session-level label within
+each model row; a later observed project can fill an earlier unknown value.
 
 ## Query recipes
 
@@ -126,14 +128,14 @@ GROUP BY harness, model, project, model_coverage, project_coverage
 ORDER BY cost_usd DESC, harness, model, project;
 ```
 
-Readable session labels without inventing names:
+Readable session-and-model labels without inventing names:
 
 ```sql
 SELECT harness, session_id_prefix, first_event_time_unix_nano,
        last_event_time_unix_nano, project, model,
        cost_microusd / 1000000.0 AS cost_usd
 FROM session_cost_detail
-ORDER BY first_event_time_unix_nano DESC, harness, session_id_prefix;
+ORDER BY first_event_time_unix_nano DESC, harness, session_id_prefix, model;
 ```
 
 Join the export into `agent-guard` by mounting it as `cost`:
@@ -156,3 +158,9 @@ also discards the existing projection history; the `tailapp` engine cannot
 replay that history, so a normalizer update does not force a reset.
 The detailed table is additive, so a continue activation preserves the compact
 history and begins detailed coverage at the activation boundary.
+
+This release also changes the runtime identity, so an existing resident holds
+ingestion closed until every active Tailapp is explicitly continued or reset.
+Follow [Upgrading an existing resident](../../docs/reference/cli.md#upgrading-an-existing-resident);
+continuing `session-cost` preserves its compact history and starts this new
+model-grained detail at the activation boundary.

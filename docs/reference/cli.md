@@ -181,6 +181,45 @@ Returns engine status; equivalent to `tailapp health`.
 
 Returns the active compiled profile. Draft-only Tailapps have no live schema.
 
+## Upgrading an existing resident
+
+A release that changes the runtime identity deliberately reopens existing
+projections in an upgrade-pending state. While any active Tailapp is pending,
+the OTLP receiver returns HTTP 503 with `ingestion_not_ready` and the resident
+reports `ingestion_ready: false`. Existing projections remain queryable, and a
+Tailapp frontier can still say `complete: true`: completeness describes its
+stored delivery frontier, not whether intake has reopened.
+
+This release changes the JSONata evaluation and orchestration identity and
+therefore places every existing Tailapp in that state. Before replacing the
+binary, keep a checkout of the matching release available for the changed
+built-in sources. After starting the new resident:
+
+1. Run `tailapp apps get APP` and record its `draft_revision`.
+2. For `agent-guard`, put `application.sql`, `folds/normalize.jsonata`, and
+   `folds/guard.jsonata` from `tailapps/agent-guard/`. For `session-cost`, put
+   `application.sql`, `folds/normalize.jsonata`, and `folds/cost.jsonata` from
+   `tailapps/session-cost/`. For `daily-review`, put
+   `folds/normalize.jsonata` from `tailapps/daily-review/`. Use
+   `tailapp apps put --expected REV --idempotency-key KEY APP PATH FILE` for
+   each file, replacing `REV` with the new draft revision returned by the
+   preceding put.
+3. Run `tailapp apps validate --expected REV APP`, then
+   `tailapp apps activate --mode continue --expected REV --idempotency-key KEY APP`.
+   Continue activation preserves compatible history and begins newly added
+   detail at the activation boundary.
+4. The unchanged `activity-stats` and `signal-counts` sources need no puts.
+   Read each current `draft_revision` with `apps get`, then activate that exact
+   draft with the same `--mode continue` command.
+5. Repeat until `tailapp health` reports `ingestion_ready: true`, then resume
+   exporters. If an application source intentionally changes an existing table
+   shape, use reset only after accepting its documented data loss and add
+   `--ack-reset`; do not substitute reset for the compatible steps above.
+
+The MCP equivalents are `tailapp_get`, one or more `tailapp_put` calls chained
+through their returned revisions, `tailapp_validate`, `tailapp_activate`, and
+finally `tailapp_status`.
+
 ## Query command
 
 ```text

@@ -31,7 +31,7 @@ CREATE TABLE session_cost_detail (
   first_event_time_unix_nano TEXT NOT NULL,
   last_event_time_unix_nano TEXT NOT NULL,
   last_source_position INTEGER NOT NULL,
-  PRIMARY KEY (harness, session_id)
+  PRIMARY KEY (harness, session_id, model)
 );
 
 CREATE TABLE session_cost (
@@ -66,6 +66,7 @@ READ detail OPTIONAL ONE AS
          last_source_position
   FROM session_cost_detail
   WHERE harness = :event.harness AND session_id = :event.session_id
+    AND model = :event.model
 USING 'folds/cost.jsonata'
 WRITES session_cost, session_cost_detail;
 

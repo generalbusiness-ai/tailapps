@@ -60,8 +60,7 @@
   $failure_raw := $exists($lookup($attrs, "error.message")) ? $lookup($attrs, "error.message") :
     ($exists($lookup($attrs, "error")) ? $lookup($attrs, "error") :
     ($exists($lookup($attrs, "failure_reason")) ? $lookup($attrs, "failure_reason") :
-    ($exists($lookup($attrs, "message")) ? $lookup($attrs, "message") :
-    ($exists($lookup($attrs, "output")) ? $lookup($attrs, "output") : $lookup($attrs, "tool_content")))));
+      $lookup($attrs, "message")));
   $operation := $lookup($attrs, "operation_kind") ? $string($lookup($attrs, "operation_kind")) : "tool";
 	$progress_raw := $lookup($attrs, "progress_fingerprint");
 	$progress_known := $exists($progress_raw) and $string($progress_raw) != "" and $string($progress_raw) != "<redacted>";

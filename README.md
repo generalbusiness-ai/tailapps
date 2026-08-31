@@ -127,10 +127,16 @@ for the source format and update lifecycle.
   sandbox controls in place.
 - Source OTLP records are discarded after captured projections commit or
   detach. There is no retained event log for replay.
-- Projections and diagnostic samples can contain sensitive telemetry. Review
-  exporter settings and each Tailapp's retention model.
+- Projections and diagnostic samples can contain sensitive telemetry. In
+  particular, `agent-guard` retains failed-call commands, arguments, project
+  paths, and explicit error detail from OTLP so local reviews can explain
+  failures. Review exporter settings and each Tailapp's retention model.
 - Cross-Tailapp composition happens only through bounded, read-only SQL over
   explicit exports.
+
+Existing installations can briefly hold ingestion closed after a runtime
+identity change. See [Upgrading an existing resident](docs/reference/cli.md#upgrading-an-existing-resident)
+before replacing a running binary.
 
 DDL, JSONata, SQL, resource, timing, and representation limits are part of the
 pinned runtime profile. See the [DDL/JSONata](docs/reference/ddl-jsonata.md) and

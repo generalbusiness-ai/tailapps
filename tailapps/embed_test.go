@@ -275,6 +275,35 @@ func TestSessionCostRetainsTelemetryDimensions(t *testing.T) {
 	}
 }
 
+func TestSessionCostDetailKeepsMixedModelsSeparate(t *testing.T) {
+	cost, err := Load("session-cost")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for position, model := range []string{"claude-opus-4-1", "claude-haiku-3-5"} {
+		normalized, err := cost.Evaluate("normalize_usage", harnessInput(position+20, "claude-code", "claude_code.api_request", map[string]any{
+			"session.id": "mixed-model-session", "model": model,
+			"input_tokens": 10, "cost_usd_micros": 3,
+		}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		event := normalized.Events["otel_event"][0]
+		result, err := cost.Evaluate("accumulate_cost", profile.EvaluationInput{
+			Meta:  map[string]any{"position": position + 20, "event_id": fmt.Sprintf("local:%d", position+20), "event_type": "otel_event", "emission_ordinal": 0},
+			Event: event,
+			Rows:  map[string]any{"prior": nil, "detail": nil},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		detail := result.Tables["session_cost_detail"].Upsert[0]
+		if detail["model"] != model || fmt.Sprint(detail["cost_microusd"]) != "3" {
+			t.Fatalf("detail[%d] = %#v", position, detail)
+		}
+	}
+}
+
 func TestAgentGuardRetainsFailedToolTelemetry(t *testing.T) {
 	guard, err := Load("agent-guard")
 	if err != nil {
@@ -353,6 +382,24 @@ func TestAgentGuardFindingAndCoverageTimestamps(t *testing.T) {
 		if row["first_seen_unix_nano"] != want || row["last_seen_unix_nano"] != want {
 			t.Fatalf("%s coverage timestamps = %#v", capability, row)
 		}
+	}
+}
+
+func TestAgentGuardDoesNotTreatToolOutputAsFailureDetail(t *testing.T) {
+	guard, err := Load("agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	normalized, err := guard.Evaluate("normalize_harness_event", harnessInput(14, "codex", "codex.tool_result", map[string]any{
+		"conversation.id": "session", "tool_name": "exec_command", "success": false,
+		"output": "secret command output", "tool_content": "secret tool content",
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	event := normalized.Events["otel_event"][0]
+	if event["failure_detail"] != "" {
+		t.Fatalf("failure_detail = %#v", event["failure_detail"])
 	}
 }
 
