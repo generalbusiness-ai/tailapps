@@ -283,6 +283,7 @@ exit 1
 	upgradeLog := filepath.Join(t.TempDir(), "upgrade-resident.log")
 	upgradeEnv := append(os.Environ(),
 		"HOME="+upgradeUserHome,
+		"XDG_CONFIG_HOME="+filepath.Join(upgradeUserHome, ".config"),
 		"TAILAPPS_RELEASE_BASE_URL=file://"+releaseRoot,
 		"TAILAPPS_INSTALL_ROOT="+upgradeRoot,
 		"TAILAPP_HOME="+upgradeHome,
