@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at scripts/release_test.go","body":{"commit":"094a62e51b2569a578b8b5fd491ed0936c6eb1b1","path":"scripts/release_test.go"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:0ab461bf7e930126c0b79ed6953cae01e9289042","text":"Merge retired a covered predecessor; the successor is at scripts/release.sh."}
