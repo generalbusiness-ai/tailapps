@@ -25,6 +25,7 @@ jobs:
       - name: Verify generated asset set
         run: |
           test -x "${RUNNER_TEMP}/dist/install.sh"
+          test -x "${RUNNER_TEMP}/dist/upgrade.sh"
           test -f "${RUNNER_TEMP}/dist/checksums.txt"
           test -f "${RUNNER_TEMP}/dist/SHA256SUMS"
 

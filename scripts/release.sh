@@ -29,13 +29,15 @@ fi
 repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 mkdir -p "$output_dir"
 
-installer="$output_dir/install.sh"
-[ ! -e "$installer" ] || {
-  echo "refusing to overwrite release installer: $installer" >&2
-  exit 65
-}
-sed "s/@TAILAPPS_VERSION@/$version/g" "$repo_root/scripts/install.sh" >"$installer"
-chmod 755 "$installer"
+for asset in install.sh upgrade.sh; do
+  rendered="$output_dir/$asset"
+  [ ! -e "$rendered" ] || {
+    echo "refusing to overwrite release asset: $rendered" >&2
+    exit 65
+  }
+  sed "s/@TAILAPPS_VERSION@/$version/g" "$repo_root/scripts/$asset" >"$rendered"
+  chmod 755 "$rendered"
+done
 
 archive_for() {
   goos=$1
@@ -68,9 +70,9 @@ checksums="$output_dir/checksums.txt"
   exit 65
 }
 if command -v sha256sum >/dev/null 2>&1; then
-  (cd "$output_dir" && sha256sum tailapps_"$version"_*.tar.gz install.sh) >"$checksums"
+  (cd "$output_dir" && sha256sum tailapps_"$version"_*.tar.gz install.sh upgrade.sh) >"$checksums"
 else
-  (cd "$output_dir" && shasum -a 256 tailapps_"$version"_*.tar.gz install.sh) >"$checksums"
+  (cd "$output_dir" && shasum -a 256 tailapps_"$version"_*.tar.gz install.sh upgrade.sh) >"$checksums"
 fi
 
 sha256sums="$output_dir/SHA256SUMS"

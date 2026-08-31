@@ -2,6 +2,7 @@ package scripts_test
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -27,12 +28,19 @@ func TestReleaseAssetsAreVersionPinnedAndInstallable(t *testing.T) {
 	if strings.Contains(string(installerBytes), "@TAILAPPS_VERSION@") || !strings.Contains(string(installerBytes), "tailapps_version='"+testVersion+"'") {
 		t.Fatalf("installer is not version pinned:\n%s", installerBytes)
 	}
+	upgradeBytes, err := os.ReadFile(filepath.Join(dist, "upgrade.sh"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(upgradeBytes), "@TAILAPPS_VERSION@") || !strings.Contains(string(upgradeBytes), "tailapps_version='"+testVersion+"'") {
+		t.Fatalf("upgrade asset is not version pinned:\n%s", upgradeBytes)
+	}
 	for _, name := range []string{
 		"tailapps_" + testVersion + "_darwin_arm64.tar.gz",
 		"tailapps_" + testVersion + "_darwin_amd64.tar.gz",
 		"tailapps_" + testVersion + "_linux_arm64.tar.gz",
 		"tailapps_" + testVersion + "_linux_amd64.tar.gz",
-		"checksums.txt", "SHA256SUMS",
+		"upgrade.sh", "checksums.txt", "SHA256SUMS",
 	} {
 		if _, err := os.Stat(filepath.Join(dist, name)); err != nil {
 			t.Fatalf("release asset %s: %v", name, err)
@@ -46,7 +54,7 @@ func TestReleaseAssetsAreVersionPinnedAndInstallable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !bytes.Equal(checksums, sha256sums) || !strings.Contains(string(checksums), "install.sh") {
+	if !bytes.Equal(checksums, sha256sums) || !strings.Contains(string(checksums), "install.sh") || !strings.Contains(string(checksums), "upgrade.sh") {
 		t.Fatalf("checksum manifests do not cover the same release asset set")
 	}
 
@@ -56,7 +64,7 @@ func TestReleaseAssetsAreVersionPinnedAndInstallable(t *testing.T) {
 		t.Fatal(err)
 	}
 	archiveName := archiveForHost(t)
-	for _, name := range []string{"checksums.txt", archiveName} {
+	for _, name := range []string{"checksums.txt", "install.sh", archiveName} {
 		if err := os.Link(filepath.Join(dist, name), filepath.Join(releaseDir, name)); err != nil {
 			t.Fatal(err)
 		}
@@ -86,13 +94,16 @@ func TestReleaseAssetsAreVersionPinnedAndInstallable(t *testing.T) {
 		}
 	})
 	cosignLog := filepath.Join(t.TempDir(), "cosign.log")
-	run(t, root, append(os.Environ(),
+	installOutput := run(t, root, append(os.Environ(),
 		"TAILAPPS_RELEASE_BASE_URL=file://"+releaseRoot,
 		"TAILAPPS_INSTALL_ROOT="+installRoot,
 		"TAILAPP_HOME="+tailappHome,
 		"TAILAPPS_COSIGN_LOG="+cosignLog,
 		"PATH="+fakeBin+":"+os.Getenv("PATH"),
 	), "sh", installer, "--bundles", "none", "--no-service")
+	if !strings.Contains(string(installOutput), "no bundles were requested; no resident was started") {
+		t.Fatalf("bundle-free install started an unnecessary resident:\n%s", installOutput)
+	}
 
 	target, err := os.Readlink(filepath.Join(installRoot, "bin", "tailapp"))
 	if err != nil {
@@ -153,6 +164,186 @@ func TestReleaseAssetsAreVersionPinnedAndInstallable(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(fallbackRoot, "lib", "tailapp", "tailapp-"+testVersion)); err != nil {
 		t.Fatalf("fallback discarded verified binary: %v", err)
 	}
+
+	// Exercise the published upgrade surface with a mocked launchd boundary:
+	// it restarts the stable link, returns machine-readable readiness, and can
+	// restore the recorded known-good target without touching Tailapps.
+	upgradeRoot := filepath.Join(t.TempDir(), "local")
+	upgradeHome, err := os.MkdirTemp("/tmp", "tailapps-upgrade-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := os.RemoveAll(upgradeHome); err != nil {
+			t.Error(err)
+		}
+	})
+	upgradeUserHome := t.TempDir()
+	oldDir := filepath.Join(upgradeRoot, "lib", "tailapp")
+	if err := os.MkdirAll(oldDir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	oldBinary := filepath.Join(oldDir, "tailapp-old")
+	run(t, root, nil, "go", "build", "-o", oldBinary, "./cmd/tailapp")
+	if err := os.MkdirAll(filepath.Join(upgradeRoot, "bin"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	upgradeLink := filepath.Join(upgradeRoot, "bin", "tailapp")
+	if err := os.Symlink(oldBinary, upgradeLink); err != nil {
+		t.Fatal(err)
+	}
+	plistDir := filepath.Join(upgradeUserHome, "Library", "LaunchAgents")
+	if err := os.MkdirAll(plistDir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	plist := `<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0"><dict><key>ProgramArguments</key><array><string>` + upgradeLink + `</string></array><key>EnvironmentVariables</key><dict><key>TAILAPP_HOME</key><string>` + upgradeHome + `</string></dict></dict></plist>`
+	if err := os.WriteFile(filepath.Join(plistDir, "ai.generalbusiness.tailapp.plist"), []byte(plist), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	servicePID := filepath.Join(t.TempDir(), "resident.pid")
+	failNextStart := filepath.Join(t.TempDir(), "fail-next-start")
+	unloaded := filepath.Join(t.TempDir(), "unloaded")
+	launchctlScript := `#!/bin/sh
+case "$1" in
+print)
+  [ ! -f "$TAILAPPS_TEST_UNLOADED" ]
+  exit
+  ;;
+kickstart)
+  if [ -f "$TAILAPPS_TEST_PID" ]; then kill "$(cat "$TAILAPPS_TEST_PID")" >/dev/null 2>&1 || true; fi
+  if [ -f "$TAILAPPS_TEST_FAIL_NEXT_START" ]; then
+    unlink "$TAILAPPS_TEST_FAIL_NEXT_START"
+    exit 0
+  fi
+  TAILAPP_HOME="$TAILAPP_HOME" "$TAILAPPS_TEST_BIN" serve --otlp-http 127.0.0.1:0 >"$TAILAPPS_TEST_LOG" 2>&1 &
+  echo $! >"$TAILAPPS_TEST_PID"
+  exit 0
+  ;;
+esac
+exit 1
+`
+	if err := os.WriteFile(launchctl, []byte(launchctlScript), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(fakeBin, "sleep"), []byte("#!/bin/sh\n/bin/sleep 0.1\n"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if bytes, err := os.ReadFile(servicePID); err == nil {
+			if process, err := os.FindProcess(parsePID(t, string(bytes))); err == nil {
+				_ = process.Kill()
+			}
+		}
+	})
+	upgradeLog := filepath.Join(t.TempDir(), "upgrade-resident.log")
+	upgradeEnv := append(os.Environ(),
+		"HOME="+upgradeUserHome,
+		"TAILAPPS_RELEASE_BASE_URL=file://"+releaseRoot,
+		"TAILAPPS_INSTALL_ROOT="+upgradeRoot,
+		"TAILAPP_HOME="+upgradeHome,
+		"TAILAPPS_TEST_BIN="+upgradeLink,
+		"TAILAPPS_TEST_PID="+servicePID,
+		"TAILAPPS_TEST_LOG="+upgradeLog,
+		"TAILAPPS_TEST_FAIL_NEXT_START="+failNextStart,
+		"TAILAPPS_TEST_UNLOADED="+unloaded,
+		"TAILAPPS_COSIGN_LOG="+filepath.Join(t.TempDir(), "upgrade-cosign.log"),
+		"PATH="+fakeBin+":"+os.Getenv("PATH"),
+	)
+	if err := os.WriteFile(failNextStart, []byte("fail"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	failed, err := runFailure(t, root, upgradeEnv, "sh", filepath.Join(dist, "upgrade.sh"))
+	if err == nil || !strings.Contains(string(failed), "restored the known-good prior binary") {
+		t.Fatalf("failed-start upgrade outcome = %v\n%s", err, failed)
+	}
+	target, err = os.Readlink(upgradeLink)
+	if err != nil || target != oldBinary {
+		t.Fatalf("failed-start rollback target = %q, %v; want %q", target, err, oldBinary)
+	}
+	run(t, root, upgradeEnv, oldBinary, "health")
+	leftovers, err := filepath.Glob(filepath.Join(oldDir, ".tailapps-upgrade-*"))
+	if err != nil || len(leftovers) != 0 {
+		t.Fatalf("failed upgrade temporary files = %v, %v", leftovers, err)
+	}
+	if err := os.Remove(filepath.Join(oldDir, "tailapp-"+testVersion)); err != nil {
+		t.Fatal(err)
+	}
+
+	upgraded := run(t, root, upgradeEnv, "sh", filepath.Join(dist, "upgrade.sh"))
+	if !strings.Contains(string(upgraded), `"control_plane":"healthy"`) || !strings.Contains(string(upgraded), `"ingestion_ready":true`) {
+		t.Fatalf("upgrade result = %s", upgraded)
+	}
+	if err := os.WriteFile(unloaded, []byte("unloaded"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	notLoaded, err := runFailure(t, root, upgradeEnv, "sh", filepath.Join(dist, "upgrade.sh"))
+	if err == nil || !strings.Contains(string(notLoaded), "LaunchAgent is not loaded") {
+		t.Fatalf("unloaded LaunchAgent outcome = %v\n%s", err, notLoaded)
+	}
+	if err := os.Remove(unloaded); err != nil {
+		t.Fatal(err)
+	}
+	upToDate := run(t, root, upgradeEnv, "sh", filepath.Join(dist, "upgrade.sh"))
+	if !strings.Contains(string(upToDate), `"action":"up_to_date"`) {
+		t.Fatalf("same-version upgrade result = %s", upToDate)
+	}
+	rolledBack := run(t, root, upgradeEnv, "sh", filepath.Join(dist, "upgrade.sh"), "--rollback")
+	if !strings.Contains(string(rolledBack), `"action":"rolled_back"`) {
+		t.Fatalf("rollback result = %s", rolledBack)
+	}
+	target, err = os.Readlink(upgradeLink)
+	if err != nil || target != oldBinary {
+		t.Fatalf("rollback target = %q, %v; want %q", target, err, oldBinary)
+	}
+	if err := os.Remove(filepath.Join(oldDir, "tailapp-"+testVersion)); err != nil {
+		t.Fatal(err)
+	}
+	writePendingRelease(t, root, releaseDir, installer, archiveName)
+	pending := run(t, root, upgradeEnv, "sh", filepath.Join(dist, "upgrade.sh"))
+	if !strings.Contains(string(pending), `"ingestion_ready":false`) ||
+		!strings.Contains(string(pending), `"action":"upgrade_pending"`) ||
+		!strings.Contains(string(pending), "apps status; follow docs/reference/cli.md#upgrading-an-existing-resident") {
+		t.Fatalf("upgrade-pending result = %s", pending)
+	}
+}
+
+func writePendingRelease(t *testing.T, root, releaseDir, installer, archiveName string) {
+	t.Helper()
+	stage := t.TempDir()
+	stub := `#!/bin/sh
+case "$1" in
+  version) printf '%s\n' '{"version":"pending-test"}' ;;
+  init) exit 0 ;;
+  health) printf '%s\n' '{"control_plane":"healthy","ingestion_ready":false}' ;;
+  serve) while :; do /bin/sleep 60; done ;;
+  *) exit 0 ;;
+esac
+`
+	if err := os.WriteFile(filepath.Join(stage, "tailapp"), []byte(stub), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	archive := filepath.Join(releaseDir, archiveName)
+	if err := os.Remove(archive); err != nil {
+		t.Fatal(err)
+	}
+	run(t, root, nil, "tar", "-C", stage, "-czf", archive, "tailapp")
+	installerBytes, err := os.ReadFile(installer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	archiveBytes, err := os.ReadFile(archive)
+	if err != nil {
+		t.Fatal(err)
+	}
+	manifest := fmt.Sprintf("%x  install.sh\n%x  %s\n", sha256.Sum256(installerBytes), sha256.Sum256(archiveBytes), archiveName)
+	checksums := filepath.Join(releaseDir, "checksums.txt")
+	if err := os.Remove(checksums); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(checksums, []byte(manifest), 0o600); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func repoRoot(t *testing.T) string {
@@ -196,4 +387,13 @@ func runFailure(t *testing.T, directory string, env []string, program string, ar
 	command.Dir = directory
 	command.Env = env
 	return command.CombinedOutput()
+}
+
+func parsePID(t *testing.T, value string) int {
+	t.Helper()
+	var pid int
+	if _, err := fmt.Sscan(value, &pid); err != nil || pid <= 0 {
+		t.Fatalf("service pid %q: %v", value, err)
+	}
+	return pid
 }
