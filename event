@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Pinned Go vulnerability scanning command","body":{"commit":"4b93320968609e6587cace35a7f023bfff9fd309","path":"scripts/vulncheck.sh"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:eb9d3f6c6d5421fc0b09021f7cbaba514d57641c","text":"Superseded by corrected full-head artifact 4b93320968609e6587cace35a7f023bfff9fd309."}
