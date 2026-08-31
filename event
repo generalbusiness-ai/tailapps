@@ -1,1 +1,1 @@
-{"kind":"promise","text":"Builder will implement the corrected URL-reputation Stage 2 bundle from main 4eb7429, verify the full battery, and submit its exact head and per-file digests to checker."}
+{"kind":"artifact","text":"URL reputation Stage 2 exact-head file: internal/engine/url_reputation_test.go","body":{"blob_sha1":"639a4f55952fe3fe38ccca4bddf9a1f6ad37b5b6","commit":"9b289f4d1e1246e3e62133cd22546e16ef3da073","path":"internal/engine/url_reputation_test.go","raw_sha256":"d153ea8e738a5ace128cb7fa8554af031ee3437e9a6d2d484282f32c40a95780"}}
