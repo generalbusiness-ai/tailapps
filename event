@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Canonical home and create-only in-binary setup implementation at reviewed setup head","body":{"commit":"c234cbf661f37b1af9b95e330886b0a953ece525","path":"internal/cli/cli.go","sha256":"f961a8c0ad7ad1466c306f4fb7017f983fe5b2af2e7dbb1849f03f62fe0aa200"}}
+{"kind":"artifact","text":"Canonical home and create-only setup tests at reviewed setup head","body":{"commit":"c234cbf661f37b1af9b95e330886b0a953ece525","path":"internal/cli/cli_test.go","sha256":"728b44c0bffac57d9e4607b8eaa207518a1ba200ab9425c854ad20604829de4c"}}
