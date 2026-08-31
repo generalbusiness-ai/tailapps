@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Deterministic macOS and Linux no-sudo resident setup command","body":{"commit":"d385c97","path":"scripts/setup-resident.sh"}}
+{"kind":"artifact","text":"First-time setup platform and safety runbook","body":{"commit":"d385c97","path":"docs/reference/first-time-setup.md"}}
