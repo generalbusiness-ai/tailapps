@@ -27,6 +27,15 @@ The OpenCode and Pi producers are not uniform wire contracts. Follow the named
 compatibility profile, then use ineffective-record samples to inspect any
 different producer's shape.
 
+## Not yet routable to Tailapp
+
+Kiro CLI v3 and the Kiro IDE document vendor telemetry controls and, for
+enterprise use, activity reports, but no operator-configurable local OTLP
+export. They therefore have no Tailapp profile yet. VS Code Copilot Chat is
+covered separately by its [current OTLP guide](vscode-copilot-chat.md). See
+the [evidence note](../../notes/2026-08-31-harness-coverage-stage-0.md) for
+the official Kiro sources and the coverage boundary.
+
 ## Verify transport, then interpretation
 
 After one model response and tool call:
