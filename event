@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Harness-coverage Stage 0 docs: current routability inventory and VS Code qualification","body":{"commit":"dcc608c4f6e0e4c8f547def7c7c811b976db1d6a","path":"docs/harnesses/README.md"}}
+{"kind":"artifact","text":"Harness-coverage Stage 0 reproducible demo safety cleanup","body":{"commit":"dcc608c4f6e0e4c8f547def7c7c811b976db1d6a","path":"scripts/demo.sh"}}
