@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:ab434bdeba2ff768cdf29652c23d1cb3eb2fb665","text":"v0.1.2 remained unpublished after GitHub run 33438611078 exposed that the Linux test fixture did not isolate XDG_CONFIG_HOME. Continue on reviewed successor v0.1.3."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:95af16bffdd3cf2cfbe12ff653fbc63ce445d191","text":"Immutable v0.1.2 failed before publication in run 33438611078; successor work must isolate Linux XDG config and publish v0.1.3."}
