@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Activity stats recognizes both Copilot service identities","body":{"commit":"c9d802b2c0a1d29eac44e05d2b2d4bb680789f55","path":"tailapps/activity-stats/folds/normalize.jsonata"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:0dd0568f87e0da5db6e31784822789b9fb30f91a","text":"Superseded by corrected full-head artifact c9d802b2c0a1d29eac44e05d2b2d4bb680789f55."}
