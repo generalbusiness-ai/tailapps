@@ -9,6 +9,7 @@
   $harness := (event.source = "codex_cli_rs" or event.source = "codex_exec" or
     event.source = "codex-app-server") ? "codex" : event.source;
   $opencode_log := $harness = "opencode" and event.signal = "log";
+  $vscode_log := $harness = "vscode-copilot-chat" and event.signal = "log";
   $event_time := event.time_unix_nano ? event.time_unix_nano :
     (event.observed_unix_nano ? event.observed_unix_nano : null);
 
@@ -17,6 +18,9 @@
     $exists($lookup($attrs, "output_tokens")) or $exists($lookup($attrs, "output_token_count")) or
     $exists($lookup($attrs, "cached_input_tokens")) or $exists($lookup($attrs, "cache_read_tokens")) or
     $exists($lookup($attrs, "cached_input_token_count")) or $exists($lookup($attrs, "cached_token_count")) or
+    $exists($lookup($attrs, "gen_ai.usage.input_tokens")) or
+    $exists($lookup($attrs, "gen_ai.usage.output_tokens")) or
+    $exists($lookup($attrs, "gen_ai.usage.cache_read.input_tokens")) or
     $exists($lookup($attrs, "reasoning_output_tokens")) or $exists($lookup($attrs, "reasoning_output_token_count")) or
     $exists($lookup($attrs, "reasoning_token_count")) or $exists($lookup($attrs, "reasoning_tokens")) or
     $exists($lookup($attrs, "cost_microusd")) or $exists($lookup($attrs, "cost_usd_micros")) or
@@ -26,9 +30,11 @@
     $event_name = "claude_code.tool_result" or $event_name = "claude_code.tool_decision" or
     $event_name = "codex.tool_result" or $event_name = "codex.tool_decision" or $event_name = "codex.tool_call" or
     $event_name = "opencode.tool.execute.after" or $event_name = "opencode.tool.execute.before" or
-    ($opencode_log and $event_name = "tool_result");
+    ($opencode_log and $event_name = "tool_result") or
+    ($vscode_log and $event_name = "copilot_chat.tool.call");
   $api_request := $event_name = "claude_code.api_request" or $event_name = "codex.api_request" or
-    $event_name = "opencode.api_request" or ($opencode_log and $event_name = "api_request");
+    $event_name = "opencode.api_request" or ($opencode_log and $event_name = "api_request") or
+    ($vscode_log and $event_name = "gen_ai.client.inference.operation.details");
   $assistant_response := $event_name = "claude_code.assistant_response" or $event_name = "codex.assistant_response" or $event_name = "opencode.assistant_response";
   $user_prompt := $event_name = "claude_code.user_prompt" or $event_name = "codex.user_prompt" or $event_name = "opencode.user_prompt";
   $turn_ttft := $event_name = "claude_code.turn_ttft" or $event_name = "codex.turn_ttft" or $event_name = "opencode.turn_ttft";
@@ -38,13 +44,16 @@
     ($codex_usage ? "token-usage" : ""))))));
   $recognized := $family != "" and $event_time;
 
-  $session_raw := $lookup($attrs, "session.id") ? $lookup($attrs, "session.id") :
+  $session_raw := $lookup($attrs, "gen_ai.conversation.id") ? $lookup($attrs, "gen_ai.conversation.id") :
+    ($lookup($attrs, "session.id") ? $lookup($attrs, "session.id") :
     ($lookup($attrs, "conversation.id") ? $lookup($attrs, "conversation.id") :
-    ($lookup($attrs, "session_id") ? $lookup($attrs, "session_id") : $lookup($resource, "service.instance.id")));
+    ($lookup($attrs, "session_id") ? $lookup($attrs, "session_id") :
+    ($lookup($resource, "session.id") ? $lookup($resource, "session.id") : $lookup($resource, "service.instance.id")))));
   $session_known := $exists($session_raw) and $session_raw != "";
   $session := $session_known ? $string($session_raw) : "unknown:" & $harness;
 
-  $tool_raw := $lookup($attrs, "tool_name") ? $lookup($attrs, "tool_name") : $lookup($attrs, "tool");
+  $tool_raw := $lookup($attrs, "tool_name") ? $lookup($attrs, "tool_name") :
+    ($lookup($attrs, "tool") ? $lookup($attrs, "tool") : $lookup($attrs, "gen_ai.tool.name"));
   $tool_name := $exists($tool_raw) ? $lowercase($string($tool_raw)) : "";
   $tool_bucket := $not($tool_event) ? "not-applicable" :
     (($tool_name = "exec_command" or $tool_name = "bash" or $tool_name = "shell" or $tool_name = "terminal") ? "shell" :
@@ -87,11 +96,14 @@
     (($status_text = "ok" or $status_text = "success" or $status_text = "completed" or ($status_number >= 200 and $status_number < 400)) ? "success" :
     (($status_text = "error" or $status_text = "failed" or $status_text = "failure" or $status_number >= 400) ? "failure" : "unknown"));
 
-  $input_raw := $exists($lookup($attrs, "input_tokens")) ? $lookup($attrs, "input_tokens") : $lookup($attrs, "input_token_count");
-  $output_raw := $exists($lookup($attrs, "output_tokens")) ? $lookup($attrs, "output_tokens") : $lookup($attrs, "output_token_count");
+  $input_raw := $exists($lookup($attrs, "input_tokens")) ? $lookup($attrs, "input_tokens") :
+    ($exists($lookup($attrs, "input_token_count")) ? $lookup($attrs, "input_token_count") : $lookup($attrs, "gen_ai.usage.input_tokens"));
+  $output_raw := $exists($lookup($attrs, "output_tokens")) ? $lookup($attrs, "output_tokens") :
+    ($exists($lookup($attrs, "output_token_count")) ? $lookup($attrs, "output_token_count") : $lookup($attrs, "gen_ai.usage.output_tokens"));
   $cached_raw := $exists($lookup($attrs, "cached_input_tokens")) ? $lookup($attrs, "cached_input_tokens") :
     ($exists($lookup($attrs, "cache_read_tokens")) ? $lookup($attrs, "cache_read_tokens") :
-    ($exists($lookup($attrs, "cached_input_token_count")) ? $lookup($attrs, "cached_input_token_count") : $lookup($attrs, "cached_token_count")));
+    ($exists($lookup($attrs, "cached_input_token_count")) ? $lookup($attrs, "cached_input_token_count") :
+    ($exists($lookup($attrs, "cached_token_count")) ? $lookup($attrs, "cached_token_count") : $lookup($attrs, "gen_ai.usage.cache_read.input_tokens"))));
   $reasoning_raw := $exists($lookup($attrs, "reasoning_output_tokens")) ? $lookup($attrs, "reasoning_output_tokens") :
     ($exists($lookup($attrs, "reasoning_output_token_count")) ? $lookup($attrs, "reasoning_output_token_count") :
     ($exists($lookup($attrs, "reasoning_token_count")) ? $lookup($attrs, "reasoning_token_count") : $lookup($attrs, "reasoning_tokens")));

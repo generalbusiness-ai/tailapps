@@ -243,6 +243,92 @@ func TestSessionCostMapsObservedClaudeUsage(t *testing.T) {
 	}
 }
 
+func TestVSCodeCopilotChatMapsObservedOTLPShape(t *testing.T) {
+	inputs := observedVSCodeCopilotInputs(t)
+
+	guard, err := Load("agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tool, err := guard.Evaluate("normalize_harness_event", inputs["tool_call"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tool.Decision != "effective" || len(tool.Events["otel_event"]) != 1 {
+		t.Fatalf("tool = %#v", tool)
+	}
+	toolEvent := tool.Events["otel_event"][0]
+	if toolEvent["harness"] != "vscode-copilot-chat" || toolEvent["session_id"] != "resource-session-scrubbed" || toolEvent["tool"] != "manage_todo_list" || toolEvent["success"] != true {
+		t.Fatalf("tool identity = %#v", toolEvent)
+	}
+	if toolEvent["target"] != nil || toolEvent["target_coverage"] != "unknown" {
+		t.Fatalf("tool coverage = %#v", toolEvent)
+	}
+
+	cost, err := Load("session-cost")
+	if err != nil {
+		t.Fatal(err)
+	}
+	usage, err := cost.Evaluate("normalize_usage", inputs["inference_details"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if usage.Decision != "effective" || len(usage.Events["otel_event"]) != 1 {
+		t.Fatalf("usage = %#v", usage)
+	}
+	usageEvent := usage.Events["otel_event"][0]
+	if usageEvent["harness"] != "vscode-copilot-chat" || usageEvent["session_id"] != "resource-session-scrubbed" {
+		t.Fatalf("usage identity = %#v", usageEvent)
+	}
+	for field, want := range map[string]string{"input_tokens": "275", "output_tokens": "5", "cached_input_tokens": "0", "cost_microusd": "0"} {
+		if got := fmt.Sprint(usageEvent[field]); got != want {
+			t.Fatalf("%s = %s, want %s; event = %#v", field, got, want, usageEvent)
+		}
+	}
+	duplicate, err := cost.Evaluate("normalize_usage", inputs["inference_span"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if duplicate.Decision != "ineffective" || len(duplicate.Events["otel_event"]) != 0 {
+		t.Fatalf("duplicate span counted as usage = %#v", duplicate)
+	}
+
+	stats, err := Load("activity-stats")
+	if err != nil {
+		t.Fatal(err)
+	}
+	activity, err := stats.Evaluate("normalize_activity", inputs["inference_details"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if activity.Decision != "effective" || len(activity.Events["otel_event"]) != 1 {
+		t.Fatalf("activity = %#v", activity)
+	}
+	activityEvent := activity.Events["otel_event"][0]
+	if activityEvent["event_family"] != "api-request" || activityEvent["endpoint_bucket"] != "unknown" || activityEvent["performance_event"] != true {
+		t.Fatalf("activity identity = %#v", activityEvent)
+	}
+	if got := fmt.Sprint(activityEvent["input_tokens"]); got != "275" {
+		t.Fatalf("activity input tokens = %s; event = %#v", got, activityEvent)
+	}
+
+	daily, err := Load("daily-review")
+	if err != nil {
+		t.Fatal(err)
+	}
+	review, err := daily.Evaluate("normalize_review_event", inputs["inference_details"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if review.Decision != "effective" || len(review.Events["otel_event"]) != 1 {
+		t.Fatalf("daily review = %#v", review)
+	}
+	reviewEvent := review.Events["otel_event"][0]
+	if reviewEvent["harness"] != "vscode-copilot-chat" || fmt.Sprint(reviewEvent["api_event"]) != "1" || fmt.Sprint(reviewEvent["input_tokens"]) != "275" || fmt.Sprint(reviewEvent["output_tokens"]) != "5" {
+		t.Fatalf("daily review event = %#v", reviewEvent)
+	}
+}
+
 func TestOpenCodeDEVtheOPSProfileMapsLogsAndIgnoresDuplicateSpan(t *testing.T) {
 	inputs := observedOpenCodeInputs(t)
 
@@ -615,6 +701,19 @@ func observedClaudeInputs(t *testing.T) map[string]profile.EvaluationInput {
 func observedOpenCodeInputs(t *testing.T) map[string]profile.EvaluationInput {
 	t.Helper()
 	encoded, err := os.ReadFile(filepath.Join("testdata", "opencode-adapter.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var inputs map[string]profile.EvaluationInput
+	if err := json.Unmarshal(encoded, &inputs); err != nil {
+		t.Fatal(err)
+	}
+	return inputs
+}
+
+func observedVSCodeCopilotInputs(t *testing.T) map[string]profile.EvaluationInput {
+	t.Helper()
+	encoded, err := os.ReadFile(filepath.Join("testdata", "vscode-copilot-chat-0.63.0.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
