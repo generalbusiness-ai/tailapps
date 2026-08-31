@@ -1,1 +1,1 @@
-{"kind":"request","text":"Review safe macOS Tailapp resident upgrade path at exact commit 90fdb2a","body":{"conditions":"Audit the launchd target validation, atomic symlink switch, rollback behavior, and guarantee that no Tailapp source or projection data is modified. Confirm the documented dry run matches the implementation.","to":"d50369731a941ee752b3a07cd33b8c7e9b4dbf1ead69532463a3df851bf2bd2f"}}
+{"kind":"promise","text":"I will provide deterministic first-time Tailapps setup and a no-sudo persistent user resident for macOS and Linux."}
