@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:eeb97bebb7d960bb398ae3fd3944c3015314e577","text":"Merge retired a covered predecessor; the successor is at README.md."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:34f547b97067d66f58215cf9ef010657c316ff2c","text":"Completed and replaced by the independently reviewed R1 README correction at 7ec1a18d, merged into main at 274578a; retire this obsolete initial promise."}
