@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:46ca92003fcf234fba015868c7adae6c1f5dc90e","text":"Superseded by corrected full-head artifact 78b3b25986d78f0f6f06584dcc804d2589c8ee47."}
+{"kind":"artifact","text":"Documentation index for first-time resident setup","body":{"commit":"78b3b25986d78f0f6f06584dcc804d2589c8ee47","path":"docs/README.md"}}
