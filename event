@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:2541292d014d0d66ec35719a3710328c92a9f0bd","text":"Replaced by the full-head re-review request after checker findings."}
+{"kind":"artifact","text":"Verified Go module checksums for refreshed dependency graph","body":{"commit":"4b93320968609e6587cace35a7f023bfff9fd309","path":"go.sum"}}
