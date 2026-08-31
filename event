@@ -1,1 +1,1 @@
-{"kind":"promise","text":"Checker claims the re-review of the corrected release-consuming upgrade gap closure at verified exact head 854f9239501a129584dabe11d981bd214fa2faf3 (supersedes the promise on retired request 55a40a47)."}
+{"kind":"promise","text":"Checker claims the re-review of the corrected release-consuming upgrade gap closure at verified exact head 854f9239501a129584dabe11d981bd214fa2faf3. (Replaces dangling promise 61d63e8a, whose basis was recorded as bare hex and never resolved.)"}
