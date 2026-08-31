@@ -197,19 +197,33 @@ func TestReleaseAssetsAreVersionPinnedAndInstallable(t *testing.T) {
 	if err := os.Symlink(oldBinary, upgradeLink); err != nil {
 		t.Fatal(err)
 	}
-	plistDir := filepath.Join(upgradeUserHome, "Library", "LaunchAgents")
-	if err := os.MkdirAll(plistDir, 0o700); err != nil {
-		t.Fatal(err)
-	}
-	plist := `<?xml version="1.0" encoding="UTF-8"?>
+	unloadedMessage := "LaunchAgent is not loaded"
+	if runtime.GOOS == "linux" {
+		unitDir := filepath.Join(upgradeUserHome, ".config", "systemd", "user")
+		if err := os.MkdirAll(unitDir, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		unit := "[Service]\nEnvironment=TAILAPP_HOME=" + upgradeHome + "\nExecStart=" + upgradeLink + " serve --otlp-http 127.0.0.1:4318\n"
+		if err := os.WriteFile(filepath.Join(unitDir, "tailapp.service"), []byte(unit), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		unloadedMessage = "systemd --user is not available"
+	} else {
+		plistDir := filepath.Join(upgradeUserHome, "Library", "LaunchAgents")
+		if err := os.MkdirAll(plistDir, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		plist := `<?xml version="1.0" encoding="UTF-8"?>
 <plist version="1.0"><dict><key>ProgramArguments</key><array><string>` + upgradeLink + `</string></array><key>EnvironmentVariables</key><dict><key>TAILAPP_HOME</key><string>` + upgradeHome + `</string></dict></dict></plist>`
-	if err := os.WriteFile(filepath.Join(plistDir, "ai.generalbusiness.tailapp.plist"), []byte(plist), 0o600); err != nil {
-		t.Fatal(err)
+		if err := os.WriteFile(filepath.Join(plistDir, "ai.generalbusiness.tailapp.plist"), []byte(plist), 0o600); err != nil {
+			t.Fatal(err)
+		}
 	}
 	servicePID := filepath.Join(t.TempDir(), "resident.pid")
 	failNextStart := filepath.Join(t.TempDir(), "fail-next-start")
 	unloaded := filepath.Join(t.TempDir(), "unloaded")
-	launchctlScript := `#!/bin/sh
+	serviceCommand := launchctl
+	serviceScript := `#!/bin/sh
 case "$1" in
 print)
   [ ! -f "$TAILAPPS_TEST_UNLOADED" ]
@@ -228,7 +242,32 @@ kickstart)
 esac
 exit 1
 `
-	if err := os.WriteFile(launchctl, []byte(launchctlScript), 0o700); err != nil {
+	if runtime.GOOS == "linux" {
+		serviceCommand = filepath.Join(fakeBin, "systemctl")
+		serviceScript = `#!/bin/sh
+case "$2" in
+show-environment)
+  [ ! -f "$TAILAPPS_TEST_UNLOADED" ]
+  exit
+  ;;
+daemon-reload)
+  exit 0
+  ;;
+restart)
+  if [ -f "$TAILAPPS_TEST_PID" ]; then kill "$(cat "$TAILAPPS_TEST_PID")" >/dev/null 2>&1 || true; fi
+  if [ -f "$TAILAPPS_TEST_FAIL_NEXT_START" ]; then
+    unlink "$TAILAPPS_TEST_FAIL_NEXT_START"
+    exit 0
+  fi
+  TAILAPP_HOME="$TAILAPP_HOME" "$TAILAPPS_TEST_BIN" serve --otlp-http 127.0.0.1:0 >"$TAILAPPS_TEST_LOG" 2>&1 &
+  echo $! >"$TAILAPPS_TEST_PID"
+  exit 0
+  ;;
+esac
+exit 1
+`
+	}
+	if err := os.WriteFile(serviceCommand, []byte(serviceScript), 0o700); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(fakeBin, "sleep"), []byte("#!/bin/sh\n/bin/sleep 0.1\n"), 0o700); err != nil {
@@ -283,8 +322,8 @@ exit 1
 		t.Fatal(err)
 	}
 	notLoaded, err := runFailure(t, root, upgradeEnv, "sh", filepath.Join(dist, "upgrade.sh"))
-	if err == nil || !strings.Contains(string(notLoaded), "LaunchAgent is not loaded") {
-		t.Fatalf("unloaded LaunchAgent outcome = %v\n%s", err, notLoaded)
+	if err == nil || !strings.Contains(string(notLoaded), unloadedMessage) {
+		t.Fatalf("unloaded user service outcome = %v\n%s", err, notLoaded)
 	}
 	if err := os.Remove(unloaded); err != nil {
 		t.Fatal(err)
