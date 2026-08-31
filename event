@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:9c8693c027fb5d857ba0fe7d1628d35147d012c3","text":"Merge retired a covered predecessor; the successor is at scripts/demo.sh."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:aaf9e1dc6977e5744aacc0791d0a824f002766c5","text":"Merge retired a covered predecessor; the successor is at internal/ingest/receiver_test.go."}
