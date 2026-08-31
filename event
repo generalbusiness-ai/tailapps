@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Explicit rejection of unsupported OTLP string-table references","body":{"commit":"4b93320968609e6587cace35a7f023bfff9fd309","path":"internal/ingest/canonical.go"}}
+{"kind":"artifact","text":"String-table ingestion rejection coverage","body":{"commit":"4b93320968609e6587cace35a7f023bfff9fd309","path":"internal/ingest/receiver_test.go"}}
