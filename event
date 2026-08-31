@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:65171543436a8a52ec106af1a5cc56be49814793","text":"Superseded by corrected full-head artifact c9d802b2c0a1d29eac44e05d2b2d4bb680789f55."}
+{"kind":"artifact","text":"Harness catalog entry for VS Code Copilot","body":{"commit":"c9d802b2c0a1d29eac44e05d2b2d4bb680789f55","path":"docs/harnesses/README.md"}}
