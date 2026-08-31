@@ -1,1 +1,1 @@
-{"kind":"promise","text":"Checker claims the review: VS Code Copilot Chat OTLP mapping at de5b0e1 (fixture-driven mapping vs current VS Code docs and observed fields, logs as sole token source, trace duplication rejected, honest session caveats, accurate setup guide); battery + demo in a clean detached worktree plus empirical script execution where safe; one signed verdict follows."}
+{"kind":"artifact","text":"Tag-only signed GitHub release workflow","body":{"commit":"385ff5c","path":".github/workflows/release.yml"}}
