@@ -101,11 +101,13 @@ documented bootstrap alternative, not an implicit fallback.
 
 ## 2. Event, table, and writer shapes
 
-One normalizer discriminates the three event families and is the sole writer
-of all three materialized tables. It emits one compact private
-`url_pipeline_event` for recognized inputs; one fold is the sole writer of a
-small `url_pipeline_counts` table. This fits the existing two-stage topology,
-keeps every table single-writer, and requires no sibling-fold reads.
+One normalizer discriminates the three event families and emits one compact
+URL-pipeline payload for recognized inputs. The existing runtime requires that
+the application's single private event be named `otel_event`; the payload's
+`event_family` field identifies it as an observation, exclusion, or verdict.
+One fold is the sole writer of all four materialized tables. This fits the
+existing two-stage topology, keeps every table single-writer, and requires no
+sibling-fold reads or runtime-profile change.
 
 ### OTLP log families
 
@@ -135,9 +137,11 @@ The record schemas intentionally echo the original local URL in a reputation
 record. That lets a scrubbed outbound URL attach its verdict to the exact local
 observation without a new hash primitive or a side cache.
 
-For every observation, the normalizer reparses `observed_full` and refuses the
-record if `tailapp.url.host` differs from the parsed lowercase host. The adapter
-cannot desynchronize host-based exclusions by supplying inconsistent fields.
+For every observation, the normalizer lowercases the URL's authority prefix
+and supplied host, then requires the host to follow the scheme and `://`
+exactly with an end, `/`, `:`, `?`, or `#` boundary. The adapter therefore
+cannot desynchronize host-based exclusions with a prefix lookalike such as
+`example.com.evil`, and this validation needs no parser or runtime extension.
 
 ### Tables and keys
 
@@ -151,7 +155,7 @@ cannot desynchronize host-based exclusions by supplying inconsistent fields.
 
 - primary key: `exclusion_id`
 - retained: kind, pattern, enabled state, update timestamp, source position
-- the normalizer seeds stable built-in IDs for loopback/private IP literals,
+- the single fold seeds stable built-in IDs for loopback/private IP literals,
   `localhost`, single-label hosts, `.local`, `.internal`, `.home.arpa`, and
   `.test` only when each ID is absent; recognized events do not rewrite rows
   that are already present
@@ -168,10 +172,15 @@ cannot desynchronize host-based exclusions by supplying inconsistent fields.
 - retained: record count, errors, first/last timestamps, source position
 
 All four tables have explicit exports. A shipped bounded query selects
-observations whose host does not match an enabled exclusion and whose chosen
-provider has no verdict with `valid_until_unix_nano > :now_unix_nano`. The
-companion fetches enabled exclusions separately and repeats the same check
-before egress. Full URLs remain available to local queries.
+observations whose chosen provider has no verdict with
+`valid_until_unix_nano > :now_unix_nano`; this due list is deliberately
+pre-exclusion. Enabled exclusions are exported separately because the public
+query sandbox cannot express exact, suffix, and prefix matching without a
+runtime change, and an incremental keyed fold cannot retroactively replay all
+observations when policy changes. The Stage 3 companion therefore fetches the
+due list and exclusions separately and is the mandatory exact, suffix, prefix,
+and built-in exclusion filter immediately before egress. Full URLs remain
+available to local queries.
 
 ## 3. Verdict freshness
 

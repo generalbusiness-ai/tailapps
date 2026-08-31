@@ -1,0 +1,119 @@
+(
+  $attrs := event.record.attributes ? event.record.attributes : {};
+  $semantic_name_raw := $lookup($attrs, "event.name");
+  $event_name := $exists($semantic_name_raw) and $string($semantic_name_raw) != "" ?
+    $string($semantic_name_raw) : event.name;
+  $recognized_name := event.signal = "log" and
+    ($event_name = "tailapp.url.observed" or $event_name = "tailapp.url.exclusion" or
+      $event_name = "tailapp.url.reputation");
+  $envelope_time := event.time_unix_nano ? event.time_unix_nano :
+    (event.observed_unix_nano ? event.observed_unix_nano : null);
+
+  $observed_raw := $lookup($attrs, "tailapp.url.observed_full");
+  $host_raw := $lookup($attrs, "tailapp.url.host");
+  $observed_full := $exists($observed_raw) ? $string($observed_raw) : "";
+  $host := $exists($host_raw) ? $lowercase($string($host_raw)) : "";
+  $lower_observed := $lowercase($observed_full);
+  $scheme_prefix := $substring($lower_observed, 0, 7) = "http://" ? "http://" :
+    ($substring($lower_observed, 0, 8) = "https://" ? "https://" : "");
+  $authority_prefix := $scheme_prefix & $host;
+  $host_boundary := $substring($lower_observed, $length($authority_prefix), 1);
+  $host_shape_valid := $host != "" and
+    $not($contains($host, "/")) and $not($contains($host, "?")) and
+    $not($contains($host, "#")) and $not($contains($host, "@"));
+  $observation_valid := event.signal = "log" and $event_name = "tailapp.url.observed" and $envelope_time and
+    $observed_full != "" and $scheme_prefix != "" and $host_shape_valid and
+    $substring($lower_observed, 0, $length($authority_prefix)) = $authority_prefix and
+    ($host_boundary = "" or $host_boundary = "/" or $host_boundary = ":" or
+      $host_boundary = "?" or $host_boundary = "#");
+
+  $exclusion_id_raw := $lookup($attrs, "tailapp.url.exclusion.id");
+  $exclusion_kind_raw := $lookup($attrs, "tailapp.url.exclusion.kind");
+  $exclusion_pattern_raw := $lookup($attrs, "tailapp.url.exclusion.pattern");
+  $exclusion_enabled_raw := $lookup($attrs, "tailapp.url.exclusion.enabled");
+  $exclusion_id := $exists($exclusion_id_raw) ? $string($exclusion_id_raw) : "";
+  $exclusion_kind := $exists($exclusion_kind_raw) ? $string($exclusion_kind_raw) : "";
+  $exclusion_pattern_text := $exists($exclusion_pattern_raw) ? $string($exclusion_pattern_raw) : "";
+  $exclusion_pattern := $exclusion_kind = "url-prefix" ? $exclusion_pattern_text :
+    $lowercase($exclusion_pattern_text);
+  $exclusion_enabled_valid := $exclusion_enabled_raw = true or $exclusion_enabled_raw = false;
+  $exclusion_valid := event.signal = "log" and $event_name = "tailapp.url.exclusion" and $envelope_time and
+    $exclusion_id != "" and $exclusion_pattern != "" and $exclusion_enabled_valid and
+    ($exclusion_kind = "host-exact" or $exclusion_kind = "host-suffix" or
+      $exclusion_kind = "url-prefix");
+
+  $reputation_observed_raw := $lookup($attrs, "tailapp.url.observed_full");
+  $checked_full_raw := $lookup($attrs, "tailapp.url.checked_full");
+  $provider_raw := $lookup($attrs, "tailapp.url.provider");
+  $verdict_raw := $lookup($attrs, "tailapp.url.verdict");
+  $checked_time_raw := $lookup($attrs, "tailapp.url.checked_unix_nano");
+  $valid_until_raw := $lookup($attrs, "tailapp.url.valid_until_unix_nano");
+  $reputation_observed := $exists($reputation_observed_raw) ? $string($reputation_observed_raw) : "";
+  $checked_full := $exists($checked_full_raw) ? $string($checked_full_raw) : "";
+  $provider := $exists($provider_raw) ? $string($provider_raw) : "";
+  $verdict := $exists($verdict_raw) ? $string($verdict_raw) : "";
+  $checked_time := $exists($checked_time_raw) ? $string($checked_time_raw) : "";
+  $valid_until := $exists($valid_until_raw) ? $string($valid_until_raw) : "";
+  $reputation_valid := event.signal = "log" and $event_name = "tailapp.url.reputation" and
+    $reputation_observed != "" and $checked_full != "" and $provider != "" and
+    $checked_time != "" and $valid_until != "" and
+    ($verdict = "clean" or $verdict = "suspected" or $verdict = "error");
+
+  $family := $observation_valid ? "observation" :
+    ($exclusion_valid ? "exclusion" : ($reputation_valid ? "reputation" : ""));
+  $event_time := $family = "reputation" ? $checked_time : $string($envelope_time);
+  $harness_raw := $lookup($attrs, "tailapp.harness") ? $lookup($attrs, "tailapp.harness") : event.source;
+  $session_raw := $lookup($attrs, "session.id") ? $lookup($attrs, "session.id") :
+    $lookup($attrs, "conversation.id");
+  $tool_raw := $lookup($attrs, "tool_name") ? $lookup($attrs, "tool_name") : $lookup($attrs, "tool.name");
+  $project_raw := $lookup($attrs, "project") ? $lookup($attrs, "project") : $lookup($attrs, "cwd");
+  $threat_types_raw := $lookup($attrs, "tailapp.url.threat_types");
+  $provider_reference_raw := $lookup($attrs, "tailapp.url.provider_reference");
+  $error_raw := $lookup($attrs, "tailapp.url.error");
+
+  $family != "" ? {
+    "decision": "effective",
+    "facts": [],
+    "events": {"otel_event": [{
+      "event_family": $family,
+      "day_utc": $floor($number($event_time) / 86400000000000),
+      "event_time_unix_nano": $event_time,
+      "source_position": meta.position,
+      "observed_full": $family = "observation" ? $observed_full :
+        ($family = "reputation" ? $reputation_observed : null),
+      "host": $family = "observation" ? $host : null,
+      "harness": $family = "observation" ? $string($harness_raw) : null,
+      "session_id": $family = "observation" and $exists($session_raw) ? $string($session_raw) : null,
+      "session_id_prefix": $family = "observation" and $exists($session_raw) ?
+        $substring($string($session_raw), 0, 12) : null,
+      "tool_name": $family = "observation" and $exists($tool_raw) ? $string($tool_raw) : null,
+      "project": $family = "observation" and $exists($project_raw) ? $string($project_raw) : null,
+      "exclusion_id": $family = "exclusion" ? $exclusion_id : null,
+      "exclusion_kind": $family = "exclusion" ? $exclusion_kind : null,
+      "exclusion_pattern": $family = "exclusion" ? $exclusion_pattern : null,
+      "exclusion_enabled": $family = "exclusion" ? ($exclusion_enabled_raw ? 1 : 0) : null,
+      "provider": $family = "reputation" ? $provider : null,
+      "checked_full": $family = "reputation" ? $checked_full : null,
+      "verdict": $family = "reputation" ? $verdict : null,
+      "threat_types": $family = "reputation" and $exists($threat_types_raw) ? $string($threat_types_raw) : null,
+      "provider_reference": $family = "reputation" and $exists($provider_reference_raw) ?
+        $string($provider_reference_raw) : null,
+      "error": $family = "reputation" and $exists($error_raw) ? $string($error_raw) : null,
+      "checked_unix_nano": $family = "reputation" ? $checked_time : null,
+      "valid_until_unix_nano": $family = "reputation" ? $valid_until : null,
+      "builtin_ip_literal_id": "builtin:ip-literal",
+      "builtin_localhost_id": "builtin:localhost",
+      "builtin_single_label_id": "builtin:single-label",
+      "builtin_local_id": "builtin:local",
+      "builtin_internal_id": "builtin:internal",
+      "builtin_home_arpa_id": "builtin:home-arpa",
+      "builtin_test_id": "builtin:test"
+    }]},
+    "tables": {}
+  } : {
+    "decision": "ineffective",
+    "facts": $recognized_name ? [{"reason": "recognized URL reputation record failed required field validation"}] : [],
+    "events": {},
+    "tables": {}
+  }
+)

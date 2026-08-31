@@ -10,12 +10,12 @@ import (
 	"github.com/generalbusiness-ai/tailapps/internal/profile"
 )
 
-//go:embed activity-stats/application.sql activity-stats/folds/*.jsonata agent-guard/application.sql agent-guard/folds/*.jsonata daily-review/application.sql daily-review/folds/*.jsonata session-cost/application.sql session-cost/folds/*.jsonata signal-counts/application.sql signal-counts/folds/*.jsonata
+//go:embed activity-stats/application.sql activity-stats/folds/*.jsonata agent-guard/application.sql agent-guard/folds/*.jsonata daily-review/application.sql daily-review/folds/*.jsonata session-cost/application.sql session-cost/folds/*.jsonata signal-counts/application.sql signal-counts/folds/*.jsonata url-reputation/application.sql url-reputation/folds/*.jsonata
 var sources embed.FS
 
 func Load(name string) (*profile.Profile, error) {
 	switch name {
-	case "activity-stats", "agent-guard", "daily-review", "session-cost", "signal-counts":
+	case "activity-stats", "agent-guard", "daily-review", "session-cost", "signal-counts", "url-reputation":
 		return profile.Load(sources, name, name)
 	default:
 		return nil, fmt.Errorf("unknown bundled tailapp %q", name)
@@ -23,7 +23,7 @@ func Load(name string) (*profile.Profile, error) {
 }
 
 func Names() []string {
-	return []string{"activity-stats", "agent-guard", "daily-review", "session-cost", "signal-counts"}
+	return []string{"activity-stats", "agent-guard", "daily-review", "session-cost", "signal-counts", "url-reputation"}
 }
 
 // Source returns a private copy of a bundled Tailapp's ordinary source set.

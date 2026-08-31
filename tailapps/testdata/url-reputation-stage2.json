@@ -1,0 +1,74 @@
+{
+  "observed": {
+    "meta": {"position": 1, "event_id": "local:1", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:1", "signal": "log", "name": "tailapp.url.observed", "source": "codex",
+      "time_unix_nano": "1788192000000000001", "observed_unix_nano": "1788192000000000001",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:url-observed",
+      "record": {"attributes": {"event.name": "tailapp.url.observed", "tailapp.url.observed_full": "https://Example.COM/path?q=local", "tailapp.url.host": "Example.COM", "conversation.id": "session-abcdef123456", "tool_name": "web_fetch", "project": "/work/tailapps"}, "resource": {"attributes": {"service.name": "codex"}}}
+    }, "rows": {}
+  },
+  "observed_host_mismatch": {
+    "meta": {"position": 2, "event_id": "local:2", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:2", "signal": "log", "name": "tailapp.url.observed", "source": "codex",
+      "time_unix_nano": "1788192000000000002", "observed_unix_nano": "1788192000000000002",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:url-mismatch",
+      "record": {"attributes": {"event.name": "tailapp.url.observed", "tailapp.url.observed_full": "https://example.com.evil/path", "tailapp.url.host": "example.com"}, "resource": {"attributes": {"service.name": "codex"}}}
+    }, "rows": {}
+  },
+  "exclusion_enabled": {
+    "meta": {"position": 3, "event_id": "local:3", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:3", "signal": "log", "name": "tailapp.url.exclusion", "source": "tailapp-url-companion",
+      "time_unix_nano": "1788192000000000003", "observed_unix_nano": "1788192000000000003",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:exclusion-enabled",
+      "record": {"attributes": {"event.name": "tailapp.url.exclusion", "tailapp.url.exclusion.id": "operator:example", "tailapp.url.exclusion.kind": "host-suffix", "tailapp.url.exclusion.pattern": ".Example.COM", "tailapp.url.exclusion.enabled": true}, "resource": {"attributes": {"service.name": "tailapp-url-companion"}}}
+    }, "rows": {}
+  },
+  "exclusion_disabled": {
+    "meta": {"position": 4, "event_id": "local:4", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:4", "signal": "log", "name": "tailapp.url.exclusion", "source": "tailapp-url-companion",
+      "time_unix_nano": "1788192000000000004", "observed_unix_nano": "1788192000000000004",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:exclusion-disabled",
+      "record": {"attributes": {"event.name": "tailapp.url.exclusion", "tailapp.url.exclusion.id": "operator:example", "tailapp.url.exclusion.kind": "host-suffix", "tailapp.url.exclusion.pattern": ".example.com", "tailapp.url.exclusion.enabled": false}, "resource": {"attributes": {"service.name": "tailapp-url-companion"}}}
+    }, "rows": {}
+  },
+  "reputation_clean": {
+    "meta": {"position": 5, "event_id": "local:5", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:5", "signal": "log", "name": "tailapp.url.reputation", "source": "tailapp-url-companion",
+      "time_unix_nano": "1788192000000000005", "observed_unix_nano": "1788192000000000005",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:reputation-clean",
+      "record": {"attributes": {"event.name": "tailapp.url.reputation", "tailapp.url.observed_full": "https://Example.COM/path?q=local", "tailapp.url.checked_full": "https://Example.COM/path", "tailapp.url.provider": "safe-browsing-v5", "tailapp.url.verdict": "clean", "tailapp.url.checked_unix_nano": "1788192000000000005", "tailapp.url.valid_until_unix_nano": "1788278400000000005"}, "resource": {"attributes": {"service.name": "tailapp-url-companion"}}}
+    }, "rows": {}
+  },
+  "reputation_suspected": {
+    "meta": {"position": 6, "event_id": "local:6", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:6", "signal": "log", "name": "tailapp.url.reputation", "source": "tailapp-url-companion",
+      "time_unix_nano": "1788192000000000006", "observed_unix_nano": "1788192000000000006",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:reputation-suspected",
+      "record": {"attributes": {"event.name": "tailapp.url.reputation", "tailapp.url.observed_full": "https://bad.example/path", "tailapp.url.checked_full": "https://bad.example/path", "tailapp.url.provider": "web-risk", "tailapp.url.verdict": "suspected", "tailapp.url.threat_types": "[\"MALWARE\"]", "tailapp.url.checked_unix_nano": "1788192000000000006", "tailapp.url.valid_until_unix_nano": "1788278400000000006"}, "resource": {"attributes": {"service.name": "tailapp-url-companion"}}}
+    }, "rows": {}
+  },
+  "reputation_error_expired": {
+    "meta": {"position": 7, "event_id": "local:7", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:7", "signal": "log", "name": "tailapp.url.reputation", "source": "tailapp-url-companion",
+      "time_unix_nano": "1788192000000000007", "observed_unix_nano": "1788192000000000007",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:reputation-error",
+      "record": {"attributes": {"event.name": "tailapp.url.reputation", "tailapp.url.observed_full": "https://error.example/path", "tailapp.url.checked_full": "https://error.example/path", "tailapp.url.provider": "safe-browsing-v5", "tailapp.url.verdict": "error", "tailapp.url.error": "provider timeout", "tailapp.url.checked_unix_nano": "1788192000000000007", "tailapp.url.valid_until_unix_nano": "1788192300000000007"}, "resource": {"attributes": {"service.name": "tailapp-url-companion"}}}
+    }, "rows": {}
+  },
+  "missing_required": {
+    "meta": {"position": 8, "event_id": "local:8", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:8", "signal": "log", "name": "tailapp.url.observed", "source": "codex",
+      "time_unix_nano": "1788192000000000008", "observed_unix_nano": "1788192000000000008",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:url-missing",
+      "record": {"attributes": {"event.name": "tailapp.url.observed", "tailapp.url.host": "example.com"}, "resource": {"attributes": {"service.name": "codex"}}}
+    }, "rows": {}
+  }
+}
