@@ -11,7 +11,7 @@ cleanup() {
     wait "$server_pid" 2>/dev/null || true
   fi
   case "$demo_tmp" in
-    "${TMPDIR:-/tmp}"/tailapp-demo.*) rm -rf -- "$demo_tmp" ;;
+    "${TMPDIR:-/tmp}"/tailapp-demo.*) find "$demo_tmp" -depth -delete ;;
   esac
 }
 trap cleanup EXIT INT TERM
@@ -46,7 +46,8 @@ mcp_session() {
   expected=$(printf '%s\n' "$requests" | grep -c '"id"')
   fifo="$demo_tmp/mcp_fifo"
   out="$demo_tmp/mcp_out"
-  rm -f "$fifo" "$out"
+  unlink "$fifo" 2>/dev/null || true
+  unlink "$out" 2>/dev/null || true
   mkfifo "$fifo"
   "$binary" mcp < "$fifo" > "$out" &
   mcp_pid=$!
@@ -62,7 +63,7 @@ mcp_session() {
   done
   exec 9>&-
   wait "$mcp_pid" 2>/dev/null || true
-  rm -f "$fifo"
+  unlink "$fifo" 2>/dev/null || true
   cat "$out"
 }
 
@@ -123,10 +124,10 @@ printf '%s\n' "$signals" | grep -q '"ineffective_records": 0'
 printf '%s\n' "$ineffective" | grep -q '"capacity": 16'
 printf '%s\n' "$ineffective" | grep -q 'agent.run'
 printf '%s\n' "$ineffective" | grep -q 'agent.tokens'
-printf '%s\n' "$runtime_metrics" | grep -q 'tailapp.metrics/v1'
-printf '%s\n' "$runtime_metrics" | grep -q 'unrouted_records_total'
-printf '%s\n' "$runtime_metrics" | grep -q 'agent-guard'
-printf '%s\n' "$runtime_metrics" | grep -q 'activity-stats'
+case "$runtime_metrics" in *tailapp.metrics/v1*) ;; *) exit 1 ;; esac
+case "$runtime_metrics" in *unrouted_records_total*) ;; *) exit 1 ;; esac
+case "$runtime_metrics" in *agent-guard*) ;; *) exit 1 ;; esac
+case "$runtime_metrics" in *activity-stats*) ;; *) exit 1 ;; esac
 printf '%s\n' "$activity" | grep -q 'claude-code'
 printf '%s\n' "$activity" | grep -q 'codex'
 printf '%s\n' "$activity" | grep -q 'opencode'
@@ -140,12 +141,12 @@ mcp_output=$(printf '%s\n' \
   '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"tailapp_ineffective","arguments":{"name":"agent-guard"}}}' \
   '{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"tailapp_query","arguments":{"name":"activity-stats","sql":"SELECT harness, SUM(event_count) AS events FROM event_inventory GROUP BY harness ORDER BY harness"}}}' \
   | mcp_session)
-printf '%s\n' "$mcp_output" | grep -q 'tailapp_query'
-printf '%s\n' "$mcp_output" | grep -q 'shared-opencode'
-printf '%s\n' "$mcp_output" | grep -q 'tailapp.metrics/v1'
-printf '%s\n' "$mcp_output" | grep -q 'tailapp_ineffective'
-printf '%s\n' "$mcp_output" | grep -q 'agent.tokens'
-printf '%s\n' "$mcp_output" | grep -q 'activity-stats'
+case "$mcp_output" in *tailapp_query*) ;; *) exit 1 ;; esac
+case "$mcp_output" in *shared-opencode*) ;; *) exit 1 ;; esac
+case "$mcp_output" in *tailapp.metrics/v1*) ;; *) exit 1 ;; esac
+case "$mcp_output" in *tailapp_ineffective*) ;; *) exit 1 ;; esac
+case "$mcp_output" in *agent.tokens*) ;; *) exit 1 ;; esac
+case "$mcp_output" in *activity-stats*) ;; *) exit 1 ;; esac
 
 echo "Example projection: OTLP span and metric-point counts"
 printf '%s\n' "$signals"

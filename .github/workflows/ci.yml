@@ -32,6 +32,9 @@ jobs:
       - name: Vet
         run: go vet ./...
 
+      - name: Scan reachable dependency vulnerabilities
+        run: ./scripts/vulncheck.sh
+
       - name: Demo
         run: ./scripts/demo.sh
 

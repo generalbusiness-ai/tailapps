@@ -230,8 +230,14 @@ func canonicalScope(scope *commonv1.InstrumentationScope, schemaURL string) (map
 func attributeMap(attributes []*commonv1.KeyValue) (map[string]any, error) {
 	result := make(map[string]any, len(attributes))
 	for _, attribute := range attributes {
-		if attribute == nil || attribute.GetKey() == "" {
+		if attribute == nil {
 			return nil, errors.New("attribute key is empty")
+		}
+		if attribute.GetKeyStrindex() != 0 {
+			return nil, errors.New("OTLP string-table attribute keys are unsupported")
+		}
+		if attribute.GetKey() == "" {
+			return nil, errors.New("attribute key is empty; OTLP string-table attribute keys are unsupported")
 		}
 		if _, exists := result[attribute.GetKey()]; exists {
 			return nil, fmt.Errorf("attribute key %q is duplicated", attribute.GetKey())
@@ -265,6 +271,8 @@ func anyValue(value *commonv1.AnyValue) (any, error) {
 		return value, nil
 	case *commonv1.AnyValue_BytesValue:
 		return jsonataddl.WrapBytes(typed.BytesValue), nil
+	case *commonv1.AnyValue_StringValueStrindex:
+		return nil, errors.New("OTLP string-table attribute values are unsupported")
 	case *commonv1.AnyValue_ArrayValue:
 		result := make([]any, len(typed.ArrayValue.GetValues()))
 		for index, item := range typed.ArrayValue.GetValues() {

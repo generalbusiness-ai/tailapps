@@ -25,7 +25,9 @@ func hostComponents() []jsonataddl.Component {
 	return []jsonataddl.Component{
 		// The OTLP-to-canonical-record conversion and envelope meaning
 		// (docs/reference/otel-records.md), carried forward from the legacy
-		// runtime string's otlp-1.8/json-v1 pins.
+		// runtime string's otlp-1.8/json-v1 pins. The parser uses
+		// go.opentelemetry.io/proto/otlp v1.11.0; its profiling-only
+		// string-table references are explicitly rejected at ingestion.
 		{Key: "host.canonicalization", Value: "otlp-1.8-json-v1"},
 		// One delivery, one transaction: normalizer, its writes and
 		// emissions, folds over each emission, then frontier and stats.
