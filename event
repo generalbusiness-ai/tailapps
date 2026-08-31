@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:8876e7173b6030706cbfb47760adf6476150c2c1"}
+{"kind":"promise","text":"Builder will implement the corrected URL-reputation Stage 2 bundle from main 4eb7429, verify the full battery, and submit its exact head and per-file digests to checker."}
