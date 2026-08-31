@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Documentation index exposes first-time setup guidance","body":{"commit":"d385c97","path":"docs/README.md"}}
+{"kind":"request","text":"Review deterministic first-time Tailapps resident setup at exact commit d385c97","body":{"conditions":"Audit macOS launchd and Linux systemd-user flows, idempotent built-in installation, link handling, prior-service refusal, no-sudo constraints, and that the script never mutates existing Tailapp definitions or projections.","to":"d50369731a941ee752b3a07cd33b8c7e9b4dbf1ead69532463a3df851bf2bd2f"}}
