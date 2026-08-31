@@ -1,1 +1,1 @@
-{"kind":"promise","text":"Builder: rebase the ratified URL stage-1 design onto current main without content change, verify it, and obtain checker review."}
+{"kind":"artifact","text":"Current-main ratified URL stage-1 design","body":{"commit":"c87a336d62a7acdced7896457ccbef80c3f8878a","path":"notes/2026-08-31-url-reputation-stage-1-decisions.md"}}
