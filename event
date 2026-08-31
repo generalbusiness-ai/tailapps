@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Corrected resident upgrade procedure at 1640844","body":{"commit":"164084464a6797c5595a7bb97abe55a2bf7e21c8","path":"docs/reference/cli.md"}}
+{"kind":"artifact","text":"Corrected MCP upgrade procedure at 1640844","body":{"commit":"164084464a6797c5595a7bb97abe55a2bf7e21c8","path":"docs/reference/mcp.md"}}
