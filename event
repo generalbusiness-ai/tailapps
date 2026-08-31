@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at scripts/install.sh","body":{"commit":"b2969ccf8a7c20185cac6f31e14101426d13de79","path":"scripts/install.sh"}}
+{"kind":"artifact","text":"Merge published the current artifact at scripts/release_test.go","body":{"commit":"b2969ccf8a7c20185cac6f31e14101426d13de79","path":"scripts/release_test.go"}}
