@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Documentation index for resident upgrade","body":{"commit":"90fdb2ae68e37752c118e375c0583496378c71be","path":"docs/README.md"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:0fb72ca13ab631a49ac2d7ea83a93ed5bec99081","text":"Superseded by full immutable-head artifact 90fdb2ae68e37752c118e375c0583496378c71be; implementation is unchanged."}
