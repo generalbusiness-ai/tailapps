@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:2edce9880359c18b75c25443daccee0ae0a4b3d5","text":"Withdraw the v0.1.0 promise because main advanced from 5d84ac71 to 5a8f888a before tagging; the release must bind the current pushed main exactly."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:2b7c90ec64a3b6bbc13e9dc878842e2dd631f035","text":"Replace the first-release request because its exact-head condition named 5d84ac71 and current pushed main advanced to 5a8f888a before the tag was created."}
