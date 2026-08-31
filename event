@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Current-main telemetry/timestamp composition: tailapps/signal-counts/application.sql","body":{"commit":"d53bfc20c561b19a4df94ba78c194babdf2c265a","path":"tailapps/signal-counts/application.sql"}}
+{"kind":"artifact","text":"Current-main telemetry/timestamp composition: tailapps/signal-counts/folds/count.jsonata","body":{"commit":"d53bfc20c561b19a4df94ba78c194babdf2c265a","path":"tailapps/signal-counts/folds/count.jsonata"}}
