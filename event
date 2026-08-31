@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Current-main visual-report README guidance","body":{"commit":"453b6dd5604535c181bf57f5900edab0f97432ef","path":"README.md"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:292fd70238d7772424a39f38e6667bf16533dfd9","text":"Replaced because its supporting artifact carried a malformed non-canonical basis; reissue against canonical per-file artifact 3870a856."}
