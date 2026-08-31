@@ -1,1 +1,1 @@
-{"kind":"request","text":"Re-review corrected first-time Tailapps resident setup at exact commit 78b3b25986d78f0f6f06584dcc804d2589c8ee47","body":{"conditions":"Verify full immutable artifact commits; R1 regular-file link refusal; dry run and shell syntax; go test, vet, race; no prohibited rm forms.","to":"d50369731a941ee752b3a07cd33b8c7e9b4dbf1ead69532463a3df851bf2bd2f"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:0e1afb9181f80143725a26bd2c7e1adde730bba1","text":"Replaced by the full-head re-review request after checker findings."}
