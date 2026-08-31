@@ -39,6 +39,16 @@ func TestVersionDerivation(t *testing.T) {
 	}
 }
 
+func TestStampedReleaseVersionWinsOnlyWhenValid(t *testing.T) {
+	info := synthetic("(devel)", "m", map[string]string{"vcs.revision": "70952f24f5901084f4eaefe9d2aa734e3cd3bf89"})
+	if got := versionWithStamp("1.2.3", info, true); got != "1.2.3" {
+		t.Fatalf("valid stamped version = %q", got)
+	}
+	if got := versionWithStamp("v1.2.3", info, true); got != "0.1.0+70952f24f590" {
+		t.Fatalf("invalid stamped version must fall back, got %q", got)
+	}
+}
+
 func TestSourceURLDerivation(t *testing.T) {
 	module := "github.com/generalbusiness-ai/tailapps"
 	cases := []struct {

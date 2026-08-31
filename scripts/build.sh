@@ -5,6 +5,9 @@
 # binary falls back to module-path derivation (see internal/buildinfo).
 #
 # Usage: scripts/build.sh [OUTPUT]   (default OUTPUT: ./tailapp)
+# Set TAILAPPS_VERSION to a validated, unprefixed semantic version only in a
+# release build. It is stamped into the binary so MCP and engine.json expose
+# the release identity rather than a checkout revision.
 set -eu
 
 repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
@@ -16,6 +19,17 @@ stamp=$("$repo_root/scripts/sanitize-remote.sh" "$remote" 2>/dev/null || true)
 flags=""
 if [ -n "$stamp" ]; then
   flags="-X github.com/generalbusiness-ai/tailapps/internal/buildinfo.stampedSourceURL=$stamp"
+fi
+
+version="${TAILAPPS_VERSION:-}"
+if [ -n "$version" ]; then
+  valid_version='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'
+  if ! printf '%s\n' "$version" | grep -Eq "$valid_version"; then
+    echo "TAILAPPS_VERSION must be an unprefixed semantic version" >&2
+    exit 64
+  fi
+  version_flag="-X github.com/generalbusiness-ai/tailapps/internal/buildinfo.stampedVersion=$version"
+  flags="${flags:+$flags }$version_flag"
 fi
 
 cd "$repo_root"
