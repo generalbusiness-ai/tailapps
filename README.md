@@ -48,6 +48,12 @@ latest captured day with:
 CLI and MCP return the same typed rows plus projection completeness and
 position, ready for people, agents, and automation.
 
+### Make a visual report
+
+Copy this prompt into an agent connected to Tailapp, or use it as a CLI brief:
+
+> Query `daily-review.daily_review`; the `activity-stats` exports `event_inventory`, `session_activity`, and `request_performance`; `session-cost.session_cost`; the `agent-guard` exports `telemetry_coverage`, `session_progress`, `policy_findings`, and `loop_findings`; and `signal-counts.signal_counts`. Produce one self-contained HTML file with inline charts and no external scripts: lead with two or three headline numbers, then chart aggregates by harness and, where available, `day_utc` for record, failure, and slow-event counts; input, cached-input, output, and reasoning tokens; `cost_microusd`; latency buckets and outcome rates; tool and endpoint buckets; repeated-failure and no-progress evidence; and presence-only privacy indicators. Label every chart as a complete-day snapshot or cumulative total, show each projection's completeness and interpreted position plus ineffective or stalled coverage, and never silently mix frontiers. Use aggregates only—no session IDs, paths, commands, prompts, or URLs—and end with an evidence-and-next-questions section citing the positions used.
+
 ## Install and connect
 
 On macOS or Linux with Go 1.26.7 or later, the fastest durable setup is:
