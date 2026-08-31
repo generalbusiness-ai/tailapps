@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Telemetry-only analytics implementation at exact head 36d1a68968d5ce715bfd1f261df6a410f488a809; tailapps plus supporting runtime timeout handling.","body":{"commit":"36d1a68968d5ce715bfd1f261df6a410f488a809","path":"tailapps"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:1cef5eb989188d6f822885afceaf18795144ee59","text":"Replaced because its artifact basis used the forbidden whole-repository path; successor rests on the live tailapps artifact at the same exact head."}
