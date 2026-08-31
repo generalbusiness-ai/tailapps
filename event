@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:14f11248eeb80b8d99fb484cd618028f611e8300","text":"Merge retired a covered predecessor; the successor is at scripts/setup-resident.sh."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:1c8e58bf58db6368186b019bad585c8ce75e3386","text":"Merge retired a covered predecessor; the successor is at scripts/build.sh."}
