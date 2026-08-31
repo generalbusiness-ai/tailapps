@@ -181,6 +181,14 @@ Returns engine status; equivalent to `tailapp health`.
 
 Returns the active compiled profile. Draft-only Tailapps have no live schema.
 
+### `tailapp version`
+
+Prints one JSON object describing this binary: semantic or development
+version, VCS revision and dirty state, sanitized source URL, Go version,
+operating system, and architecture. Revision and source URL are empty when the
+build did not embed them. It does not contact a resident or read
+`TAILAPP_HOME`.
+
 ## Upgrading an existing resident
 
 A release that changes the runtime identity deliberately reopens existing

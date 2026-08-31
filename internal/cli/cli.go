@@ -47,6 +47,12 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		printUsage(stdout)
 		return nil
 	}
+	if args[0] == "version" {
+		if len(args) != 1 {
+			return errors.New("version accepts no arguments")
+		}
+		return output(stdout, buildinfo.Current())
+	}
 	home, err := Home()
 	if err != nil {
 		return err
@@ -120,6 +126,7 @@ Usage:
   tailapp apps <list|create|get|put|rm|validate|activate|delete|status|schema>
   tailapp query --sql SQL [options] APP
   tailapp health
+  tailapp version
   tailapp metrics [--json]
   tailapp ineffective APP
   tailapp ingest-fixture [--signal logs|traces|metrics] FILE

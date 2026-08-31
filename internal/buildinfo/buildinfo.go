@@ -6,6 +6,7 @@ package buildinfo
 
 import (
 	"regexp"
+	"runtime"
 	"runtime/debug"
 	"strings"
 )
@@ -30,6 +31,45 @@ var stampedVersion string
 
 var githubURL = regexp.MustCompile(`^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$`)
 var releaseVersion = regexp.MustCompile(`^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$`)
+
+// Details is the stable, machine-readable identity emitted by `tailapp
+// version`. It is deliberately build-only information: no field reads a
+// checkout or a Git remote at run time.
+type Details struct {
+	Version   string `json:"version"`
+	Revision  string `json:"revision"`
+	Dirty     bool   `json:"dirty"`
+	SourceURL string `json:"source_url"`
+	GoVersion string `json:"go_version"`
+	OS        string `json:"os"`
+	Arch      string `json:"arch"`
+}
+
+// Current reports this binary's identity. Release builds use their stamped
+// semantic version; development builds retain the VCS-derived Version value.
+func Current() Details {
+	info, ok := debug.ReadBuildInfo()
+	return details(info, ok)
+}
+
+func details(info *debug.BuildInfo, ok bool) Details {
+	revision, dirty := "", false
+	if ok && info != nil {
+		for _, setting := range info.Settings {
+			switch setting.Key {
+			case "vcs.revision":
+				revision = setting.Value
+			case "vcs.modified":
+				dirty = setting.Value == "true"
+			}
+		}
+	}
+	return Details{
+		Version: versionWithStamp(stampedVersion, info, ok), Revision: revision, Dirty: dirty,
+		SourceURL: sourceURL(stampedSourceURL, info, ok),
+		GoVersion: runtime.Version(), OS: runtime.GOOS, Arch: runtime.GOARCH,
+	}
+}
 
 // Version reports the binary's version: a real module tag when one names the
 // build, otherwise the base version annotated with the VCS revision and a

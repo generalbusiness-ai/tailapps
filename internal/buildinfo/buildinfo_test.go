@@ -73,3 +73,16 @@ func TestSourceURLDerivation(t *testing.T) {
 		})
 	}
 }
+
+func TestDetailsCarriesStableMachineReadableFields(t *testing.T) {
+	info := synthetic("(devel)", "github.com/generalbusiness-ai/tailapps", map[string]string{
+		"vcs.revision": "70952f24f5901084f4eaefe9d2aa734e3cd3bf89", "vcs.modified": "true",
+	})
+	details := details(info, true)
+	if details.Version != "0.1.0+70952f24f590.dirty" || details.Revision != "70952f24f5901084f4eaefe9d2aa734e3cd3bf89" || !details.Dirty {
+		t.Fatalf("details = %#v", details)
+	}
+	if details.SourceURL != "https://github.com/generalbusiness-ai/tailapps" || details.GoVersion == "" || details.OS == "" || details.Arch == "" {
+		t.Fatalf("missing stable details: %#v", details)
+	}
+}
