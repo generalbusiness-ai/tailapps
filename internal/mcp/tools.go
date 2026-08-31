@@ -36,7 +36,7 @@ func tools() []tool {
 	sourceContent := map[string]any{"type": "string", "contentEncoding": "base64"}
 
 	appResult := result(map[string]any{"name": text, "draft_revision": text, "active_revision": text, "runtime_profile": text, "activation_mode": text, "boundary_position": integer}, "name", "draft_revision")
-	frontierResult := result(map[string]any{"revision": text, "activation_boundary": integer, "interpreted_position": integer, "last_event_id": text, "complete": boolean, "gap_position": integer, "gap_reason": text}, "revision", "complete")
+	frontierResult := result(map[string]any{"revision": text, "activation_boundary": integer, "interpreted_position": integer, "last_event_id": text, "complete": boolean, "gap_position": integer, "gap_reason": text, "gap_observed_unix_nano": text, "last_record_time_unix_nano": text}, "revision", "complete")
 	profileResult := result(map[string]any{"name": text, "revision": text, "runtime_profile": text, "storage_schema_digest": text, "export_contract_digest": text, "event": anyObject, "normalizer": anyObject, "folds": anyArray, "tables": anyObject, "views": anyObject, "exports": anyObject, "schema_sql": anyArray}, "name", "revision")
 
 	install := object(map[string]any{

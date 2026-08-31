@@ -2,8 +2,10 @@
   $attrs := event.record.attributes ? event.record.attributes : {};
   $resource := event.record.resource.attributes ? event.record.resource.attributes : {};
   $semantic_name_raw := $lookup($attrs, "event.name");
-  $event_name := $exists($semantic_name_raw) and $string($semantic_name_raw) != "" ?
-    $string($semantic_name_raw) : event.name;
+  $body_name := $exists(event.record.body) ? $string(event.record.body) : "";
+  $claude_body_name := event.source = "claude-code" and $substring($body_name, 0, 12) = "claude_code.";
+  $event_name := $claude_body_name ? $body_name :
+    ($exists($semantic_name_raw) and $string($semantic_name_raw) != "" ? $string($semantic_name_raw) : event.name);
   $harness := (event.source = "codex_cli_rs" or event.source = "codex_exec" or
     event.source = "codex-app-server") ? "codex" :
     ((event.source = "copilot-chat" or event.source = "vscode-copilot-chat") ? "vscode-copilot-chat" : event.source);

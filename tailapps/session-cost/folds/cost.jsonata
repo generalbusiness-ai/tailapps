@@ -1,9 +1,11 @@
 (
   $old := rows.prior;
+  $detail := rows.detail;
   {
     "decision": "effective",
     "facts": [],
-    "tables": {"session_cost": {"upsert": [{
+    "tables": {
+      "session_cost": {"upsert": [{
       "harness": event.harness,
       "session_id": event.session_id,
       "input_tokens": ($old ? $old.input_tokens : 0) + event.input_tokens,
@@ -13,6 +15,24 @@
       "cost_microusd": ($old ? $old.cost_microusd : 0) + event.cost_microusd,
       "last_event_time_unix_nano": event.event_time_unix_nano,
       "last_source_position": event.source_position
-    }]}}
+      }]},
+      "session_cost_detail": {"upsert": [{
+        "harness": event.harness,
+        "session_id": event.session_id,
+        "session_id_prefix": event.session_id_prefix,
+        "model": event.model_coverage = "observed" ? event.model : ($detail ? $detail.model : "unknown"),
+        "project": event.project_coverage = "observed" ? event.project : ($detail ? $detail.project : "unknown"),
+        "model_coverage": event.model_coverage = "observed" ? "observed" : ($detail ? $detail.model_coverage : "unknown"),
+        "project_coverage": event.project_coverage = "observed" ? "observed" : ($detail ? $detail.project_coverage : "unknown"),
+        "input_tokens": ($detail ? $detail.input_tokens : 0) + event.input_tokens,
+        "output_tokens": ($detail ? $detail.output_tokens : 0) + event.output_tokens,
+        "cached_input_tokens": ($detail ? $detail.cached_input_tokens : 0) + event.cached_input_tokens,
+        "reasoning_output_tokens": ($detail ? $detail.reasoning_output_tokens : 0) + event.reasoning_output_tokens,
+        "cost_microusd": ($detail ? $detail.cost_microusd : 0) + event.cost_microusd,
+        "first_event_time_unix_nano": $detail ? $detail.first_event_time_unix_nano : event.event_time_unix_nano,
+        "last_event_time_unix_nano": event.event_time_unix_nano,
+        "last_source_position": event.source_position
+      }]}
+    }
   }
 )

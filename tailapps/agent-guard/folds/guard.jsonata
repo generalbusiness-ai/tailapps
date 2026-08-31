@@ -1,5 +1,8 @@
 (
   $old := rows.prior;
+	$tool_coverage_old := rows.tool_coverage_prior;
+	$target_coverage_old := rows.target_coverage_prior;
+	$progress_coverage_old := rows.progress_coverage_prior;
 	$action_same := $old and $old.action_fingerprint = event.action_fingerprint;
 	$repeat := $action_same ? $old.repeat_count + 1 : 1;
   $failed := event.success = false;
@@ -33,6 +36,7 @@
     "harness": event.harness,
     "session_id": event.session_id,
     "source_position": event.source_position,
+    "observed_unix_nano": event.event_time_unix_nano,
     "summary": $summary,
     "evidence": {
       "tool": event.tool,
@@ -51,6 +55,8 @@
     "harness": event.harness,
     "session_id": event.session_id,
     "source_position": event.source_position,
+    "first_observed_unix_nano": $first,
+    "last_observed_unix_nano": event.event_time_unix_nano,
     "repeat_count": $repeat,
     "consecutive_failures": $failures,
     "no_progress_count": $no_progress,
@@ -63,11 +69,56 @@
       "last_distinct_progress_unix_nano": $distinct
     }
   }] : [];
+  $failure_rows := $failed ? [{
+    "source_position": event.source_position,
+    "event_time_unix_nano": event.event_time_unix_nano,
+    "harness": event.harness,
+    "session_id": event.session_id,
+    "session_id_prefix": event.session_id_prefix,
+    "project": event.project,
+    "model": event.model,
+    "tool": event.tool ? event.tool : "unknown",
+    "command": event.command,
+    "tool_arguments": event.tool_arguments,
+    "target": event.target ? event.target : "",
+    "failure_detail": event.failure_detail,
+    "detail_coverage": event.command != "" and event.failure_detail != "" ? "observed" :
+      ((event.command != "" or event.tool_arguments != "" or event.failure_detail != "" or event.target) ? "partial" : "unknown")
+  }] : [];
 
   {
     "decision": "effective",
     "facts": [],
     "tables": {
+      "telemetry_coverage": {"upsert": [
+        {
+          "harness": event.harness,
+          "capability": event.tool_capability,
+          "state": event.tool_coverage,
+          "reason": event.tool_coverage_reason,
+          "first_seen_unix_nano": $tool_coverage_old ? $tool_coverage_old.first_seen_unix_nano : event.event_time_unix_nano,
+          "last_seen_unix_nano": event.event_time_unix_nano,
+          "last_source_position": event.source_position
+        },
+        {
+          "harness": event.harness,
+          "capability": event.target_capability,
+          "state": event.target_coverage,
+          "reason": event.target_coverage_reason,
+          "first_seen_unix_nano": $target_coverage_old ? $target_coverage_old.first_seen_unix_nano : event.event_time_unix_nano,
+          "last_seen_unix_nano": event.event_time_unix_nano,
+          "last_source_position": event.source_position
+        },
+        {
+          "harness": event.harness,
+          "capability": event.progress_capability,
+          "state": event.progress_coverage,
+          "reason": event.progress_coverage_reason,
+          "first_seen_unix_nano": $progress_coverage_old ? $progress_coverage_old.first_seen_unix_nano : event.event_time_unix_nano,
+          "last_seen_unix_nano": event.event_time_unix_nano,
+          "last_source_position": event.source_position
+        }
+      ]},
       "session_progress": {"upsert": [{
         "harness": event.harness,
         "session_id": event.session_id,
@@ -83,7 +134,8 @@
         "last_source_position": event.source_position
       }]},
       "policy_findings": {"upsert": $policy_rows},
-      "loop_findings": {"upsert": $loop_rows}
+      "loop_findings": {"upsert": $loop_rows},
+      "tool_failure_detail": {"upsert": $failure_rows}
     }
   }
 )
