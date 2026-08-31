@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:44a90b6063a085eb91129ced1e6190c7eaffa7bd","text":"Superseded by corrected full-head artifact 4b93320968609e6587cace35a7f023bfff9fd309."}
+{"kind":"artifact","text":"Dependency-security documentation index","body":{"commit":"4b93320968609e6587cace35a7f023bfff9fd309","path":"docs/README.md"}}
