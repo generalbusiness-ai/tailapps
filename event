@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Documentation index exposes dependency security checks","body":{"commit":"b808dc8","path":"docs/README.md"}}
+{"kind":"request","text":"Review urgent Go dependency security refresh at exact commit b808dc8","body":{"conditions":"Verify each upgrade is compatible and addresses the reported reachable vulnerabilities; inspect the pinned scanner and CI invocation; confirm module verification, tests, race, scanner, and demo evidence; ensure demo cleanup has no forbidden rm form.","to":"d50369731a941ee752b3a07cd33b8c7e9b4dbf1ead69532463a3df851bf2bd2f"}}
