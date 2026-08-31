@@ -50,7 +50,18 @@ position, ready for people, agents, and automation.
 
 ## Install and connect
 
-On macOS or Linux with Go 1.26.7 or later, build and start the resident:
+On macOS or Linux with Go 1.26.7 or later, the fastest durable setup is:
+
+```sh
+scripts/setup-resident.sh
+```
+
+It builds the binary, links `~/.local/bin/tailapp`, starts a no-sudo user
+resident, and installs all five built-in bundles. See
+[first-time resident setup](docs/reference/first-time-setup.md) for its dry
+run and platform details.
+
+To build and start the resident manually instead:
 
 ```sh
 go build -o tailapp ./cmd/tailapp

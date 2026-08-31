@@ -35,6 +35,7 @@ activate, query, update, and delete them through either public interface.
 - [Runtime metrics](reference/metrics.md)
 - [Dependency and vulnerability checks](reference/dependency-security.md)
 - [Verified GitHub releases](reference/releases.md)
+- [First-time resident setup](reference/first-time-setup.md)
 
 The CLI and MCP adapter are clients of the same resident control service.
 Draft changes made through either interface are immediately visible through
