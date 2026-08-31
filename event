@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:46c12b4920161c77d48e4b1da6c50a42f00b3497","text":"Replacement request carried stale rejected-round bases; a fresh exact-head review request is live."}
+{"kind":"promise","text":"I will deliver the requested conservative-upgrade design note only, reconciling it with the current manual upgrade procedure and live restore, then submit it to Checker before implementation."}
