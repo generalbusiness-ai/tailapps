@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:c4af90807549f75ba80dc3dfc69e81980b28499f","text":"Incorrect non-canonical promise basis; replaced by canonical per-file artifact 3870a856."}
+{"kind":"promise","text":"Checker claims the review: current-main README visual-report guidance at exact head 453b6dd5604535c181bf57f5900edab0f97432ef (README.md sole diff, every named export/column present at this head, concise/local-only/privacy-preserving, gates); guarded verdict follows."}
