@@ -1,6 +1,6 @@
 ---
 date: 2026-08-31
-status: proposed stage-1 decisions; capture and provider defaults require operator ratification
+status: ratified stage-1 decisions; stage 2 may begin
 basis: notes/2026-08-30-web-domain-reputation.md
 ---
 
@@ -11,10 +11,9 @@ keeps the feature entirely telemetry-based: the Tailapp consumes OTLP records,
 the companion emits OTLP records, and neither reads an agent harness's local
 session store.
 
-Three operator choices remain deliberately unratified: how URL observations
-are captured, which reputation service is eligible, and how outbound URLs are
-scrubbed. Recommended defaults are called out below. No engine or
-runtime-profile change is part of this feature.
+The operator ratified the capture route, provider posture, and egress policy
+on 2026-08-31 in assert `c9c7fa4c425f498668c976c026e5a8e1d3089db3`.
+No engine or runtime-profile change is part of this feature.
 
 ## 1. Capture and provider choices
 
@@ -47,15 +46,16 @@ sensitive-value handling: <https://opentelemetry.io/docs/specs/semconv/registry/
 
 | Option | Eligibility and operational shape |
 |---|---|
-| Google Web Risk Lookup (recommended) | Suitable when commercial use cannot be ruled out; one URL per Lookup request, the client need not canonicalize for provider matching, and the response carries threat types and cache expiry. Client-side exclusion and secret scrubbing remain mandatory before the request. Current pricing includes a monthly free Lookup allowance but pricing must not be baked into behavior. |
-| Google Safe Browsing v5 | Free but explicitly non-commercial. It accepts up to 50 URLs per search and returns `cacheDuration`; its warning/attribution requirements apply when results are presented to users. |
+| Google Safe Browsing v5 (default) | The default for this separately run, user-instruction companion. It is explicitly non-commercial: the person running each installation must confirm that eligibility before it sends a URL. It accepts up to 50 URLs per search and returns `cacheDuration`; its warning/attribution requirements apply when results are presented to users. |
+| Google Web Risk Lookup | Use when commercial use cannot be ruled out; one URL per Lookup request, the client need not canonicalize for provider matching, and the response carries threat types and cache expiry. Client-side exclusion and secret scrubbing remain mandatory before the request. Current pricing includes a monthly free Lookup allowance but pricing must not be baked into behavior. |
 | VirusTotal | Use only with a Premium license that covers automated enrichment. Its Public API is not a default: it forbids commercial products/services and business report-retrieval workflows and has strict daily/rate limits. |
 
-The recommended default is Web Risk Lookup. A personal, demonstrably
-non-commercial installation may ratify Safe Browsing v5 instead. VirusTotal is
-an explicit licensed override, never an automatic fallback. The companion
+Safe Browsing v5 is the ratified default only after the runner confirms
+non-commercial eligibility for that installation. When commercial use cannot
+be ruled out, the runner must select Web Risk Lookup instead. VirusTotal is an
+explicit Premium-only override, never an automatic fallback. The companion
 requires exactly one configured provider and refuses to send anything when the
-choice or credential is absent.
+choice, eligibility confirmation, or credential is absent.
 
 Current primary references, checked 2026-08-31:
 
@@ -214,6 +214,11 @@ written to config, logged, or included in OTLP. The script scrubs provider
 request URLs before reporting failures so a query-string API key cannot enter
 telemetry.
 
+The companion README will name Safe Browsing v5 as the default and require the
+runner to confirm its non-commercial eligibility for each installation before
+the default provider can be used. It will direct any uncertain or commercial
+installation to Web Risk Lookup, and will describe VirusTotal as Premium-only.
+
 ## 5. Retention and reset
 
 Stage 2 retains one row per distinct exact URL until reset. This is explicit,
@@ -291,21 +296,24 @@ network egress.
 ### Stage 4: review integration and catalog
 
 - Add the bundle to the built-in catalog and install docs.
-- Extend daily-review instructions with due-query, provider eligibility,
-  companion invocation, suspected-hit reporting, coverage, and reset caveats.
+- Extend daily-review instructions with due-query, companion invocation,
+  suspected-hit reporting, coverage, and reset caveats. They must name Safe
+  Browsing v5 as the default, require the runner's per-install non-commercial
+  eligibility confirmation, direct uncertain or commercial use to Web Risk,
+  and describe VirusTotal as Premium-only.
 - Add concise first-encounter MCP resource links for the bundle and companion.
 - Verify all existing bundles and their exports remain unchanged.
 
 ## Ratification gate
 
-Before Stage 2 begins, the operator should ratify or replace these defaults:
+The operator ratified all three gates on 2026-08-31 in assert
+`c9c7fa4c425f498668c976c026e5a8e1d3089db3`:
 
-1. narrow dedicated adapter capture rather than the broad harness detail gate;
-2. Web Risk Lookup as the default eligible provider, with Safe Browsing only
-   for confirmed non-commercial use and VirusTotal only under a suitable
-   Premium license; and
+1. the narrow dedicated adapter rather than the broad harness detail gate;
+2. Safe Browsing v5 as the default with per-install non-commercial eligibility
+   confirmation; Web Risk when commercial use cannot be ruled out; and
+   VirusTotal only under a suitable Premium license; and
 3. mandatory query removal plus high-confidence path-secret redaction before
    egress.
 
-Everything else in this note is an implementation decision under those policy
-choices.
+Stage 2 may proceed under these choices.
