@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Canonical OTLP string-table boundary documentation","body":{"commit":"4b93320968609e6587cace35a7f023bfff9fd309","path":"docs/reference/otel-records.md"}}
+{"kind":"artifact","text":"Canonical parser compatibility provenance","body":{"commit":"4b93320968609e6587cace35a7f023bfff9fd309","path":"internal/profile/runtime.go"}}
