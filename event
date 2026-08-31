@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Activity stats recognizes VS Code Copilot inference and tool-log families","body":{"commit":"de5b0e1","path":"tailapps/activity-stats/folds/normalize.jsonata"}}
+{"kind":"artifact","text":"Agent guard recognizes VS Code Copilot tool-call fields and honest coverage","body":{"commit":"de5b0e1","path":"tailapps/agent-guard/folds/normalize.jsonata"}}
