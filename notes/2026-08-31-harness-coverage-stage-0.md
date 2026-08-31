@@ -1,6 +1,6 @@
 ---
 date: 2026-08-31
-status: evidence stage; no normalizer or capture profile claimed yet
+status: Kiro evidence stage; VS Code Copilot Chat coverage delivered
 basis: official Kiro and Visual Studio Code documentation, checked 2026-08-31
 ---
 
@@ -17,7 +17,7 @@ the receiver shape.
 |---|---|---|
 | Kiro CLI v3 | Not documented | Negative finding; do not add a profile or guide that implies delivery to Tailapp. |
 | Kiro IDE | Not documented | Negative finding; do not add a profile or guide that implies delivery to Tailapp. |
-| VS Code Copilot Chat | Yes | Stage the capture and exact compatibility profile before normalizer work. |
+| VS Code Copilot Chat | Yes | Delivered: the current guide, scrubbed 0.63.0 fixture, and built-in normalizers recognize its supported log families. |
 
 ### Kiro CLI v3
 
@@ -47,7 +47,7 @@ Sources: [Kiro IDE overview](https://kiro.dev/docs/ide/),
 [network destinations](https://kiro.dev/docs/privacy-and-security/firewalls/),
 and [IDE data protection](https://kiro.dev/docs/privacy-and-security/data-protection/).
 
-### VS Code Copilot Chat
+### VS Code Copilot Chat: delivered coverage
 
 VS Code's Copilot Chat documentation describes an OTLP-compatible exporter for
 traces, metrics, and events. It is off by default; `github.copilot.chat.otel`
@@ -59,14 +59,15 @@ events including `gen_ai.client.inference.operation.details`,
 `copilot_chat.session.start`, `copilot_chat.tool.call`, and
 `copilot_chat.agent.turn`.
 
-This is a routable source, but existing Tailapp normalizers do not yet name a
-`copilot-chat` compatibility profile. A Stage 1 capture must use a current VS
-Code build, preserve default content-off settings, route each signal through
-Tailapp's OTLP/HTTP receiver, and check the resulting canonical records before
-recognition is added. In particular, the capture must establish whether the
-receiver represents the documented span names and span events as the expected
-canonical record names; vendor documentation alone does not settle that local
-translation boundary.
+The current built-in coverage has completed that capture boundary with a
+scrubbed VS Code 1.135 / Copilot Chat 0.63.0 fixture. The documented default
+`copilot-chat` service identity and optional `vscode-copilot-chat` identity
+map to one `vscode-copilot-chat` harness. The bundled normalizers recognize
+the `gen_ai.client.inference.operation.details` log for token totals and the
+`copilot_chat.tool.call` log for tool activity; trace and metric companions
+remain visible in `signal-counts` without duplicating totals. The
+[VS Code Copilot Chat guide](../docs/harnesses/vscode-copilot-chat.md) records
+the settings, retained fields, and verification commands.
 
 Source: [Monitor agent usage with OpenTelemetry](https://code.visualstudio.com/docs/agents/guides/monitoring-agents).
 
@@ -74,11 +75,8 @@ Source: [Monitor agent usage with OpenTelemetry](https://code.visualstudio.com/d
 
 1. Keep the Kiro negatives in the harness index until Kiro publishes a
    user-routable local OTLP contract.
-2. Capture one content-off Copilot Chat interaction with a tool call against a
-   loopback Tailapp receiver; scrub it, record its VS Code/Copilot version, and
-   compare the receiver's canonical log/span/metric records with the official
-   table above.
-3. Only then add a `copilot-chat` compatibility profile consistently to every
-   applicable shipped normalizer, a harness guide, fixture tests, README and
-   index links. Unknown target/command detail remains unknown when content
+2. Re-capture a content-off Copilot Chat interaction after a material VS Code
+   or Copilot Chat update, scrub it, record the version, and compare its
+   canonical records against the shipped compatibility fixture before changing
+   recognition. Unknown target and command detail remain unknown when content
    capture is off.
