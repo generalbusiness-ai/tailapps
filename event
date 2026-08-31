@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Current-main telemetry analytics and timestamp upgrade correction","body":{"commit":"a6b7c0c3ab8d02b9d25805f2fd035c57055912d7","path":"."}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:cda74f604d2917f6eb157eebbe62d924467c1f4e","text":"Superseded: the recorded commit hash was transcribed incorrectly; use the exact current-main composition artifact."}
