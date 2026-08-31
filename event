@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at notes/2026-08-31-conservative-tailapp-upgrades.md","body":{"commit":"c35789d67442a8d9b3ef16a31a79d964c7c61514","path":"notes/2026-08-31-conservative-tailapp-upgrades.md"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:97603d18dd9b02eb16d72d76655eb0026c4f4778","text":"Merge retired a covered predecessor; the successor is at notes/2026-08-31-conservative-tailapp-upgrades.md."}
