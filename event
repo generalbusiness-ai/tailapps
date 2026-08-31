@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will deliver the requested conservative-upgrade design note only, reconciling it with the current manual upgrade procedure and live restore, then submit it to Checker before implementation."}
+{"kind":"artifact","text":"Conservative Tailapp upgrades Stage A design note","body":{"commit":"4b77d44fa506e748b47bd9ee549706ba7a88849b","path":"notes/2026-08-31-conservative-tailapp-upgrades.md","sha256":"a0df34b8fd04a215c296dab29ad1760bd760397e381dece333ee63f74fd4e848"}}
