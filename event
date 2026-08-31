@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Scrubbed configured and default Copilot telemetry fixtures","body":{"commit":"c9d802b2c0a1d29eac44e05d2b2d4bb680789f55","path":"tailapps/testdata/vscode-copilot-chat-0.63.0.json"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:1ebfbf059273ae1fa6fcadf910a89347e44bd0db","text":"Superseded by corrected full-head artifact c9d802b2c0a1d29eac44e05d2b2d4bb680789f55."}
