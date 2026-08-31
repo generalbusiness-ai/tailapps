@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Machine-readable version CLI documentation at reviewed release head","body":{"commit":"0bac8fd1d512323e329731a192802454483925fe","path":"docs/reference/cli.md","sha256":"efb19456a164a10f8631d4f2734ab3b705846419b202a6ac69f541ca6758f102"}}
+{"kind":"artifact","text":"Verified release installation documentation at reviewed release head","body":{"commit":"0bac8fd1d512323e329731a192802454483925fe","path":"docs/reference/releases.md","sha256":"721232b9a018600c637eda2f9ac8520de375ee8e4da6c21f1c45b7aa94a62c46"}}
