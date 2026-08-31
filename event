@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at docs/assets/visual-report-sample.png","body":{"commit":"abb60147c34b4f324b66c33cb45f4b3b234fab59","path":"docs/assets/visual-report-sample.png"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:3870a8563c6a1bc9940e28526f542547439a5bc4","text":"Merge retired a covered predecessor; the successor is at README.md."}
