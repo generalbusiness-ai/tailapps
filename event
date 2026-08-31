@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Runtime build identity accepts only validated release stamps","body":{"commit":"385ff5c","path":"internal/buildinfo/buildinfo.go"}}
+{"kind":"artifact","text":"Release-version validation unit coverage","body":{"commit":"385ff5c","path":"internal/buildinfo/buildinfo_test.go"}}
