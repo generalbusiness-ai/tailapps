@@ -21,8 +21,9 @@ preserving any existing settings:
 ```
 
 The endpoint is the receiver base URL; VS Code sends the OTLP signal paths.
-`serviceName` is optional: use it to make Copilot’s source name unambiguous;
-`OTEL_SERVICE_NAME` takes precedence when it is set in VS Code’s environment.
+In VS Code 1.135's built-in Copilot Chat extension 0.63.0, `serviceName` is
+optional: use it to make Copilot’s source name unambiguous; `OTEL_SERVICE_NAME`
+takes precedence when it is set in VS Code’s environment.
 Restart VS Code after changing telemetry settings, then make one Copilot Chat
 request and one agent tool call. Confirm delivery and interpretation with:
 
