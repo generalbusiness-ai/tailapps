@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Current Claude fixture guide at b874243","body":{"commit":"b874243a6a5c05fc5fc56b4b646d3f9a4dc52cf5","path":"docs/harnesses/claude-code.md"}}
+{"kind":"artifact","text":"Demo cleanup compatibility at b874243","body":{"commit":"b874243a6a5c05fc5fc56b4b646d3f9a4dc52cf5","path":"scripts/demo.sh"}}
