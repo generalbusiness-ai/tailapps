@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Scrubbed observed VS Code Copilot compatibility fixture","body":{"commit":"de5b0e1","path":"tailapps/testdata/vscode-copilot-chat-0.63.0.json"}}
+{"kind":"artifact","text":"Observed VS Code Copilot mapping regression coverage","body":{"commit":"de5b0e1","path":"tailapps/embed_test.go"}}
