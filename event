@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:f391319310396f2d2fe9375125e7c4162d44a0b6","text":"Replaced by the combined timestamp successor carrying the telemetry checker corrections and accurate reset guidance."}
+{"kind":"artifact","text":"Combined observed-timestamp successor plus telemetry review corrections at exact head 6e8e7dc450ef9a77e28faa9e3a20bfb7131c22e4; full tests, vet, race, and demo pass","body":{"commit":"6e8e7dc450ef9a77e28faa9e3a20bfb7131c22e4","path":"tailapps"}}
