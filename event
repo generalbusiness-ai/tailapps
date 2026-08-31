@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will validate and merge the out-of-checkout release workflow, publish v0.1.4, and prove its signed pinned install has clean exact build metadata."}
+{"kind":"artifact","text":"Release workflow builds, signs, attests, and publishes from runner temp at exact head 6f6599e.","body":{"blob":"d67de989c3d10abf8bea385c4523e8c4e4de0b11","commit":"6f6599e6f591a5242b7cccf0cd5415fb34f20322","path":".github/workflows/release.yml","sha256":"8032ce9c12d0c2ac64a6c48dad15837ee7715913b62c0e610acc229fca5a1602"}}
