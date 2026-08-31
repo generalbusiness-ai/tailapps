@@ -10,7 +10,7 @@ Install and activate it explicitly:
 ```sh
 tailapp apps install --bundle url-reputation \
   --idempotency-key install-url-reputation-v1 url-reputation
-tailapp apps activate --mode reset --confirm-reset \
+tailapp apps activate --mode reset --ack-reset \
   --idempotency-key activate-url-reputation-v1 url-reputation
 ```
 
