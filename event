@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:9c6497d9c04d351e8750e6ef0fd2468685a909f2","text":"Superseded by full immutable-head artifact 90fdb2ae68e37752c118e375c0583496378c71be; implementation is unchanged."}
+{"kind":"artifact","text":"macOS resident upgrade procedure","body":{"commit":"90fdb2ae68e37752c118e375c0583496378c71be","path":"docs/reference/resident-upgrade.md"}}
