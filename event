@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Ratified URL reputation Stage 1 decisions at d908b48","body":{"commit":"d908b48589e79a0620142a1bf268e04f800b23f9","path":"notes/2026-08-31-url-reputation-stage-1-decisions.md"}}
+{"kind":"artifact","text":"Safe URL-stage demo cleanup at d908b48","body":{"commit":"d908b48589e79a0620142a1bf268e04f800b23f9","path":"scripts/demo.sh"}}
