@@ -120,7 +120,8 @@ curl -fsSL https://github.com/generalbusiness-ai/tailapps/releases/download/vVER
 ```
 
 The installer verifies the archive checksum, verifies GitHub provenance with
-Cosign when available, and prints the command to run the resident.
+Cosign when available, starts the no-sudo per-user resident, and installs the
+five missing built-in bundles without changing telemetry settings.
 
 On macOS, once this is running as the standard per-user LaunchAgent, use
 [`scripts/upgrade-resident-macos.sh`](docs/reference/resident-upgrade.md) to

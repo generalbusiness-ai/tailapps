@@ -41,8 +41,12 @@ verifies the archive SHA-256 before installing it as
 `~/.local/lib/tailapp/tailapp-VERSION` and linking `~/.local/bin/tailapp`.
 When `cosign` is available it also verifies the keyless checksum-signature
 identity for that exact tag. It never uses sudo or changes telemetry settings.
-It prints the next foreground command; durable setup remains a separate,
-explicit operation.
+It configures the no-sudo per-user resident and installs all five missing
+built-in bundles without prompting. Use `sh -s -- --bundles LIST|none` after
+the pipe to select bundles, `--interactive` only when `/dev/tty` is available,
+or `--no-service` to retain the binary and bundles with an explicit foreground
+remedy instead of a service. See [first-time setup](first-time-setup.md) for
+service status, logs, and the source-checkout path.
 
 For an independent GitHub-hosted provenance check, use GitHub CLI:
 

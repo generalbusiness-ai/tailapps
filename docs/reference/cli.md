@@ -10,10 +10,10 @@ owner-only Unix socket.
 
 ## Environment
 
-`TAILAPP_HOME` selects the engine home. If unset, `tailapp` uses
-`tailapp` beneath the operating system's user configuration directory. Set it
-explicitly when the resident and harness-launched MCP processes must share one
-engine.
+`TAILAPP_HOME` selects the engine home. If unset, `tailapp` uses the stable,
+documented per-user location `~/.local/share/tailapp` on every supported
+platform. Set it explicitly when the resident and harness-launched MCP
+processes must share a non-default engine.
 
 ```sh
 export TAILAPP_HOME="$HOME/.local/share/tailapp"
@@ -25,6 +25,20 @@ export TAILAPP_HOME="$HOME/.local/share/tailapp"
 
 Creates the protected engine home and projection/temp directories. It is safe
 to call again for the same home.
+
+### `tailapp setup [--bundles LIST|none] [--interactive]`
+
+Installs requested missing built-in bundles through the running resident's
+create-only control operation. The default requests all five bundles;
+`--bundles` accepts a comma-separated subset or `none`. Existing Tailapps are
+reported as `already_present` and are never overwritten, reset, or activated.
+The JSON result contains `home`, `requested`, `installed`, and
+`already_present`.
+
+The default never prompts. `--interactive` asks for confirmation only through
+a readable, writable `/dev/tty`; it refuses in non-interactive environments.
+Run `tailapp serve` first, or use the signed release installer to create the
+resident service before this bundle-only step.
 
 ### `tailapp serve [--otlp-http IP:PORT]`
 

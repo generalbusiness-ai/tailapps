@@ -4,10 +4,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/generalbusiness-ai/tailapps/internal/control"
+	"github.com/generalbusiness-ai/tailapps/internal/engine"
 )
 
 func TestHelpLeadsWithProductAndInstallPath(t *testing.T) {
@@ -44,6 +48,69 @@ func TestVersionIsJSONAndDoesNotNeedAResidentHome(t *testing.T) {
 		if _, found := value[key]; !found {
 			t.Fatalf("version JSON omitted %q: %#v", key, value)
 		}
+	}
+}
+
+func TestDefaultHomeMatchesDocumentedPerUserLocation(t *testing.T) {
+	if got, want := defaultHome("/Users/example"), "/Users/example/.local/share/tailapp"; got != want {
+		t.Fatalf("defaultHome = %q, want %q", got, want)
+	}
+}
+
+func TestSetupInstallsOnlyMissingRequestedBuiltInsThroughControl(t *testing.T) {
+	home, err := os.MkdirTemp("/tmp", "tailapp-cli-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := os.RemoveAll(home); err != nil {
+			t.Error(err)
+		}
+	})
+	resident, err := engine.Open(context.Background(), home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resident.Close()
+	listener, err := control.Listen(filepath.Join(home, "engine.sock"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer listener.Close()
+	go func() { _ = http.Serve(listener, &control.Server{Engine: resident}) }()
+
+	var stdout, stderr bytes.Buffer
+	if err := setup(&stdout, &stderr, home, []string{"--bundles", "daily-review,session-cost"}); err != nil {
+		t.Fatal(err)
+	}
+	var first SetupResult
+	if err := json.Unmarshal(stdout.Bytes(), &first); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Join(first.Installed, ",") != "daily-review,session-cost" || len(first.AlreadyPresent) != 0 {
+		t.Fatalf("first setup = %#v", first)
+	}
+	stdout.Reset()
+	if err := setup(&stdout, &stderr, home, []string{"--bundles", "session-cost,daily-review"}); err != nil {
+		t.Fatal(err)
+	}
+	var second SetupResult
+	if err := json.Unmarshal(stdout.Bytes(), &second); err != nil {
+		t.Fatal(err)
+	}
+	if len(second.Installed) != 0 || strings.Join(second.AlreadyPresent, ",") != "session-cost,daily-review" {
+		t.Fatalf("second setup overwrote or missed an existing Tailapp: %#v", second)
+	}
+}
+
+func TestSetupBundleSelectionRejectsUnknownAndDuplicateNames(t *testing.T) {
+	for _, value := range []string{"", "unknown", "daily-review,daily-review"} {
+		if _, err := setupBundles(value); err == nil {
+			t.Fatalf("setupBundles(%q) unexpectedly succeeded", value)
+		}
+	}
+	if selected, err := setupBundles("none"); err != nil || len(selected) != 0 {
+		t.Fatalf("setupBundles(none) = %#v, %v", selected, err)
 	}
 }
 
