@@ -148,8 +148,11 @@ length only, never response content; see its
 [`input and privacy model`](../../tailapps/activity-stats/README.md#input-and-privacy-model).
 
 The checked-in compatibility fixture is a structurally representative,
-scrubbed capture from Claude Code 2.1.250. Vendor fields may change; after an
-upgrade, use `ineffective` and `telemetry_coverage` to check the live shape.
+scrubbed capture from Claude Code 2.1.251. It proves the current API request,
+API-error, tool-result/decision, and failed-MCP-connection shapes without
+retaining prompts, responses, tool arguments, content, or identifiers. Vendor
+fields may change; after an upgrade, use `ineffective` and
+`telemetry_coverage` to check the live shape.
 
 Official references: [Claude Code monitoring](https://code.claude.com/docs/en/monitoring-usage)
 and [Claude Code MCP setup](https://code.claude.com/docs/en/mcp).
