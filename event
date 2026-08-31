@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at tailapps","body":{"commit":"a838bfc9a1c60312fa8f4e0ad913cb72d19d9318","path":"tailapps"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:00d01f8c51eedce7333e348e38577d7e6680a9ea","text":"Merge retired a covered predecessor; the successor is at internal/engine/engine.go."}
