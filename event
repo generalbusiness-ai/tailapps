@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Corrected release upgrader at verified exact head: loaded-service gate, no-op result, failure cleanup, and preserved rollback.","body":{"commit":"854f9239501a129584dabe11d981bd214fa2faf3","path":"scripts/upgrade.sh"}}
+{"kind":"artifact","text":"Release-consumer tests at verified exact head covering failed-start rollback, healthy prior recovery, upgrade-pending guidance, no-op, loaded launchd, and temp cleanup.","body":{"commit":"854f9239501a129584dabe11d981bd214fa2faf3","path":"scripts/release_test.go"}}
