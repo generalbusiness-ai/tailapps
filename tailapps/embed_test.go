@@ -969,6 +969,90 @@ func observedClaudeInputs(t *testing.T) map[string]profile.EvaluationInput {
 	return inputs
 }
 
+func TestCurrentClaudeFixtureDocumentsStageZeroEvidence(t *testing.T) {
+	inputs := currentClaudeInputs(t)
+	for name, body := range map[string]string{
+		"api_request":           "claude_code.api_request",
+		"subagent_api_request":  "claude_code.api_request",
+		"api_error":             "claude_code.api_error",
+		"tool_result":           "claude_code.tool_result",
+		"failed_tool_result":    "claude_code.tool_result",
+		"tool_decision":         "claude_code.tool_decision",
+		"mcp_connection_failed": "claude_code.mcp_server_connection",
+	} {
+		attributes := fixtureAttributes(t, inputs[name])
+		if inputs[name].Event["source"] != "claude-code" || inputs[name].Event["name"] != attributes["event.name"] {
+			t.Fatalf("%s identity = %#v", name, inputs[name].Event)
+		}
+		if record := inputs[name].Event["record"].(map[string]any); record["body"] != body {
+			t.Fatalf("%s body = %#v, want %q", name, record["body"], body)
+		}
+	}
+	if got := fixtureAttributes(t, inputs["subagent_api_request"])["agent.name"]; got != "Explore" {
+		t.Fatalf("subagent attribution = %#v", got)
+	}
+	if got := fmt.Sprint(fixtureAttributes(t, inputs["api_error"])["status_code"]); got != "401" {
+		t.Fatalf("api error status = %q", got)
+	}
+	if got := fixtureAttributes(t, inputs["failed_tool_result"])["success"]; got != false {
+		t.Fatalf("failed tool outcome = %#v", got)
+	}
+	if got := fixtureAttributes(t, inputs["mcp_connection_failed"])["error_code"]; got != "CONNECTION_CLOSED" {
+		t.Fatalf("mcp failure = %#v", got)
+	}
+
+	encoded, err := json.Marshal(inputs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, forbidden := range []string{
+		`"prompt"`, `"response"`, `"tool_input"`, `"tool_parameters"`,
+		`"user.`, `"organization.`, `"request_id"`, `"tool_use_id"`, `"message.uuid"`,
+	} {
+		if strings.Contains(string(encoded), forbidden) {
+			t.Fatalf("current fixture retains forbidden field %q", forbidden)
+		}
+	}
+
+	cost, err := Load("session-cost")
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := cost.Evaluate("normalize_usage", inputs["api_request"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Decision != "effective" || len(result.Events["otel_event"]) != 1 {
+		t.Fatalf("current Claude request = %#v", result)
+	}
+}
+
+func currentClaudeInputs(t *testing.T) map[string]profile.EvaluationInput {
+	t.Helper()
+	encoded, err := os.ReadFile(filepath.Join("testdata", "claude-code-2.1.251.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var inputs map[string]profile.EvaluationInput
+	if err := json.Unmarshal(encoded, &inputs); err != nil {
+		t.Fatal(err)
+	}
+	return inputs
+}
+
+func fixtureAttributes(t *testing.T, input profile.EvaluationInput) map[string]any {
+	t.Helper()
+	record, ok := input.Event["record"].(map[string]any)
+	if !ok {
+		t.Fatalf("record = %#v", input.Event)
+	}
+	attributes, ok := record["attributes"].(map[string]any)
+	if !ok {
+		t.Fatalf("attributes = %#v", record)
+	}
+	return attributes
+}
+
 func observedOpenCodeInputs(t *testing.T) map[string]profile.EvaluationInput {
 	t.Helper()
 	encoded, err := os.ReadFile(filepath.Join("testdata", "opencode-adapter.json"))
