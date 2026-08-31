@@ -101,6 +101,11 @@ Versioned macOS and Linux binaries are published as signed GitHub release
 archives. See [verified releases](docs/reference/releases.md) to verify their
 checksums, keyless signature, and GitHub provenance before using one.
 
+On macOS, once this is running as the standard per-user LaunchAgent, use
+[`scripts/upgrade-resident-macos.sh`](docs/reference/resident-upgrade.md) to
+build the current checkout, atomically switch the resident binary, verify its
+control socket, and automatically roll back if it does not become healthy.
+
 ## Create your own
 
 [`signal-counts`](tailapps/signal-counts/README.md) is the smallest complete
