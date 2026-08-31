@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Version CLI tests at reviewed release head","body":{"commit":"0bac8fd1d512323e329731a192802454483925fe","path":"internal/cli/cli_test.go","sha256":"9154d175e3b7605cbf8549b34a97b2a9307a3b3cab3424251a8fb4ec75f579c6"}}
+{"kind":"artifact","text":"Version-pinned release installer template at reviewed release head","body":{"commit":"0bac8fd1d512323e329731a192802454483925fe","path":"scripts/install.sh","sha256":"f87211dbf6ed646b941eae2bdc4db01eedfd4d965028af893687144dd5100163"}}
