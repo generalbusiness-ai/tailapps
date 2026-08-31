@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Release installer option documentation at reviewed setup head","body":{"commit":"c234cbf661f37b1af9b95e330886b0a953ece525","path":"docs/reference/releases.md","sha256":"63bf92034ea7e4263c8a90dbfb966aaf2a8464aa587a7f30ee8297b57561c941"}}
+{"kind":"artifact","text":"Canonical home and create-only in-binary setup implementation at reviewed setup head","body":{"commit":"c234cbf661f37b1af9b95e330886b0a953ece525","path":"internal/cli/cli.go","sha256":"f961a8c0ad7ad1466c306f4fb7017f983fe5b2af2e7dbb1849f03f62fe0aa200"}}
