@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:9755d125ea132dc6e0baae610efd87731e285d7b","text":"Retired after its changes-requested verdict: corrected successor review request 3f32fcf9 approved exact head 854f9239501a129584dabe11d981bd214fa2faf3, which landed on main as merge 4eb742948ed8802397a710129d2c2ec5a744472b."}
+{"kind":"promise","text":"I will record the already-landed competitive analytics Stage 0 merge bookkeeping without changing main or recreating any deleted branch."}
