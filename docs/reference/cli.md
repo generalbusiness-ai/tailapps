@@ -56,8 +56,10 @@ semantics.
 Returns the 16 most recent records that the named Tailapp's normalizer declared
 ineffective. Samples are held only in resident memory, disappear on restart or
 activation, and are ordered oldest to newest. Each sample includes its delivery
-position, active revision, signal, event name, source, timestamps and IDs when
-present, content digest, and the actual canonical `record` JSON.
+position, active revision, signal, event name, source, record timestamps and
+IDs when present, `received_at_unix_nano`, content digest, and the actual
+canonical `record` JSON. The receipt timestamp is always present and identifies
+when the resident accepted the sampled record.
 
 `ineffective_records` is the durable total since initial activation or reset,
 `available_records` is the number represented by the current memory buffer, and
@@ -178,6 +180,57 @@ Returns engine status; equivalent to `tailapp health`.
 ### `tailapp apps schema APP`
 
 Returns the active compiled profile. Draft-only Tailapps have no live schema.
+
+## Upgrading an existing resident
+
+A release that changes the runtime identity deliberately reopens existing
+projections in an upgrade-pending state. While any active Tailapp is pending,
+the OTLP receiver returns HTTP 503 with `ingestion_not_ready` and the resident
+reports `ingestion_ready: false`. Existing projections remain queryable, and a
+Tailapp frontier can still say `complete: true`: completeness describes its
+stored delivery frontier, not whether intake has reopened.
+
+This release changes the JSONata evaluation and orchestration identity and
+therefore places every existing Tailapp in that state. The additive frontier
+timestamps do not change interpretation and do not introduce another identity
+transition.
+Before replacing the binary, keep a checkout of the matching release available
+for the changed built-in sources. The source lists below are derived
+mechanically with `git diff --name-only main..HEAD -- tailapps`: keep only
+changed executable sources (`application.sql` and `folds/*.jsonata`) and group
+them by bundle. Re-run that command for every release rather than inferring a
+partial list from its schema changes. After starting the new resident:
+
+1. Run `tailapp apps get APP` and record its `draft_revision`.
+2. For `agent-guard`, put `application.sql`, `folds/normalize.jsonata`, and
+   `folds/guard.jsonata` from `tailapps/agent-guard/`. For `session-cost`, put
+   `application.sql`, `folds/normalize.jsonata`, and `folds/cost.jsonata` from
+   `tailapps/session-cost/`. For `daily-review`, put
+   `folds/normalize.jsonata` from `tailapps/daily-review/`. Use
+   `tailapp apps put --expected REV --idempotency-key KEY APP PATH FILE` for
+   each file, replacing `REV` with the new draft revision returned by the
+   preceding put.
+3. For `signal-counts`, put `application.sql`, `folds/normalize.jsonata`, and
+   `folds/count.jsonata` from `tailapps/signal-counts/`, chaining the returned
+   revisions in the same way.
+4. Validate each final draft with `tailapp apps validate --expected REV APP`.
+   Activate `daily-review` and `session-cost` with
+   `tailapp apps activate --mode continue --expected REV --idempotency-key KEY APP`;
+   their compatible history is preserved and new detail begins at the
+   activation boundary. The added timestamp columns change existing writable
+   table shapes in `agent-guard` and `signal-counts`, so those two require
+   `--mode reset --ack-reset` and discard their prior projections.
+5. The unchanged `activity-stats` source needs no puts. Read its current
+   `draft_revision` with `apps get`, then activate that exact draft with
+   `--mode continue`.
+6. Repeat until `tailapp health` reports `ingestion_ready: true`, then resume
+   exporters. If an application source intentionally changes an existing table
+   shape, use reset only after accepting its documented data loss and add
+   `--ack-reset`; do not substitute reset for the compatible steps above.
+
+The MCP equivalents are `tailapp_get`, one or more `tailapp_put` calls chained
+through their returned revisions, `tailapp_validate`, `tailapp_activate`, and
+finally `tailapp_status`.
 
 ## Query command
 

@@ -138,11 +138,33 @@ The last four fields are absent before first activation.
   "last_event_id": "local:57",
   "complete": true,
   "gap_position": 58,
-  "gap_reason": "..."
+  "gap_reason": "...",
+  "gap_observed_unix_nano": "1787900000000003000",
+  "last_record_time_unix_nano": "1787900000000002500"
 }
 ```
 
 Gap fields are absent for a healthy projection.
+`gap_observed_unix_nano` is the resident wall-clock time at which the
+deterministic failure opened the gap. `last_record_time_unix_nano` is the
+source record timestamp, with observed-time fallback, of the last successfully
+consumed record and can be absent when the gap occurred at the activation
+boundary or the producer supplied no timestamp.
+
+`tailapp_status` can also report `ingestion_ready: false` while a runtime
+upgrade is pending. In that state existing projections remain queryable and
+their frontier may still be `complete: true`, but OTLP intake is held closed
+with `ingestion_not_ready` until every active Tailapp is explicitly continued
+or reset. Use `tailapp_get`, chain changed sources through `tailapp_put`, then
+call `tailapp_validate` and `tailapp_activate`; unchanged drafts still require
+an explicit continue activation. The [CLI upgrade procedure](cli.md#upgrading-an-existing-resident)
+lists the changed built-in source paths for this release. It derives them from
+`git diff --name-only main..HEAD -- tailapps`, retaining only `application.sql`
+and `folds/*.jsonata`: `agent-guard` needs `application.sql`,
+`folds/normalize.jsonata`, and `folds/guard.jsonata`; `session-cost` needs
+`application.sql`, `folds/normalize.jsonata`, and `folds/cost.jsonata`;
+`daily-review` needs `folds/normalize.jsonata`; and `signal-counts` needs
+`application.sql`, `folds/normalize.jsonata`, and `folds/count.jsonata`.
 
 ### Idempotency key
 
@@ -404,6 +426,8 @@ Returns the same bounded diagnostic snapshot as `tailapp ineffective APP`:
     "signal": "log",
     "name": "codex.unmapped_event",
     "source": "codex",
+    "observed_unix_nano": "1787900000000002000",
+    "received_at_unix_nano": "1787900000000002100",
     "content_digest": "sha256:...",
     "record_bytes": 412,
     "record": {"attributes": {}, "resource": {"attributes": {}}}
@@ -414,6 +438,8 @@ Returns the same bounded diagnostic snapshot as `tailapp ineffective APP`:
 The per-Tailapp buffer keeps the 16 newest ineffective canonical records in
 resident memory only and clears on restart or activation. Payloads above 32
 KiB are omitted while their metadata and original byte size remain. Records
+always include the resident receipt timestamp and include the producer's own
+source/observed timestamps when present. Records
 may contain sensitive telemetry; this tool deliberately exposes payloads for
 local diagnosis and is not an event-history API. `ineffective_records` is the
 durable total, while `available_records` and `unavailable_records` explicitly

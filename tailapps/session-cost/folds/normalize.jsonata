@@ -47,6 +47,18 @@
     ($lookup($resource, "session.id") ? $lookup($resource, "session.id") : $lookup($resource, "service.instance.id")))));
   $session_known := $exists($session_raw) and $session_raw != "";
   $session := $session_known ? $string($session_raw) : "unknown:" & $harness;
+  $model_raw := $exists($lookup($attrs, "model")) ? $lookup($attrs, "model") :
+    ($exists($lookup($attrs, "gen_ai.request.model")) ? $lookup($attrs, "gen_ai.request.model") :
+    ($exists($lookup($attrs, "gen_ai.response.model")) ? $lookup($attrs, "gen_ai.response.model") :
+    ($exists($lookup($attrs, "request.model")) ? $lookup($attrs, "request.model") : $lookup($attrs, "model_name"))));
+  $model_known := $exists($model_raw) and $string($model_raw) != "";
+  $project_raw := $exists($lookup($attrs, "project")) ? $lookup($attrs, "project") :
+    ($exists($lookup($attrs, "project.name")) ? $lookup($attrs, "project.name") :
+    ($exists($lookup($attrs, "project_path")) ? $lookup($attrs, "project_path") :
+    ($exists($lookup($attrs, "cwd")) ? $lookup($attrs, "cwd") :
+    ($exists($lookup($attrs, "working_directory")) ? $lookup($attrs, "working_directory") :
+      $lookup($attrs, "workspace.root")))));
+  $project_known := $exists($project_raw) and $string($project_raw) != "";
   $input_raw := $exists($lookup($attrs, "input_tokens")) ? $lookup($attrs, "input_tokens") :
     ($exists($lookup($attrs, "input_token_count")) ? $lookup($attrs, "input_token_count") : $lookup($attrs, "gen_ai.usage.input_tokens"));
   $output_raw := $exists($lookup($attrs, "output_tokens")) ? $lookup($attrs, "output_tokens") :
@@ -72,6 +84,11 @@
     "events": {"otel_event": [{
       "harness": $harness,
       "session_id": $session,
+      "session_id_prefix": $substring($session, 0, 12),
+      "model": $model_known ? $string($model_raw) : "unknown",
+      "project": $project_known ? $string($project_raw) : "unknown",
+      "model_coverage": $model_known ? "observed" : "unknown",
+      "project_coverage": $project_known ? "observed" : "unknown",
       "input_tokens": $input,
       "output_tokens": $output,
       "cached_input_tokens": $cached,

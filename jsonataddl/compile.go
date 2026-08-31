@@ -21,7 +21,7 @@ import (
 // JSONata evaluation. It is part of the evaluator component of runtime
 // identity; admitted programs are confined statically, and wall time is not
 // a deterministic evaluation budget.
-const evaluationWallTimeMilliseconds = 250
+const evaluationWallTimeMilliseconds = 2000
 
 var (
 	createEventRE       = regexp.MustCompile(`(?is)^CREATE\s+EVENT\s+([A-Za-z_][A-Za-z0-9_]*)\s*\((.*)\)$`)

@@ -45,6 +45,42 @@ func TestSignalCountsExportsSignalCounts(t *testing.T) {
 	}
 }
 
+func TestSignalCountsRetainsFirstAndLastObservedTimestamps(t *testing.T) {
+	counts, err := Load("signal-counts")
+	if err != nil {
+		t.Fatal(err)
+	}
+	input := harnessInput(1, "codex", "codex.tool_result", map[string]any{})
+	first, err := counts.Evaluate("normalize_signal", input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	firstEvent := first.Events["otel_event"][0]
+	firstFold, err := counts.Evaluate("count_signal", profile.EvaluationInput{
+		Meta: map[string]any{"position": 1}, Event: firstEvent, Rows: map[string]any{"prior": nil},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	firstRow := firstFold.Tables["signal_counts"].Upsert[0]
+	input.Event["time_unix_nano"] = "1787900000000000500"
+	input.Meta["position"] = 2
+	second, err := counts.Evaluate("normalize_signal", input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	secondFold, err := counts.Evaluate("count_signal", profile.EvaluationInput{
+		Meta: map[string]any{"position": 2}, Event: second.Events["otel_event"][0], Rows: map[string]any{"prior": firstRow},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	row := secondFold.Tables["signal_counts"].Upsert[0]
+	if row["first_seen_unix_nano"] != "1787900000000000000" || row["last_seen_unix_nano"] != "1787900000000000500" {
+		t.Fatalf("signal timestamps = %#v", row)
+	}
+}
+
 func TestAgentGuardProducesViolationUnknownAndLoopEvidence(t *testing.T) {
 	guard, err := Load("agent-guard")
 	if err != nil {
@@ -61,16 +97,6 @@ func TestAgentGuardProducesViolationUnknownAndLoopEvidence(t *testing.T) {
 	if len(events) != 1 || events[0]["tool"] != "dangerous_shell" {
 		t.Fatalf("normalized = %#v", normalized)
 	}
-	if got := len(normalized.Tables["telemetry_coverage"].Upsert); got != 3 {
-		t.Fatalf("coverage rows = %d", got)
-	}
-	coverage := normalized.Tables["telemetry_coverage"].Upsert
-	if coverage[0]["reason"] != "session and tool identity observed" ||
-		coverage[1]["reason"] != "tool target observed" ||
-		coverage[2]["reason"] != "progress fingerprint absent, gated, or redacted" {
-		t.Fatalf("coverage reasons = %#v", coverage)
-	}
-
 	prior := any(nil)
 	var analytic profile.EvaluationResult
 	for position := 1; position <= 3; position++ {
@@ -79,7 +105,7 @@ func TestAgentGuardProducesViolationUnknownAndLoopEvidence(t *testing.T) {
 		analytic, err = guard.Evaluate("update_guard_analytics", profile.EvaluationInput{
 			Meta:  map[string]any{"position": position, "event_id": "local", "event_type": "otel_event", "emission_ordinal": 0},
 			Event: event,
-			Rows:  map[string]any{"prior": prior},
+			Rows:  guardAnalyticRows(prior),
 		})
 		if err != nil {
 			t.Fatal(err)
@@ -92,6 +118,12 @@ func TestAgentGuardProducesViolationUnknownAndLoopEvidence(t *testing.T) {
 	if len(analytic.Tables["loop_findings"].Upsert) != 1 {
 		t.Fatalf("loop findings = %#v", analytic)
 	}
+	coverage := analytic.Tables["telemetry_coverage"].Upsert
+	if len(coverage) != 3 || coverage[0]["reason"] != "session and tool identity observed" ||
+		coverage[1]["reason"] != "tool target observed" ||
+		coverage[2]["reason"] != "progress fingerprint absent, gated, or redacted" {
+		t.Fatalf("coverage reasons = %#v", coverage)
+	}
 
 	unknownInput := harnessInput(9, "claude-code", "claude_code.tool_result", map[string]any{
 		"session.id": "session-2", "tool_name": "read", "success": true,
@@ -102,7 +134,7 @@ func TestAgentGuardProducesViolationUnknownAndLoopEvidence(t *testing.T) {
 	}
 	unknownAnalytic, err := guard.Evaluate("update_guard_analytics", profile.EvaluationInput{
 		Meta:  map[string]any{"position": 9, "event_id": "local:9", "event_type": "otel_event", "emission_ordinal": 0},
-		Event: unknown.Events["otel_event"][0], Rows: map[string]any{"prior": nil},
+		Event: unknown.Events["otel_event"][0], Rows: guardAnalyticRows(nil),
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -115,7 +147,7 @@ func TestAgentGuardProducesViolationUnknownAndLoopEvidence(t *testing.T) {
 	if fmt.Sprint(progress["no_progress_count"]) != "0" {
 		t.Fatalf("missing progress telemetry counted as no progress: %#v", progress)
 	}
-	unknownCoverage := unknown.Tables["telemetry_coverage"].Upsert
+	unknownCoverage := unknownAnalytic.Tables["telemetry_coverage"].Upsert
 	if unknownCoverage[0]["state"] != "observed" || unknownCoverage[0]["reason"] != "session and tool identity observed" {
 		t.Fatalf("tool coverage explains a different capability: %#v", unknownCoverage)
 	}
@@ -130,7 +162,7 @@ func TestAgentGuardProducesViolationUnknownAndLoopEvidence(t *testing.T) {
 		unknownAnalytic, err = guard.Evaluate("update_guard_analytics", profile.EvaluationInput{
 			Meta:  map[string]any{"position": position, "event_id": "local", "event_type": "otel_event", "emission_ordinal": 0},
 			Event: event,
-			Rows:  map[string]any{"prior": prior},
+			Rows:  guardAnalyticRows(prior),
 		})
 		if err != nil {
 			t.Fatal(err)
@@ -187,6 +219,187 @@ func TestSessionCostMapsClaudeNativeCost(t *testing.T) {
 	events := normalized.Events["otel_event"]
 	if len(events) != 1 || events[0]["cost_microusd"].(interface{ String() string }).String() != "11" {
 		t.Fatalf("normalized = %#v", normalized)
+	}
+}
+
+func TestDailyReviewMapsObservedClaudeNativeNames(t *testing.T) {
+	review, err := Load("daily-review")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"tool_result", "api_request"} {
+		normalized, err := review.Evaluate("normalize_review_event", observedClaudeInputs(t)[name])
+		if err != nil {
+			t.Fatal(err)
+		}
+		events := normalized.Events["otel_event"]
+		if normalized.Decision != "effective" || len(events) != 1 {
+			t.Fatalf("%s normalized = %#v", name, normalized)
+		}
+		if name == "tool_result" && fmt.Sprint(events[0]["tool_event"]) != "1" {
+			t.Fatalf("tool event = %#v", events[0])
+		}
+		if name == "api_request" && (fmt.Sprint(events[0]["api_event"]) != "1" || fmt.Sprint(events[0]["input_tokens"]) != "2") {
+			t.Fatalf("usage event = %#v", events[0])
+		}
+	}
+}
+
+func TestSessionCostRetainsTelemetryDimensions(t *testing.T) {
+	cost, err := Load("session-cost")
+	if err != nil {
+		t.Fatal(err)
+	}
+	normalized, err := cost.Evaluate("normalize_usage", harnessInput(12, "codex", "codex.api_request", map[string]any{
+		"conversation.id": "0198aabbccddeeff", "model": "gpt-5.6", "cwd": "/work/tailapps",
+		"input_tokens": 100, "output_tokens": 25, "cost_microusd": 7,
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	event := normalized.Events["otel_event"][0]
+	if event["session_id_prefix"] != "0198aabbccdd" || event["model"] != "gpt-5.6" || event["project"] != "/work/tailapps" {
+		t.Fatalf("dimensions = %#v", event)
+	}
+	result, err := cost.Evaluate("accumulate_cost", profile.EvaluationInput{
+		Meta:  map[string]any{"position": 12, "event_id": "local:12", "event_type": "otel_event", "emission_ordinal": 0},
+		Event: event,
+		Rows:  map[string]any{"prior": nil, "detail": nil},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	detail := result.Tables["session_cost_detail"].Upsert[0]
+	if detail["model"] != "gpt-5.6" || detail["project"] != "/work/tailapps" || fmt.Sprint(detail["cost_microusd"]) != "7" {
+		t.Fatalf("detail = %#v", detail)
+	}
+}
+
+func TestSessionCostDetailKeepsMixedModelsSeparate(t *testing.T) {
+	cost, err := Load("session-cost")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for position, model := range []string{"claude-opus-4-1", "claude-haiku-3-5"} {
+		normalized, err := cost.Evaluate("normalize_usage", harnessInput(position+20, "claude-code", "claude_code.api_request", map[string]any{
+			"session.id": "mixed-model-session", "model": model,
+			"input_tokens": 10, "cost_usd_micros": 3,
+		}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		event := normalized.Events["otel_event"][0]
+		result, err := cost.Evaluate("accumulate_cost", profile.EvaluationInput{
+			Meta:  map[string]any{"position": position + 20, "event_id": fmt.Sprintf("local:%d", position+20), "event_type": "otel_event", "emission_ordinal": 0},
+			Event: event,
+			Rows:  map[string]any{"prior": nil, "detail": nil},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		detail := result.Tables["session_cost_detail"].Upsert[0]
+		if detail["model"] != model || fmt.Sprint(detail["cost_microusd"]) != "3" {
+			t.Fatalf("detail[%d] = %#v", position, detail)
+		}
+	}
+}
+
+func TestAgentGuardRetainsFailedToolTelemetry(t *testing.T) {
+	guard, err := Load("agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	normalized, err := guard.Evaluate("normalize_harness_event", harnessInput(13, "codex", "codex.tool_result", map[string]any{
+		"conversation.id": "0198aabbccddeeff", "tool_name": "exec_command", "success": false,
+		"cwd": "/work/tailapps", "model": "gpt-5.6", "full_command": "go test ./...",
+		"arguments": `{"cmd":"go test ./..."}`, "error.message": "exit status 1",
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	event := normalized.Events["otel_event"][0]
+	result, err := guard.Evaluate("update_guard_analytics", profile.EvaluationInput{
+		Meta:  map[string]any{"position": 13, "event_id": "local:13", "event_type": "otel_event", "emission_ordinal": 0},
+		Event: event,
+		Rows:  guardAnalyticRows(nil),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows := result.Tables["tool_failure_detail"].Upsert
+	if len(rows) != 1 {
+		t.Fatalf("failure rows = %#v", rows)
+	}
+	row := rows[0]
+	if row["command"] != "go test ./..." || row["tool_arguments"] != `{"cmd":"go test ./..."}` || row["failure_detail"] != "exit status 1" || row["project"] != "/work/tailapps" {
+		t.Fatalf("failure detail = %#v", row)
+	}
+}
+
+func TestAgentGuardFindingAndCoverageTimestamps(t *testing.T) {
+	guard, err := Load("agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	input := observedCodexInputs(t)["tool_result"]
+	first, err := guard.Evaluate("normalize_harness_event", input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	firstEvent := cloneMap(first.Events["otel_event"][0])
+	firstEvent["success"] = false
+	var session any
+	coverageRows := map[string]any{}
+	var result profile.EvaluationResult
+	for position := 1; position <= 3; position++ {
+		event := cloneMap(firstEvent)
+		event["source_position"] = position
+		rows := map[string]any{
+			"prior":                   session,
+			"tool_coverage_prior":     coverageRows["tool-observation"],
+			"target_coverage_prior":   coverageRows["target-detail"],
+			"progress_coverage_prior": coverageRows["progress-detail"],
+		}
+		result, err = guard.Evaluate("update_guard_analytics", profile.EvaluationInput{
+			Meta: map[string]any{"position": position}, Event: event, Rows: rows,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		session = result.Tables["session_progress"].Upsert[0]
+		for _, row := range result.Tables["telemetry_coverage"].Upsert {
+			coverageRows[fmt.Sprint(row["capability"])] = row
+		}
+	}
+	want := fmt.Sprint(firstEvent["event_time_unix_nano"])
+	policy := result.Tables["policy_findings"].Upsert[0]
+	loop := result.Tables["loop_findings"].Upsert[0]
+	if policy["observed_unix_nano"] != want || loop["first_observed_unix_nano"] != want || loop["last_observed_unix_nano"] != want {
+		t.Fatalf("finding timestamps: policy=%#v loop=%#v", policy, loop)
+	}
+	for capability, value := range coverageRows {
+		row := value.(map[string]any)
+		if row["first_seen_unix_nano"] != want || row["last_seen_unix_nano"] != want {
+			t.Fatalf("%s coverage timestamps = %#v", capability, row)
+		}
+	}
+}
+
+func TestAgentGuardDoesNotTreatToolOutputAsFailureDetail(t *testing.T) {
+	guard, err := Load("agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	normalized, err := guard.Evaluate("normalize_harness_event", harnessInput(14, "codex", "codex.tool_result", map[string]any{
+		"conversation.id": "session", "tool_name": "exec_command", "success": false,
+		"output": "secret command output", "tool_content": "secret tool content",
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	event := normalized.Events["otel_event"][0]
+	if event["failure_detail"] != "" {
+		t.Fatalf("failure_detail = %#v", event["failure_detail"])
 	}
 }
 
@@ -446,7 +659,7 @@ func TestAgentGuardMapsObservedCodexOTLPShape(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if strings.Contains(string(encoded), "arguments") || strings.Contains(string(encoded), "<scrubbed>") {
+			if strings.Contains(string(encoded), "<scrubbed>") || event["tool_arguments"] != "" {
 				t.Fatalf("raw arguments escaped normalized output: %s", encoded)
 			}
 		})
@@ -704,6 +917,32 @@ func TestSessionCostRejectsCounterlessAPIRequest(t *testing.T) {
 	}
 }
 
+func BenchmarkTelemetryNormalizers(b *testing.B) {
+	inputs := []struct {
+		bundle  string
+		program string
+		input   profile.EvaluationInput
+	}{
+		{"activity-stats", "normalize_activity", harnessInput(1, "codex", "codex.tool_result", map[string]any{"conversation.id": "bench", "tool_name": "exec_command", "success": false, "arguments": `{"cmd":"go test ./..."}`})},
+		{"daily-review", "normalize_review_event", harnessInput(2, "claude-code", "claude_code.api_request", map[string]any{"session.id": "bench", "input_tokens": 100, "output_tokens": 20})},
+		{"agent-guard", "normalize_harness_event", harnessInput(3, "codex", "codex.tool_result", map[string]any{"conversation.id": "bench", "tool_name": "exec_command", "success": false, "full_command": "go test ./...", "error.message": "exit status 1"})},
+		{"session-cost", "normalize_usage", harnessInput(4, "codex", "codex.api_request", map[string]any{"conversation.id": "bench", "model": "gpt-5.6", "cwd": "/work/tailapps", "input_tokens": 100, "output_tokens": 20})},
+	}
+	for _, item := range inputs {
+		compiled, err := Load(item.bundle)
+		if err != nil {
+			b.Fatal(err)
+		}
+		b.Run(item.bundle, func(b *testing.B) {
+			for range b.N {
+				if _, err := compiled.Evaluate(item.program, item.input); err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
+	}
+}
+
 func observedCodexInputs(t *testing.T) map[string]profile.EvaluationInput {
 	t.Helper()
 	encoded, err := os.ReadFile(filepath.Join("testdata", "codex-cli-0.150.1.json"))
@@ -775,4 +1014,11 @@ func cloneMap(source map[string]any) map[string]any {
 		result[key] = value
 	}
 	return result
+}
+
+func guardAnalyticRows(prior any) map[string]any {
+	return map[string]any{
+		"prior": prior, "tool_coverage_prior": nil,
+		"target_coverage_prior": nil, "progress_coverage_prior": nil,
+	}
 }

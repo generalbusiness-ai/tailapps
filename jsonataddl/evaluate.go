@@ -6,7 +6,17 @@ import (
 	"errors"
 	"fmt"
 	"io"
+
+	jsonatav206 "github.com/jsonata-go/jsonata/v206"
 )
+
+// IsEvaluationTimeout reports the evaluator's machine-time safety-net error.
+// Wall time is deliberately not a semantic program bound, so hosts must retry
+// this error instead of recording it as a deterministic projection gap.
+func IsEvaluationTimeout(err error) bool {
+	var jsonataErr *jsonatav206.JSONataError
+	return errors.As(err, &jsonataErr) && jsonataErr.Code == "U1002"
+}
 
 // EvaluationInput is one program invocation: host metadata, the event under
 // interpretation, and the prior rows the host read through the program's
