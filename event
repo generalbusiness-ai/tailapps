@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will publish and verify the first signed Tailapps release as v0.1.0 from exact main head 5d84ac71d625b29d9e7e9dbdf4c7c66c60429434."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:2edce9880359c18b75c25443daccee0ae0a4b3d5","text":"Withdraw the v0.1.0 promise because main advanced from 5d84ac71 to 5a8f888a before tagging; the release must bind the current pushed main exactly."}
