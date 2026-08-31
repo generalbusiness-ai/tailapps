@@ -5,6 +5,8 @@
     "source": event.source,
     "signal": event.signal,
     "event_name": event.name,
+    "event_time_unix_nano": event.time_unix_nano ? event.time_unix_nano :
+      (event.observed_unix_nano ? event.observed_unix_nano : null),
     "source_position": meta.position
   }]},
   "tables": {}

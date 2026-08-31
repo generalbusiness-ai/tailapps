@@ -80,10 +80,7 @@ When any action-fingerprint input is absent, gated, or redacted, repeated-action
 evidence marks `action_fingerprint_coverage` as `degraded` and carries an
 `action_fingerprint_reason`. For example, without target detail the fingerprint
 can distinguish tools but not their arguments or targets, so three consecutive
-calls to the same tool can satisfy the repetition threshold. The marker lives
-inside the existing `evidence` JSON rather than adding a writable table column;
-upgrades therefore preserve existing projection data and do not require reset
-activation.
+calls to the same tool can satisfy the repetition threshold.
 
 `bounded-no-progress` requires an observed `progress_fingerprint`. The native
 Claude Code, Codex, and OpenCode telemetry shapes documented here do not
@@ -97,10 +94,13 @@ progress timestamp with a caller-supplied cutoff.
 
 The queryable tables and exports are:
 
-- `telemetry_coverage`: latest observed/unknown state per harness capability;
+- `telemetry_coverage`: latest observed/unknown state per harness capability,
+  with first/last observed timestamps;
 - `session_progress`: rolling counters and progress timestamps per session;
-- `policy_findings`: per-position violations plus stable per-session unknowns;
-- `loop_findings`: latest evidence per session and loop kind.
+- `policy_findings`: per-position violations plus stable per-session unknowns,
+  with the triggering record timestamp;
+- `loop_findings`: latest evidence per session and loop kind, with the first
+  and last timestamps of the aggregated run;
 - `tool_failure_detail`: one row per observed failed tool call, including raw
   telemetry detail and explicit observed/partial/unknown coverage.
 
@@ -109,7 +109,8 @@ The queryable tables and exports are:
 Recent policy evidence:
 
 ```sql
-SELECT harness, session_id, rule_id, severity, summary, evidence, coverage_state
+SELECT observed_unix_nano, harness, session_id, rule_id, severity,
+       summary, evidence, coverage_state
 FROM policy_findings
 ORDER BY source_position DESC;
 ```
@@ -117,7 +118,8 @@ ORDER BY source_position DESC;
 Current instrumentation coverage:
 
 ```sql
-SELECT harness, capability, state, reason, last_source_position
+SELECT harness, capability, state, reason, first_seen_unix_nano,
+       last_seen_unix_nano, last_source_position
 FROM telemetry_coverage
 ORDER BY harness, capability;
 ```
@@ -125,7 +127,8 @@ ORDER BY harness, capability;
 Loop evidence:
 
 ```sql
-SELECT harness, session_id, finding_kind, repeat_count,
+SELECT first_observed_unix_nano, last_observed_unix_nano,
+       harness, session_id, finding_kind, repeat_count,
        consecutive_failures, no_progress_count, evidence
 FROM loop_findings
 ORDER BY source_position DESC;
@@ -160,3 +163,8 @@ violations retain per-position evidence, while insufficient telemetry uses a
 stable per-session ID to avoid a missing-field firehose. This remains detective
 evidence: Tailapp neither blocks a call nor proves that an unobserved operation
 did not happen.
+
+The finding and coverage timestamp columns change existing writable table
+shapes. Upgrading an older installed `agent-guard` therefore requires reset
+activation and discards its materialized guard history. `session-cost`,
+`daily-review`, and `activity-stats` are unaffected by this storage change.

@@ -28,6 +28,12 @@ Every normalizer receives these fields:
 Nanosecond timestamps are decimal strings so the full unsigned 64-bit OTLP
 range survives JSON and JSONata without precision loss.
 
+The canonical normalizer envelope contains producer timestamps only. The
+bounded `tailapp ineffective` diagnostic additionally reports
+`received_at_unix_nano`, the resident's acceptance time. Projection status
+reports the last successfully consumed producer timestamp and, for a gap, the
+resident wall-clock time at which the gap was observed.
+
 Every `event.record` contains:
 
 ```json

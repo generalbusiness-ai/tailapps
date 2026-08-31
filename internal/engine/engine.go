@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"testing/fstest"
@@ -77,6 +78,7 @@ type IneffectiveRecord struct {
 	Source           string          `json:"source"`
 	TimeUnixNano     *string         `json:"time_unix_nano,omitempty"`
 	ObservedUnixNano *string         `json:"observed_unix_nano,omitempty"`
+	ReceivedUnixNano string          `json:"received_at_unix_nano"`
 	TraceID          *string         `json:"trace_id,omitempty"`
 	SpanID           *string         `json:"span_id,omitempty"`
 	ContentDigest    string          `json:"content_digest"`
@@ -101,6 +103,8 @@ type TailappMetrics struct {
 	LagPositions        int64            `json:"lag_positions"`
 	Complete            bool             `json:"complete"`
 	GapPosition         *int64           `json:"gap_position,omitempty"`
+	GapObservedUnixNano *string          `json:"gap_observed_unix_nano,omitempty"`
+	LastRecordUnixNano  *string          `json:"last_record_time_unix_nano,omitempty"`
 	Durable             projection.Stats `json:"durable"`
 }
 
@@ -800,11 +804,16 @@ func (e *Engine) recordIneffectiveLocked(name string, delivery inbox.Delivery) {
 	if e.ineffective == nil {
 		e.ineffective = map[string][]IneffectiveRecord{}
 	}
+	receivedAt := delivery.ReceivedAt
+	if receivedAt.IsZero() {
+		receivedAt = time.Now()
+	}
 	record := IneffectiveRecord{
 		Position: delivery.Position, EventID: delivery.EventID, Revision: delivery.Revision,
 		Signal: delivery.Signal, Name: delivery.Name, Source: delivery.Source,
 		TimeUnixNano: delivery.TimeUnixNano, ObservedUnixNano: delivery.ObservedUnixNano,
-		TraceID: delivery.TraceID, SpanID: delivery.SpanID, ContentDigest: delivery.ContentDigest,
+		ReceivedUnixNano: strconv.FormatInt(receivedAt.UnixNano(), 10),
+		TraceID:          delivery.TraceID, SpanID: delivery.SpanID, ContentDigest: delivery.ContentDigest,
 		RecordBytes: len(delivery.JSON),
 	}
 	if len(delivery.JSON) <= MaxIneffectiveRecordJSONSize {
@@ -903,7 +912,7 @@ func (e *Engine) Metrics(ctx context.Context) (MetricsSnapshot, error) {
 		if lag < 0 {
 			lag = 0
 		}
-		tailappMetrics[name] = TailappMetrics{DeliveryHead: stats.DeliveryHead, InterpretedPosition: frontier.InterpretedPosition, LagPositions: lag, Complete: frontier.Complete, GapPosition: frontier.GapPosition, Durable: durable}
+		tailappMetrics[name] = TailappMetrics{DeliveryHead: stats.DeliveryHead, InterpretedPosition: frontier.InterpretedPosition, LagPositions: lag, Complete: frontier.Complete, GapPosition: frontier.GapPosition, GapObservedUnixNano: frontier.GapObservedUnixNano, LastRecordUnixNano: frontier.LastRecordUnixNano, Durable: durable}
 		if handle := e.processing[name]; handle != nil {
 			handles[name] = handle
 		}

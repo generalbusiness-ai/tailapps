@@ -20,7 +20,13 @@ CREATE EVENT otel_event (
   source_position INTEGER NOT NULL,
   tool_coverage TEXT NOT NULL,
   target_coverage TEXT NOT NULL,
-  coverage_reason TEXT NOT NULL
+  coverage_reason TEXT NOT NULL,
+  tool_capability TEXT NOT NULL,
+  target_capability TEXT NOT NULL,
+  progress_capability TEXT NOT NULL,
+  tool_coverage_reason TEXT NOT NULL,
+  target_coverage_reason TEXT NOT NULL,
+  progress_coverage_reason TEXT NOT NULL
 );
 
 CREATE TABLE tool_failure_detail (
@@ -44,6 +50,8 @@ CREATE TABLE telemetry_coverage (
   capability TEXT NOT NULL,
   state TEXT NOT NULL CHECK (state IN ('observed', 'unknown')),
   reason TEXT NOT NULL,
+  first_seen_unix_nano TEXT NOT NULL,
+  last_seen_unix_nano TEXT NOT NULL,
   last_source_position INTEGER NOT NULL,
   PRIMARY KEY (harness, capability)
 );
@@ -71,6 +79,7 @@ CREATE TABLE policy_findings (
   harness TEXT NOT NULL,
   session_id TEXT NOT NULL,
   source_position INTEGER NOT NULL,
+  observed_unix_nano TEXT NOT NULL,
   summary TEXT NOT NULL,
   evidence JSON NOT NULL,
   coverage_state TEXT NOT NULL
@@ -82,6 +91,8 @@ CREATE TABLE loop_findings (
   harness TEXT NOT NULL,
   session_id TEXT NOT NULL,
   source_position INTEGER NOT NULL,
+  first_observed_unix_nano TEXT NOT NULL,
+  last_observed_unix_nano TEXT NOT NULL,
   repeat_count INTEGER NOT NULL,
   consecutive_failures INTEGER NOT NULL,
   no_progress_count INTEGER NOT NULL,
@@ -96,12 +107,11 @@ CREATE INDEX loop_findings_session
 
 CREATE VIEW open_guard_findings AS
   SELECT finding_id, rule_id, severity, harness, session_id,
-         source_position, summary, evidence, coverage_state
+         source_position, observed_unix_nano, summary, evidence, coverage_state
   FROM policy_findings;
 
 CREATE NORMALIZER normalize_harness_event ON otlp_record
 USING 'folds/normalize.jsonata'
-WRITES telemetry_coverage
 EMITS otel_event;
 
 CREATE FOLD update_guard_analytics ON otel_event
@@ -112,11 +122,27 @@ READ prior OPTIONAL ONE AS
          consecutive_failures, total_actions, last_source_position
   FROM session_progress
   WHERE harness = :event.harness AND session_id = :event.session_id
+READ tool_coverage_prior OPTIONAL ONE AS
+  SELECT harness, capability, state, reason, first_seen_unix_nano,
+         last_seen_unix_nano, last_source_position
+  FROM telemetry_coverage
+  WHERE harness = :event.harness AND capability = :event.tool_capability
+READ target_coverage_prior OPTIONAL ONE AS
+  SELECT harness, capability, state, reason, first_seen_unix_nano,
+         last_seen_unix_nano, last_source_position
+  FROM telemetry_coverage
+  WHERE harness = :event.harness AND capability = :event.target_capability
+READ progress_coverage_prior OPTIONAL ONE AS
+  SELECT harness, capability, state, reason, first_seen_unix_nano,
+         last_seen_unix_nano, last_source_position
+  FROM telemetry_coverage
+  WHERE harness = :event.harness AND capability = :event.progress_capability
 USING 'folds/guard.jsonata'
-WRITES session_progress, policy_findings, loop_findings, tool_failure_detail;
+WRITES telemetry_coverage, session_progress, policy_findings, loop_findings, tool_failure_detail;
 
 CREATE EXPORT telemetry_coverage AS
-  SELECT harness, capability, state, reason, last_source_position
+  SELECT harness, capability, state, reason, first_seen_unix_nano,
+         last_seen_unix_nano, last_source_position
   FROM telemetry_coverage;
 
 CREATE EXPORT session_progress AS
@@ -127,13 +153,14 @@ CREATE EXPORT session_progress AS
   FROM session_progress;
 
 CREATE EXPORT policy_findings AS
-  SELECT finding_id, rule_id, severity, harness, session_id,
-         source_position, summary, evidence, coverage_state
+  SELECT finding_id, rule_id, severity, harness, session_id, source_position,
+         observed_unix_nano, summary, evidence, coverage_state
   FROM policy_findings;
 
 CREATE EXPORT loop_findings AS
   SELECT finding_id, finding_kind, harness, session_id, source_position,
-         repeat_count, consecutive_failures, no_progress_count, evidence
+         first_observed_unix_nano, last_observed_unix_nano, repeat_count,
+         consecutive_failures, no_progress_count, evidence
   FROM loop_findings;
 
 CREATE EXPORT tool_failure_detail AS

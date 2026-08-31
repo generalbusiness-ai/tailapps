@@ -56,8 +56,10 @@ semantics.
 Returns the 16 most recent records that the named Tailapp's normalizer declared
 ineffective. Samples are held only in resident memory, disappear on restart or
 activation, and are ordered oldest to newest. Each sample includes its delivery
-position, active revision, signal, event name, source, timestamps and IDs when
-present, content digest, and the actual canonical `record` JSON.
+position, active revision, signal, event name, source, record timestamps and
+IDs when present, `received_at_unix_nano`, content digest, and the actual
+canonical `record` JSON. The receipt timestamp is always present and identifies
+when the resident accepted the sampled record.
 
 `ineffective_records` is the durable total since initial activation or reset,
 `available_records` is the number represented by the current memory buffer, and

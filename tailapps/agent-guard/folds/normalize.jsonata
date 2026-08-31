@@ -101,34 +101,16 @@
         "source_position": meta.position,
         "tool_coverage": $tool_coverage,
         "target_coverage": $target_coverage,
-        "coverage_reason": $coverage_reason
+        "coverage_reason": $coverage_reason,
+        "tool_capability": "tool-observation",
+        "target_capability": "target-detail",
+        "progress_capability": "progress-detail",
+        "tool_coverage_reason": $tool_reason,
+        "target_coverage_reason": $target_reason,
+        "progress_coverage_reason": $progress_reason
       }]
     },
-    "tables": {
-      "telemetry_coverage": {"upsert": [
-        {
-          "harness": $harness,
-          "capability": "tool-observation",
-          "state": $tool_coverage,
-          "reason": $tool_reason,
-          "last_source_position": meta.position
-        },
-        {
-          "harness": $harness,
-          "capability": "target-detail",
-          "state": $target_coverage,
-          "reason": $target_reason,
-          "last_source_position": meta.position
-		},
-		{
-		  "harness": $harness,
-		  "capability": "progress-detail",
-		  "state": $progress_known ? "observed" : "unknown",
-		  "reason": $progress_reason,
-		  "last_source_position": meta.position
-        }
-      ]}
-    }
+    "tables": {}
   } : {
     "decision": "ineffective",
     "facts": [],

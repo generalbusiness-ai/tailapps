@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"testing/fstest"
@@ -128,7 +129,96 @@ CREATE EXPORT state AS SELECT id, status FROM state;`)},
 	if frontier.InterpretedPosition != 0 || frontier.Complete || frontier.GapPosition == nil || *frontier.GapPosition != 1 {
 		t.Fatalf("gap frontier = %#v", frontier)
 	}
+	if frontier.GapObservedUnixNano == nil {
+		t.Fatalf("gap has no observed timestamp: %#v", frontier)
+	}
+	if _, err := strconv.ParseInt(*frontier.GapObservedUnixNano, 10, 64); err != nil {
+		t.Fatalf("gap observed timestamp = %q: %v", *frontier.GapObservedUnixNano, err)
+	}
 	assertCount(t, projection, `SELECT COUNT(*) FROM state`, 0)
+}
+
+func TestGapRetainsLastConsumedRecordTimestamp(t *testing.T) {
+	compiled, err := profile.Load(fstest.MapFS{
+		"application.sql": {Data: []byte(`
+CREATE EVENT otel_event (id TEXT NOT NULL);
+CREATE TABLE state (id TEXT PRIMARY KEY, status TEXT NOT NULL CHECK(status='valid'));
+CREATE TABLE analytic (id TEXT PRIMARY KEY);
+CREATE NORMALIZER normalize ON otlp_record USING 'folds/normalize.jsonata' WRITES state EMITS otel_event;
+CREATE FOLD fold ON otel_event USING 'folds/fold.jsonata' WRITES analytic;
+CREATE EXPORT state AS SELECT id, status FROM state;`)},
+		"folds/normalize.jsonata": {Data: []byte(`{"decision":"effective","facts":[],"events":{"otel_event":[]},"tables":{"state":{"upsert":[{"id":"x","status":event.record.attributes.fail ? "invalid" : "valid"}]}}}`)},
+		"folds/fold.jsonata":      {Data: []byte(`{"decision":"effective","facts":[],"tables":{"analytic":{"upsert":[]}}}`)},
+	}, ".", "timestamped-gap")
+	if err != nil {
+		t.Fatal(err)
+	}
+	item, err := Create(context.Background(), filepath.Join(t.TempDir(), "state.sqlite"), compiled, 0, "reset")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer item.Close()
+	if _, err := item.Process(context.Background(), guardDelivery(1, "codex", "ok", map[string]any{"fail": false})); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := item.Process(context.Background(), guardDelivery(2, "codex", "bad", map[string]any{"fail": true})); err == nil {
+		t.Fatal("invalid second delivery succeeded")
+	}
+	frontier, err := item.Frontier(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if frontier.LastRecordUnixNano == nil || *frontier.LastRecordUnixNano != "0000000000000000100" || frontier.GapObservedUnixNano == nil {
+		t.Fatalf("timestamped gap frontier = %#v", frontier)
+	}
+}
+
+func TestOpenMigratesLegacyFrontierTimestampColumns(t *testing.T) {
+	guard, err := tailapps.Load("agent-guard")
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(t.TempDir(), "legacy.sqlite")
+	database, err := openDatabase(path, &readGuard{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, statement := range []string{`CREATE TABLE tailapp_projection_identity (
+ singleton INTEGER PRIMARY KEY CHECK (singleton=1), tailapp TEXT NOT NULL,
+ revision TEXT NOT NULL, runtime_profile TEXT NOT NULL, activation_mode TEXT NOT NULL
+)`, `CREATE TABLE tailapp_frontier (
+ singleton INTEGER PRIMARY KEY CHECK (singleton=1), activation_boundary INTEGER NOT NULL,
+ interpreted_position INTEGER NOT NULL, last_event_id TEXT NOT NULL,
+ complete INTEGER NOT NULL, gap_position INTEGER, gap_reason TEXT
+)`} {
+		if _, err := database.Exec(statement); err != nil {
+			database.Close()
+			t.Fatal(err)
+		}
+	}
+	if _, err := database.Exec(`INSERT INTO tailapp_projection_identity VALUES (1,?,?,?,'reset')`, guard.Name, guard.Revision, guard.RuntimeProfile); err != nil {
+		database.Close()
+		t.Fatal(err)
+	}
+	if _, err := database.Exec(`INSERT INTO tailapp_frontier VALUES (1,0,0,'',1,NULL,NULL)`); err != nil {
+		database.Close()
+		t.Fatal(err)
+	}
+	if err := database.Close(); err != nil {
+		t.Fatal(err)
+	}
+	opened, err := Open(context.Background(), path, guard)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer opened.Close()
+	frontier, err := opened.Frontier(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if frontier.GapObservedUnixNano != nil || frontier.LastRecordUnixNano != nil {
+		t.Fatalf("legacy frontier gained invented timestamps: %#v", frontier)
+	}
 }
 
 func TestCancelledProcessingLeavesDeliveryPendingWithoutGap(t *testing.T) {
@@ -229,7 +319,11 @@ func TestFoldReadsExecuteUnderTheDefaultDenyAuthorizer(t *testing.T) {
 	if fold.Name == "" || len(fold.Reads) == 0 {
 		t.Fatal("fixture fold with reads is missing")
 	}
-	event := map[string]any{"harness": "codex", "session_id": "s1"}
+	event := map[string]any{
+		"harness": "codex", "session_id": "s1",
+		"tool_capability": "tool-observation", "target_capability": "target-detail",
+		"progress_capability": "progress-detail",
+	}
 	input, err := projection.evaluationInput(ctx, tx, fold, 1, "e1", "otel_event", event)
 	if err != nil {
 		t.Fatalf("the compiled plan must execute under its own authorizer: %v", err)

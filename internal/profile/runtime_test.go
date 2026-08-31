@@ -20,9 +20,9 @@ const pinnedRuntimeDescriptor = "core.grammar=ddl/1; " +
 	"dialect=tailapp-otlp/1+sha256:e5607de7863520bb9859bacdddf6a537a9fb2b7db3e1e0389f1dbe9c0c5243ce; " +
 	"host.canonicalization=otlp-1.8-json-v1; " +
 	"host.orchestration=two-stage-txn/2; " +
-	"host.projection=query-values/1"
+	"host.projection=query-values/2"
 
-const pinnedRuntimeDigest = "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1"
+const pinnedRuntimeDigest = "jsonata-ddl-runtime:sha256:161930fcc593ef5090e881decbfce0ce5dd1a877b1c58716d8ebc7207b8b2c64"
 
 func TestComposedRuntimeIsPinned(t *testing.T) {
 	if descriptor := ComposedRuntime().Descriptor(); descriptor != pinnedRuntimeDescriptor {
