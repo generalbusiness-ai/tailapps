@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will deliver the ratified URL stage-1 design correction on current main."}
+{"kind":"artifact","text":"Ratified URL reputation stage-1 design on current main","body":{"commit":"ee5a363c6c95590897912ebb8b687a8019eda203","path":"notes/2026-08-31-url-reputation-stage-1-decisions.md"}}
