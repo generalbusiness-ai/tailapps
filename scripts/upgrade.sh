@@ -53,6 +53,7 @@ case "$(uname -s)" in
     [ -f "$service_path" ] || { echo "missing LaunchAgent: $service_path" >&2; exit 66; }
     [ "$(plutil -extract ProgramArguments.0 raw "$service_path")" = "$bin_link" ] || { echo 'LaunchAgent does not use the managed binary link' >&2; exit 65; }
     [ "$(plutil -extract EnvironmentVariables.TAILAPP_HOME raw "$service_path")" = "$tailapp_home" ] || { echo 'LaunchAgent home differs; pass --home with the configured path' >&2; exit 65; }
+    launchctl print "$service_domain" >/dev/null 2>&1 || { echo "LaunchAgent is not loaded: $service_domain" >&2; exit 69; }
     restart_service() { launchctl kickstart -k "$service_domain"; }
     status_command="launchctl print $service_domain"
     ;;
@@ -87,11 +88,14 @@ replace_link() {
   mv "$stage" "$bin_link"
 }
 report() {
+  completed_action=$1
   status=$(TAILAPP_HOME="$tailapp_home" "$bin_link" health)
   if printf '%s' "$status" | grep -Eq '"ingestion_ready"[[:space:]]*:[[:space:]]*true'; then
-    printf '%s\n' "{\"version\":\"$tailapps_version\",\"control_plane\":\"healthy\",\"ingestion_ready\":true,\"action\":\"upgraded\",\"next\":\"$status_command\"}"
+    printf '%s\n' "{\"version\":\"$tailapps_version\",\"control_plane\":\"healthy\",\"ingestion_ready\":true,\"action\":\"$completed_action\",\"next\":\"$status_command\"}"
   else
-    printf '%s\n' "{\"version\":\"$tailapps_version\",\"control_plane\":\"healthy\",\"ingestion_ready\":false,\"action\":\"upgrade_pending\",\"next\":\"TAILAPP_HOME=$tailapp_home $bin_link apps status; follow docs/reference/cli.md#upgrading-an-existing-resident\"}"
+    pending_action=$completed_action
+    [ "$completed_action" != upgraded ] || pending_action=upgrade_pending
+    printf '%s\n' "{\"version\":\"$tailapps_version\",\"control_plane\":\"healthy\",\"ingestion_ready\":false,\"action\":\"$pending_action\",\"next\":\"TAILAPP_HOME=$tailapp_home $bin_link apps status; follow docs/reference/cli.md#upgrading-an-existing-resident\"}"
   fi
 }
 
@@ -108,10 +112,31 @@ if [ "$rollback" = true ]; then
   exit 1
 fi
 
+if [ "$old_target" = "$lib_dir/tailapp-$tailapps_version" ]; then
+  if wait_for_health; then
+    report up_to_date
+    exit 0
+  fi
+  echo 'installed resident did not become healthy' >&2
+  exit 1
+fi
+
 command -v curl >/dev/null 2>&1 || { echo 'curl is required' >&2; exit 69; }
 command -v sha256sum >/dev/null 2>&1 || command -v shasum >/dev/null 2>&1 || { echo 'sha256sum or shasum is required' >&2; exit 69; }
 mkdir -p "$lib_dir"
 release_url="$release_root/download/v$tailapps_version"
+checksums=''
+signature=''
+bundle=''
+installer=''
+installer_log=''
+cleanup_upgrade_files() {
+  for upgrade_temp in "$checksums" "$signature" "$bundle" "$installer" "$installer_log"; do
+    [ -z "$upgrade_temp" ] || [ ! -e "$upgrade_temp" ] || unlink "$upgrade_temp"
+  done
+}
+trap cleanup_upgrade_files 0
+trap 'exit 1' HUP INT TERM
 checksums=$(mktemp "$lib_dir/.tailapps-upgrade-checksums.XXXXXX")
 signature=$(mktemp "$lib_dir/.tailapps-upgrade-signature.XXXXXX")
 bundle=$(mktemp "$lib_dir/.tailapps-upgrade-bundle.XXXXXX")
@@ -139,8 +164,7 @@ rmdir "$previous_stage"
 ln -s "$old_target" "$previous_stage"
 mv "$previous_stage" "$previous_link"
 if restart_service && wait_for_health; then
-  unlink "$checksums"; unlink "$signature"; unlink "$bundle"; unlink "$installer"; unlink "$installer_log"
-  report
+  report upgraded
   exit 0
 fi
 replace_link "$old_target"

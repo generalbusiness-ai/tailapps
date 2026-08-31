@@ -293,6 +293,20 @@ if [ "$persistent" = true ]; then
   exit 0
 fi
 
+if [ "$bundles" = none ]; then
+  unlink "$checksums"
+  unlink "$archive"
+  unlink "$signature"
+  unlink "$bundle"
+  printf '%s\n' "installed Tailapps $tailapps_version at $installed_binary"
+  printf '%s\n' 'no bundles were requested; no resident was started.'
+  if [ "$no_service" = true ]; then
+    exit 0
+  fi
+  echo 'persistent setup is incomplete because no usable user service manager was available; the binary was retained.' >&2
+  exit 1
+fi
+
 if ! start_temporary_resident; then
   stop_temporary_resident
   echo "could not start a temporary resident for built-in setup; run: TAILAPP_HOME=$tailapp_home $bin_link serve --otlp-http 127.0.0.1:4318" >&2

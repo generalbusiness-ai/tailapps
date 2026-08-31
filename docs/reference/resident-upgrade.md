@@ -14,9 +14,11 @@ It emits one JSON result. `control_plane: "healthy"` means the resident socket
 started. `ingestion_ready: false` is a successful binary upgrade with existing
 Tailapps awaiting their explicit source lifecycle; it does not install bundles,
 rewrite source, activate apps, reset projections, or change telemetry. Its
-`next` field gives `apps status` and the exact upgrade guide. A failed control
-plane restores the known-good link and restarts the prior service. Use
-`--rollback` to select that recorded prior binary explicitly.
+`next` field gives `apps status` and the exact upgrade guide. `action` is
+`upgraded`, `upgrade_pending`, or `up_to_date`; an explicit successful rollback
+reports `rolled_back`. A failed control plane restores the known-good link and
+restarts the prior service. Use `--rollback` to select that recorded prior
+binary explicitly.
 
 The source-checkout macOS command below remains supported for building the
 current checkout. It is not a release consumer.
