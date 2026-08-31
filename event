@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Release-consumer tests covering failed-start rollback, healthy prior recovery, upgrade-pending guidance, no-op, loaded launchd, and temp cleanup.","body":{"commit":"854f92312631de3b55a702df6a934a5832d23570","path":"scripts/release_test.go"}}
+{"kind":"artifact","text":"Bundle-free release installer path that starts no temporary resident.","body":{"commit":"854f92312631de3b55a702df6a934a5832d23570","path":"scripts/install.sh"}}
