@@ -1,4 +1,27 @@
-# Upgrade the macOS resident
+# Upgrade the resident
+
+For an installed release, use the same release's pinned `upgrade.sh` asset.
+It verifies that asset against the signed `checksums.txt` manifest (and the
+keyless Cosign bundle when available), stages the verified release through the
+release installer, preserves the known-good binary, atomically switches the
+stable link, and restarts either launchd or systemd --user:
+
+```sh
+curl -fsSL https://github.com/generalbusiness-ai/tailapps/releases/download/vVERSION/upgrade.sh | sh
+```
+
+It emits one JSON result. `control_plane: "healthy"` means the resident socket
+started. `ingestion_ready: false` is a successful binary upgrade with existing
+Tailapps awaiting their explicit source lifecycle; it does not install bundles,
+rewrite source, activate apps, reset projections, or change telemetry. Its
+`next` field gives `apps status` and the exact upgrade guide. A failed control
+plane restores the known-good link and restarts the prior service. Use
+`--rollback` to select that recorded prior binary explicitly.
+
+The source-checkout macOS command below remains supported for building the
+current checkout. It is not a release consumer.
+
+## Upgrade the macOS resident from a checkout
 
 `scripts/upgrade-resident-macos.sh` replaces only the binary that the existing
 per-user launchd resident executes. It does not touch `TAILAPP_HOME`, Tailapp

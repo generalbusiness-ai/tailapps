@@ -6,7 +6,8 @@ releases from merged `main`, not from a feature branch. The workflow tests the
 tagged source, builds `darwin/arm64`, `darwin/amd64`, `linux/arm64`, and
 `linux/amd64` archives, publishes them with `checksums.txt` and the equivalent
 `SHA256SUMS`, and attaches a keyless Cosign signature and bundle for that
-checksum manifest. Every archive
+checksum manifest. It also publishes version-pinned `install.sh` and
+`upgrade.sh` assets. Every archive
 contains the `tailapp` binary, `LICENSE`, and `NOTICE`. The workflow also
 creates GitHub build-provenance attestations for every archive.
 
@@ -47,6 +48,11 @@ the pipe to select bundles, `--interactive` only when `/dev/tty` is available,
 or `--no-service` to retain the binary and bundles with an explicit foreground
 remedy instead of a service. See [first-time setup](first-time-setup.md) for
 service status, logs, and the source-checkout path.
+
+The companion `upgrade.sh` consumes the same verified release without changing
+bundles, Tailapp source, activation, projections, or telemetry configuration.
+It preserves a known-good binary and emits machine-readable control-plane and
+ingestion readiness. See [resident upgrades](resident-upgrade.md).
 
 For an independent GitHub-hosted provenance check, use GitHub CLI:
 

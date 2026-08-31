@@ -127,6 +127,9 @@ On macOS, once this is running as the standard per-user LaunchAgent, use
 [`scripts/upgrade-resident-macos.sh`](docs/reference/resident-upgrade.md) to
 build the current checkout, atomically switch the resident binary, verify its
 control socket, and automatically roll back if it does not become healthy.
+Published releases also include a signed, version-pinned `upgrade.sh` for
+launchd and systemd user services; it reports control-plane and ingestion
+readiness separately.
 
 ## Create your own
 
