@@ -86,6 +86,10 @@ After a model request and tool call, confirm intake and projection health:
 If intake rises but a result stays empty, `./tailapp ineffective APP` shows
 recent records that app did not recognize.
 
+Versioned macOS and Linux binaries are published as signed GitHub release
+archives. See [verified releases](docs/reference/releases.md) to verify their
+checksums, keyless signature, and GitHub provenance before using one.
+
 ## Create your own
 
 [`signal-counts`](tailapps/signal-counts/README.md) is the smallest complete

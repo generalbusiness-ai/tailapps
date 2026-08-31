@@ -91,3 +91,24 @@ func TestBuildScriptStampsSanitizedOrigin(t *testing.T) {
 		t.Fatalf("origin does not sanitize but the binary is stamped:\n%s", info)
 	}
 }
+
+func TestBuildScriptStampsExplicitReleaseVersion(t *testing.T) {
+	if testing.Short() {
+		t.Skip("builds the binary")
+	}
+	root := repoRoot(t)
+	output := filepath.Join(t.TempDir(), "tailapp")
+	build := exec.Command(filepath.Join(root, "scripts", "build.sh"), output)
+	build.Env = append(os.Environ(), "TAILAPPS_VERSION=1.2.3")
+	build.Stderr = os.Stderr
+	if err := build.Run(); err != nil {
+		t.Fatalf("build.sh: %v", err)
+	}
+	info, err := exec.Command("go", "version", "-m", output).Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(info), "buildinfo.stampedVersion=1.2.3") {
+		t.Fatalf("release version stamp missing:\n%s", info)
+	}
+}
