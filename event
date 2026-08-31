@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Competitive analytics Stage 0 evidence note at b874243","body":{"commit":"b874243a6a5c05fc5fc56b4b646d3f9a4dc52cf5","path":"notes/2026-08-31-sentry-agents-dashboard-gap-analysis.md"}}
+{"kind":"artifact","text":"Competitive analytics Stage 0 current Claude fixture at b874243","body":{"commit":"b874243a6a5c05fc5fc56b4b646d3f9a4dc52cf5","path":"tailapps/testdata/claude-code-2.1.251.json"}}
