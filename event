@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Demo cleanup avoids prohibited removal forms and pipeline false failures","body":{"commit":"b808dc8","path":"scripts/demo.sh"}}
+{"kind":"artifact","text":"Dependency refresh and vulnerability-scan operating guide","body":{"commit":"b808dc8","path":"docs/reference/dependency-security.md"}}
