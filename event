@@ -1,1 +1,1 @@
-{"kind":"report","text":"Resident health restored without projection resets: updated compatible activity-stats, daily-review, and session-cost sources; validated and continue-activated all five runtime profiles; health now reports all five complete at delivery head 80313 and ingestion_ready true. Agent-guard and signal-counts preserve their existing stored schemas and data; their schema-expanding latest sources remain a separate reset-required upgrade."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:2e1128e98cc992eb409d8081cc213d5b87fbc14e"}
