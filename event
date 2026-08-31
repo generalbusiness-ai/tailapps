@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Apache-2.0 redistribution notice","body":{"commit":"867c4882fb2658d07c52a393c54172f1ea681a6d","path":"NOTICE"}}
+{"kind":"artifact","text":"Safe reversible macOS resident upgrade command","body":{"commit":"90fdb2ae68e37752c118e375c0583496378c71be","path":"scripts/upgrade-resident-macos.sh"}}
