@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:8d70bf3eb8a6d50ff5814060f6970f799cb4bf6e","text":"Superseded by corrected full-head artifact c9d802b2c0a1d29eac44e05d2b2d4bb680789f55."}
+{"kind":"artifact","text":"Safe demo cleanup without prohibited recursive removals","body":{"commit":"c9d802b2c0a1d29eac44e05d2b2d4bb680789f55","path":"scripts/demo.sh"}}
