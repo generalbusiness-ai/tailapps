@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:2bc8f66555193bbfb4a193ffa6b0dab32299717f","text":"Superseded by corrected full-head artifact c9d802b2c0a1d29eac44e05d2b2d4bb680789f55."}
+{"kind":"artifact","text":"Copilot tool normalization without raw argument promotion","body":{"commit":"c9d802b2c0a1d29eac44e05d2b2d4bb680789f55","path":"tailapps/agent-guard/folds/normalize.jsonata"}}
