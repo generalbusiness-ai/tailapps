@@ -86,6 +86,11 @@ After a model request and tool call, confirm intake and projection health:
 If intake rises but a result stays empty, `./tailapp ineffective APP` shows
 recent records that app did not recognize.
 
+On macOS, once this is running as the standard per-user LaunchAgent, use
+[`scripts/upgrade-resident-macos.sh`](docs/reference/resident-upgrade.md) to
+build the current checkout, atomically switch the resident binary, verify its
+control socket, and automatically roll back if it does not become healthy.
+
 ## Create your own
 
 [`signal-counts`](tailapps/signal-counts/README.md) is the smallest complete
