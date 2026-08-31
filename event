@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Release-consumer tests at verified exact head covering failed-start rollback, healthy prior recovery, upgrade-pending guidance, no-op, loaded launchd, and temp cleanup.","body":{"commit":"854f9239501a129584dabe11d981bd214fa2faf3","path":"scripts/release_test.go"}}
+{"kind":"artifact","text":"Bundle-free release installer path at verified exact head that starts no temporary resident.","body":{"commit":"854f9239501a129584dabe11d981bd214fa2faf3","path":"scripts/install.sh"}}
