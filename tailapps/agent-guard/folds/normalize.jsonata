@@ -7,7 +7,8 @@
   $event_name := $claude_body_name ? $body_name :
     ($exists($semantic_name_raw) and $string($semantic_name_raw) != "" ? $string($semantic_name_raw) : event.name);
   $harness := (event.source = "codex_cli_rs" or event.source = "codex_exec" or
-    event.source = "codex-app-server") ? "codex" : event.source;
+    event.source = "codex-app-server") ? "codex" :
+    ((event.source = "copilot-chat" or event.source = "vscode-copilot-chat") ? "vscode-copilot-chat" : event.source);
   $opencode_log := $harness = "opencode" and event.signal = "log";
   $vscode_log := $harness = "vscode-copilot-chat" and event.signal = "log";
   $event_time := event.time_unix_nano ? event.time_unix_nano :
@@ -31,7 +32,7 @@
   $tool := $tool_known ? $lowercase($string($tool_raw)) : null;
   $target_raw := $lookup($attrs, "target") ? $lookup($attrs, "target") :
     ($lookup($attrs, "file_path") ? $lookup($attrs, "file_path") :
-    ($lookup($attrs, "full_command") ? $lookup($attrs, "full_command") : $lookup($attrs, "gen_ai.tool.arguments")));
+    $lookup($attrs, "full_command"));
   $target_known := $exists($target_raw) and $string($target_raw) != "" and $string($target_raw) != "<redacted>";
   $target := $target_known ? $string($target_raw) : null;
   $success_raw := $lookup($attrs, "success");

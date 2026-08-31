@@ -264,6 +264,17 @@ func TestVSCodeCopilotChatMapsObservedOTLPShape(t *testing.T) {
 	if toolEvent["target"] != nil || toolEvent["target_coverage"] != "unknown" {
 		t.Fatalf("tool coverage = %#v", toolEvent)
 	}
+	defaultTool, err := guard.Evaluate("normalize_harness_event", inputs["default_tool_call"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if defaultTool.Decision != "effective" || len(defaultTool.Events["otel_event"]) != 1 {
+		t.Fatalf("default tool = %#v", defaultTool)
+	}
+	defaultToolEvent := defaultTool.Events["otel_event"][0]
+	if defaultToolEvent["harness"] != "vscode-copilot-chat" || defaultToolEvent["target"] != nil || defaultToolEvent["target_coverage"] != "unknown" {
+		t.Fatalf("default tool identity or content boundary = %#v", defaultToolEvent)
+	}
 
 	cost, err := Load("session-cost")
 	if err != nil {
@@ -284,6 +295,13 @@ func TestVSCodeCopilotChatMapsObservedOTLPShape(t *testing.T) {
 		if got := fmt.Sprint(usageEvent[field]); got != want {
 			t.Fatalf("%s = %s, want %s; event = %#v", field, got, want, usageEvent)
 		}
+	}
+	defaultUsage, err := cost.Evaluate("normalize_usage", inputs["default_inference_details"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if defaultUsage.Decision != "effective" || len(defaultUsage.Events["otel_event"]) != 1 || defaultUsage.Events["otel_event"][0]["harness"] != "vscode-copilot-chat" {
+		t.Fatalf("default usage identity = %#v", defaultUsage)
 	}
 	duplicate, err := cost.Evaluate("normalize_usage", inputs["inference_span"])
 	if err != nil {
@@ -311,6 +329,13 @@ func TestVSCodeCopilotChatMapsObservedOTLPShape(t *testing.T) {
 	if got := fmt.Sprint(activityEvent["input_tokens"]); got != "275" {
 		t.Fatalf("activity input tokens = %s; event = %#v", got, activityEvent)
 	}
+	defaultActivity, err := stats.Evaluate("normalize_activity", inputs["default_inference_details"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if defaultActivity.Decision != "effective" || len(defaultActivity.Events["otel_event"]) != 1 || defaultActivity.Events["otel_event"][0]["harness"] != "vscode-copilot-chat" {
+		t.Fatalf("default activity identity = %#v", defaultActivity)
+	}
 
 	daily, err := Load("daily-review")
 	if err != nil {
@@ -326,6 +351,13 @@ func TestVSCodeCopilotChatMapsObservedOTLPShape(t *testing.T) {
 	reviewEvent := review.Events["otel_event"][0]
 	if reviewEvent["harness"] != "vscode-copilot-chat" || fmt.Sprint(reviewEvent["api_event"]) != "1" || fmt.Sprint(reviewEvent["input_tokens"]) != "275" || fmt.Sprint(reviewEvent["output_tokens"]) != "5" {
 		t.Fatalf("daily review event = %#v", reviewEvent)
+	}
+	defaultReview, err := daily.Evaluate("normalize_review_event", inputs["default_inference_details"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if defaultReview.Decision != "effective" || len(defaultReview.Events["otel_event"]) != 1 || defaultReview.Events["otel_event"][0]["harness"] != "vscode-copilot-chat" {
+		t.Fatalf("default daily review identity = %#v", defaultReview)
 	}
 }
 

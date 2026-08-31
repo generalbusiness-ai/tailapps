@@ -1,8 +1,9 @@
 # VS Code Copilot Chat
 
 VS Code's built-in GitHub Copilot Chat extension can export local OpenTelemetry
-to Tailapp over OTLP/HTTP. The included bundles recognize the observed
-`vscode-copilot-chat` log vocabulary from Copilot Chat extension 0.63.0.
+to Tailapp over OTLP/HTTP. The included bundles recognize its `copilot-chat`
+default service identity and the optional `vscode-copilot-chat` identity below,
+using one `vscode-copilot-chat` harness label for both.
 
 ## Send telemetry
 
@@ -20,6 +21,8 @@ preserving any existing settings:
 ```
 
 The endpoint is the receiver base URL; VS Code sends the OTLP signal paths.
+`serviceName` is optional: use it to make Copilot’s source name unambiguous;
+`OTEL_SERVICE_NAME` takes precedence when it is set in VS Code’s environment.
 Restart VS Code after changing telemetry settings, then make one Copilot Chat
 request and one agent tool call. Confirm delivery and interpretation with:
 
@@ -48,16 +51,19 @@ telemetry does not report a currency cost, so `session-cost.cost_microusd`
 remains zero rather than estimating a price.
 
 `agent-guard` recognizes `copilot_chat.tool.call`, with
-`gen_ai.tool.name`, `duration_ms`, and `success`. It records target coverage
-as unknown unless a producer supplies a safe `target`, `file_path`,
-`full_command`, or `gen_ai.tool.arguments` attribute.
+`gen_ai.tool.name`, `duration_ms`, and `success`. Copilot tool names fall into
+the generic `other` tool bucket. It records target coverage as unknown unless
+a producer supplies a safe `target`, `file_path`, or `full_command` attribute;
+Copilot’s full `gen_ai.tool.arguments` are never promoted into policy evidence.
 
 For inference logs that lack a conversation identifier, the bundles use the
 resource `session.id`. That identifies the VS Code instrumentation session,
 not necessarily one chat conversation, so do not treat its aggregate row as a
 per-chat-session ledger. Spans may contain a more precise
 `gen_ai.conversation.id`; the shipped bundles do not use them for token totals
-because that would duplicate the logs.
+because that would duplicate the logs. Only those two log families are
+interpreted; their trace and metric companions remain visible through
+`signal-counts` for diagnosis but do not add to bundle results.
 
 The content setting above asks VS Code not to include prompt, response, and
 tool payloads. The included Tailapps do not promote such raw fields into their

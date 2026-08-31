@@ -5,7 +5,8 @@
   $event_name := $exists($semantic_name_raw) and $string($semantic_name_raw) != "" ?
     $string($semantic_name_raw) : event.name;
   $harness := (event.source = "codex_cli_rs" or event.source = "codex_exec" or
-    event.source = "codex-app-server") ? "codex" : event.source;
+    event.source = "codex-app-server") ? "codex" :
+    ((event.source = "copilot-chat" or event.source = "vscode-copilot-chat") ? "vscode-copilot-chat" : event.source);
   $vscode_log := $harness = "vscode-copilot-chat" and event.signal = "log";
   $event_time := event.time_unix_nano ? event.time_unix_nano :
     (event.observed_unix_nano ? event.observed_unix_nano : null);

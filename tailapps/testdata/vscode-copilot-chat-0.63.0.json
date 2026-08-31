@@ -32,6 +32,33 @@
       }}}
     }, "rows": {}
   },
+  "default_inference_details": {
+    "meta": {"position": 32104, "event_id": "local:32104", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:32104", "signal": "log", "name": "gen_ai.client.inference.operation.details", "source": "copilot-chat",
+      "time_unix_nano": "1788165435393000000", "observed_unix_nano": "1788165435393000000",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:scrubbed-copilot-default-inference",
+      "record": {"attributes": {
+        "event.name": "gen_ai.client.inference.operation.details", "gen_ai.operation.name": "chat",
+        "gen_ai.usage.input_tokens": 27, "gen_ai.usage.output_tokens": 5
+      }, "body": "GenAI inference", "resource": {"attributes": {
+        "service.name": "copilot-chat", "service.version": "0.63.0", "session.id": "default-resource-session-scrubbed"
+      }}}
+    }, "rows": {}
+  },
+  "default_tool_call": {
+    "meta": {"position": 32105, "event_id": "local:32105", "event_type": "otlp_record"},
+    "event": {
+      "id": "local:32105", "signal": "log", "name": "copilot_chat.tool.call", "source": "copilot-chat",
+      "time_unix_nano": "1788165435611000000", "observed_unix_nano": "1788165435611000000",
+      "trace_id": null, "span_id": null, "content_digest": "sha256:scrubbed-copilot-default-tool-call",
+      "record": {"attributes": {
+        "event.name": "copilot_chat.tool.call", "gen_ai.tool.name": "manage_todo_list", "gen_ai.tool.arguments": "<scrubbed>", "duration_ms": 1, "success": true
+      }, "body": "Copilot tool call", "resource": {"attributes": {
+        "service.name": "copilot-chat", "service.version": "0.63.0", "session.id": "default-resource-session-scrubbed"
+      }}}
+    }, "rows": {}
+  },
   "inference_span": {
     "meta": {"position": 32103, "event_id": "local:32103", "event_type": "otlp_record"},
     "event": {
