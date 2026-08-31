@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will publish and verify v0.1.0 from exact pushed main 5a8f888ac9d7c9704f11c2b31fd322b96d53d8b9."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:88fc8441f01c56932fc0589577505c288381c80e","text":"Withdraw the v0.1.0 publication promise after GitHub run 33435875143 failed before asset publication because the release installer fallback test mocked launchctl on an Ubuntu runner instead of the host service manager."}
