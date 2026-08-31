@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at tailapps","body":{"commit":"5d84ac71d625b29d9e7e9dbdf4c7c66c60429434","path":"tailapps"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:483e78e0cc0468d15e519f458960d6214931b04e","text":"Merge retired a covered predecessor; the successor is at notes/2026-08-31-url-reputation-stage-1-decisions.md."}
