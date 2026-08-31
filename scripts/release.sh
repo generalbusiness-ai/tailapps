@@ -29,6 +29,14 @@ fi
 repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 mkdir -p "$output_dir"
 
+installer="$output_dir/install.sh"
+[ ! -e "$installer" ] || {
+  echo "refusing to overwrite release installer: $installer" >&2
+  exit 65
+}
+sed "s/@TAILAPPS_VERSION@/$version/g" "$repo_root/scripts/install.sh" >"$installer"
+chmod 755 "$installer"
+
 archive_for() {
   goos=$1
   goarch=$2
@@ -60,7 +68,14 @@ checksums="$output_dir/checksums.txt"
   exit 65
 }
 if command -v sha256sum >/dev/null 2>&1; then
-  (cd "$output_dir" && sha256sum tailapps_"$version"_*.tar.gz) >"$checksums"
+  (cd "$output_dir" && sha256sum tailapps_"$version"_*.tar.gz install.sh) >"$checksums"
 else
-  (cd "$output_dir" && shasum -a 256 tailapps_"$version"_*.tar.gz) >"$checksums"
+  (cd "$output_dir" && shasum -a 256 tailapps_"$version"_*.tar.gz install.sh) >"$checksums"
 fi
+
+sha256sums="$output_dir/SHA256SUMS"
+[ ! -e "$sha256sums" ] || {
+  echo "refusing to overwrite checksum manifest: $sha256sums" >&2
+  exit 65
+}
+cp "$checksums" "$sha256sums"

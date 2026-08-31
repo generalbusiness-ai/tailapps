@@ -113,6 +113,15 @@ Versioned macOS and Linux binaries are published as signed GitHub release
 archives. See [verified releases](docs/reference/releases.md) to verify their
 checksums, keyless signature, and GitHub provenance before using one.
 
+To install a signed, version-pinned release without `sudo`:
+
+```sh
+curl -fsSL https://github.com/generalbusiness-ai/tailapps/releases/download/vVERSION/install.sh | sh
+```
+
+The installer verifies the archive checksum, verifies GitHub provenance with
+Cosign when available, and prints the command to run the resident.
+
 On macOS, once this is running as the standard per-user LaunchAgent, use
 [`scripts/upgrade-resident-macos.sh`](docs/reference/resident-upgrade.md) to
 build the current checkout, atomically switch the resident binary, verify its

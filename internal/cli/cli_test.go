@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -26,6 +27,23 @@ func TestMetricsRejectsDisablingItsOnlyOutputFormat(t *testing.T) {
 	err := Run(context.Background(), []string{"metrics", "--json=false"}, &stdout, &stderr)
 	if err == nil || !strings.Contains(err.Error(), "JSON output only") {
 		t.Fatalf("metrics --json=false error = %v", err)
+	}
+}
+
+func TestVersionIsJSONAndDoesNotNeedAResidentHome(t *testing.T) {
+	t.Setenv("TAILAPP_HOME", "relative-home-is-irrelevant-for-version")
+	var stdout, stderr bytes.Buffer
+	if err := Run(context.Background(), []string{"version"}, &stdout, &stderr); err != nil {
+		t.Fatal(err)
+	}
+	var value map[string]any
+	if err := json.Unmarshal(stdout.Bytes(), &value); err != nil {
+		t.Fatalf("version output is not JSON: %v; %s", err, stdout.String())
+	}
+	for _, key := range []string{"version", "revision", "dirty", "source_url", "go_version", "os", "arch"} {
+		if _, found := value[key]; !found {
+			t.Fatalf("version JSON omitted %q: %#v", key, value)
+		}
 	}
 }
 
