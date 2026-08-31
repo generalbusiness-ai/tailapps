@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Verified release archive builder","body":{"commit":"24a6a2f93f2d8fd1d92ea4b849ecede7828f3777","path":"scripts/release.sh"}}
+{"kind":"artifact","text":"Merged-main signed release workflow","body":{"commit":"24a6a2f93f2d8fd1d92ea4b849ecede7828f3777","path":".github/workflows/release.yml"}}
