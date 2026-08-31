@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will compose the reviewed changes on a clean integration head, preserve all documentation links, verify the combined build, and submit it for an independent final review."}
+{"kind":"artifact","text":"Composed public setup, release, and upgrade guidance","body":{"commit":"24a6a2f93f2d8fd1d92ea4b849ecede7828f3777","path":"README.md"}}
