@@ -6,6 +6,8 @@ SQL over CLI or MCP to inspect activity, cost, performance, coverage, and
 suspicious behavior. Each Tailapp retains useful results rather than another
 copy of the OTLP stream.
 
+Agents can easily author many tiny analytic pipelines. Think of it like a "code-mode analytics machine".
+
 ![Tailapps pipeline: OTLP/HTTP enters a local resident, DDL and JSONata define a two-stage Tailapp, and MCP queries its SQLite projection.](docs/assets/tailapp-architecture.svg)
 
 ## What you can install
@@ -54,7 +56,7 @@ Example prompt - copy this into an agent connected to Tailapp, or use it as a CL
 
 > Query `daily-review.daily_review`; the `activity-stats` exports `event_inventory`, `session_activity`, and `request_performance`; `session-cost.session_cost` and `session_cost_detail`; the `agent-guard` exports `telemetry_coverage`, `session_progress`, `policy_findings`, `loop_findings`, and `tool_failure_detail`; and `signal-counts.signal_counts`. Inspect schemas and each projection frontier first. Produce one self-contained HTML file with inline charts and no external scripts. Lead with two or three headline numbers and show every chart's completeness, interpreted position, and whether it is a complete-day snapshot, cumulative-since-activation total, or partial interval; never silently mix frontiers. Use one same-width time bucket grammar: a per-harness arrival timeline and per-session bars grouped by harness, with each session labelled `harness` plus an ordinal or hashed short prefix—never a raw session ID. Use retained `observed_unix_nano` and `first_seen_unix_nano`/`last_seen_unix_nano` fields as the event-time source for markers where available; otherwise show only the actual day, cumulative, or source-position sequence and never fabricate finer time buckets. Mark data gaps or stalls, guard findings by severity and rule, loop findings by kind, and observed harness starts or stops. Stack time-series legends with totals by model or tool where those dimensions exist; include average and P95 latency, a normalized stacked-area token-share view, and a lighter final bucket whenever it is incomplete. Include sortable detail tables for model/project cost, tools and endpoints, failures by harness/tool/command/error detail, policy and loop evidence, and coverage gaps. This is a local report, so use retained project and failure detail when it helps investigation, but omit prompts and raw session IDs. End with the evidence used and the next questions to investigate.
 
-**Sample result:** (click and download to see a full report example)
+**Sample result:**
 
 <a href="https://htmlpreview.github.io/?https://github.com/generalbusiness-ai/tailapps/blob/main/docs/assets/visual-report-sample.html"><img src="docs/assets/visual-report-sample.png" alt="Sample visual report, truncated: arrival timeline with per-session bars" width="640"></a>
 
