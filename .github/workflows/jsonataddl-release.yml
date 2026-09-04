@@ -39,9 +39,6 @@ jobs:
           GOWORK=off go test -race ./...
           GOWORK=off go vet ./...
           test "$(GOWORK=off go list -m -f '{{.Path}}')" = 'github.com/generalbusiness-ai/tailapps/jsonataddl'
-          if GOWORK=off go list -deps -test ./... | grep '^github.com/generalbusiness-ai/tailapps/' | grep -Ev '^github.com/generalbusiness-ai/tailapps/jsonataddl(_test)?([/. ]|$)'; then
-            echo 'jsonataddl tests and production code must not depend on Tailapps packages outside jsonataddl' >&2
-            exit 1
-          fi
+          ../scripts/check-jsonataddl-boundary.sh .
           GOWORK=off ../scripts/vulncheck.sh
           test -z "$(git status --porcelain)"

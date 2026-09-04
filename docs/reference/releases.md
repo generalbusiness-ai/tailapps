@@ -11,6 +11,11 @@ checksum manifest. It also publishes version-pinned `install.sh` and
 contains the `tailapp` binary, `LICENSE`, and `NOTICE`. The workflow also
 creates GitHub build-provenance attestations for every archive.
 
+The root module requires the nested `jsonataddl` module at v0.1.0 behind a
+local replacement. Publish `jsonataddl/v0.1.0` before any later root release
+tag, so an external consumer can resolve the required nested-module version
+without the repository-local replacement.
+
 Download the archive matching your operating system and CPU together with
 `checksums.txt`, `checksums.txt.sig`, and `checksums.txt.bundle` from the same
 GitHub release. Verify the signature before trusting the checksums:

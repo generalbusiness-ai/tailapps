@@ -41,13 +41,9 @@ jobs:
           (cd jsonataddl && GOWORK=off go vet ./...)
 
       - name: Verify module boundary
-        working-directory: jsonataddl
         run: |
-          test "$(GOWORK=off go list -m -f '{{.Path}}')" = 'github.com/generalbusiness-ai/tailapps/jsonataddl'
-          if GOWORK=off go list -deps -test ./... | grep '^github.com/generalbusiness-ai/tailapps/' | grep -Ev '^github.com/generalbusiness-ai/tailapps/jsonataddl(_test)?([/. ]|$)'; then
-            echo 'jsonataddl tests and production code must not depend on Tailapps packages outside jsonataddl' >&2
-            exit 1
-          fi
+          test "$(cd jsonataddl && GOWORK=off go list -m -f '{{.Path}}')" = 'github.com/generalbusiness-ai/tailapps/jsonataddl'
+          ./scripts/check-jsonataddl-boundary.sh
 
       - name: Scan reachable dependency vulnerabilities
         run: |

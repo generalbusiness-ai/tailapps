@@ -12,7 +12,7 @@ import (
 // with independently versioned components. Every semantic participant in
 // deterministic interpretation names itself; changing any component changes
 // the digest, and the digest (not merely a core version) enters the
-// application revision at migration stage 5.
+// application revision and every compatible persisted projection.
 //
 // The component set is closed: exactly these keys, each exactly once. A
 // closed set is what makes the canonical form canonical - an unknown or
