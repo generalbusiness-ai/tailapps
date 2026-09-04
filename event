@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:321bc5ef63b839223437840b74501c717a1f8fef","text":"Merge retired a covered predecessor; the successor is at jsonataddl/identity.go."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:33a2b8595d33fd0768c8c3796ccf11e7bcab0ae3","text":"Merge retired a covered predecessor; the successor is at internal/profile/runtime_test.go."}
