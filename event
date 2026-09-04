@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5039eaefc687733ae4caf5ef056dce664b0d61c9"}
+{"kind":"artifact","text":"Exact pushed head 52df68a7 documents the safe release order, exact origin and public absence proof, and the v0.1.1 negative-cache incident.","body":{"commit":"52df68a7bf235c1d1f94277605ef050ff370d1d8","path":"docs/reference/releases.md"}}
