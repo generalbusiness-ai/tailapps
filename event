@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:6335af247a57bcfd09c99fc24d044d87757143e5","text":"Merge retired a covered predecessor; the successor is at docs/reference/resident-upgrade.md."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:7c55656e376069a7cea11a8845b738e439f9e5b6","text":"Merge retired a covered predecessor; the successor is at jsonataddl/json_storage_test.go."}
