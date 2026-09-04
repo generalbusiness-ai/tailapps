@@ -7,16 +7,20 @@ source loading, storage, and transaction orchestration.
 
 ## Install
 
-The module is published from this repository with module-path tags such as
-`jsonataddl/v0.1.0`:
+The module is published from this repository with module-path tags. The first
+usable release is `jsonataddl/v0.1.1`:
 
 ```sh
-go get github.com/generalbusiness-ai/tailapps/jsonataddl@v0.1.0
+go get github.com/generalbusiness-ai/tailapps/jsonataddl@v0.1.1
 ```
 
 Consumers resolve the versioned module directly, without a workspace or local
 replacement. See
 `ExampleLoadApplication` for a minimal compile-and-evaluate path.
+
+Do not use v0.1.0. Its published module bytes conflict with the immutable
+public checksum-database record for that version, so a normal Go consumer
+correctly rejects it.
 
 ## Contents
 
@@ -86,9 +90,20 @@ test code has no dependency on packages outside this module.
 
 ## Release ordering
 
-Repository maintainers release only a commit already merged to `main`, using a
-module-path tag such as `jsonataddl/v0.1.0`. The Tailapps root module requires
-`jsonataddl` v0.1.0 behind a local replacement, so `jsonataddl/v0.1.0` must be
-pushed before any later Tailapps root release tag.
+Repository maintainers release only a commit already merged to `main`. Before
+pushing a module-path tag, run the public-record preflight for the intended
+version:
+
+```sh
+scripts/check-jsonataddl-version-available.sh v0.1.1
+```
+
+Only a result that verifies absence from both `proxy.golang.org` and
+`sum.golang.org` permits the tag push. Network failures, unexpected responses,
+and existing records all refuse publication. The Tailapps root module requires
+`jsonataddl` v0.1.1 behind a local replacement, so `jsonataddl/v0.1.1` must be
+pushed before any later Tailapps root release tag. The protected
+`jsonataddl/v*` tag namespace prevents published tags from being moved or
+deleted.
 
 The module is Apache-2.0 licensed; see `LICENSE` and `NOTICE` in this directory.

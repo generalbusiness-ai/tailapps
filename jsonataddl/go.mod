@@ -2,6 +2,8 @@ module github.com/generalbusiness-ai/tailapps/jsonataddl
 
 go 1.26.7
 
+retract v0.1.0 // Its published bytes conflict with the immutable checksum database, so this version is unusable.
+
 require (
 	github.com/jsonata-go/jsonata v0.0.0-20250709164031-599f35f32e5f
 	github.com/ncruces/go-sqlite3 v0.35.3

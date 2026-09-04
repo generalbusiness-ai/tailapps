@@ -9,6 +9,13 @@ The independently published `jsonataddl` module has its own `go.mod` and
 `go.sum`. Run `go mod tidy` in both module directories and review both sums.
 The root module's `replace` keeps Tailapps on the same local core source during
 development; published `jsonataddl` consumers do not use it.
+Before pushing a module tag, run
+`scripts/check-jsonataddl-version-available.sh vVERSION`. It uses bounded
+requests and admits publication only after both the public Go proxy and
+checksum database return a verified not-found response. Existing records,
+transport failures, unexpected HTTP results, and malformed status output all
+fail closed. Its CI coverage uses an injected HTTP client rather than live
+network responses.
 `scripts/verify-jsonataddl-module.sh` proves a tagged module through a clean
 consumer with workspace mode disabled and refuses a resolved replacement. It
 clears inherited Go flags and the `GOPRIVATE`, `GONOPROXY`, `GONOSUMDB`, and
