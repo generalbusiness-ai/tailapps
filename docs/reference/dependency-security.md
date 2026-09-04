@@ -11,11 +11,15 @@ The root module's `replace` keeps Tailapps on the same local core source during
 development; published `jsonataddl` consumers do not use it.
 Before pushing a module tag, run
 `scripts/check-jsonataddl-version-available.sh vVERSION`. It uses bounded
-requests and admits publication only after both the public Go proxy and
-checksum database return a verified not-found response. Existing records,
-transport failures, unexpected HTTP results, and malformed status output all
-fail closed. Its CI coverage uses an injected HTTP client rather than live
-network responses.
+HTTPS requests and admits publication only after the exact `origin` tag is
+absent, the public Go proxy's version list lacks the exact version, and the
+checksum database returns a verified not-found response. It never probes the
+proxy's version-specific `.info` endpoint before publication: doing so for
+v0.1.1 created a 30-minute negative cache that outlived the successful tag and
+release workflow. Existing records, missing tools, transport failures,
+unexpected HTTP results, and malformed, duplicate, or mismatched output all
+fail closed. Deterministic tests inject the remote and HTTP clients and prove
+the absent path cannot call the cache-poisoning endpoint.
 `scripts/verify-jsonataddl-module.sh` proves a tagged module through a clean
 consumer with workspace mode disabled and refuses a resolved replacement. It
 clears inherited Go flags and the `GOPRIVATE`, `GONOPROXY`, `GONOSUMDB`, and

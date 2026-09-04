@@ -2,6 +2,7 @@ package scripts_test
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -108,14 +109,25 @@ func TestCheckJSONataDDLVersionAvailableFailsClosed(t *testing.T) {
 	curlScript := `#!/bin/sh
 set -eu
 printf '%s\n' "$*" >>"$FAKE_CURL_LOG"
-case "$*" in
-  *proxy.golang.org*) status=${FAKE_PROXY_STATUS-404} ;;
-  *sum.golang.org*) status=${FAKE_SUMDB_STATUS-404} ;;
+output=/dev/null
+url=
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --output) output=$2; shift 2 ;;
+    https://*) url=$1; shift ;;
+    *) shift ;;
+  esac
+done
+case "$url" in
+  *api.github.com*) status=${FAKE_REMOTE_STATUS-404}; body= ;;
+  *proxy.golang.org*) status=${FAKE_PROXY_STATUS-200}; body=${FAKE_PROXY_BODY-} ;;
+  *sum.golang.org*) status=${FAKE_SUMDB_STATUS-404}; body= ;;
   *) echo 'unexpected endpoint' >&2; exit 90 ;;
 esac
 if [ "$status" = transport-error ]; then
   exit 7
 fi
+[ "$output" = /dev/null ] || printf '%s' "$body" >"$output"
 printf '%s' "$status"
 `
 	if err := os.WriteFile(filepath.Join(fakeBin, "curl"), []byte(curlScript), 0o700); err != nil {
@@ -123,45 +135,104 @@ printf '%s' "$status"
 	}
 
 	for _, test := range []struct {
-		name        string
-		proxyStatus string
-		sumdbStatus string
-		wantErr     bool
-		wantOutput  string
-		wantCalls   int
+		name         string
+		remoteStatus string
+		proxyStatus  string
+		proxyBody    string
+		sumdbStatus  string
+		wantErr      bool
+		wantOutput   string
+		wantCurl     int
 	}{
-		{name: "verified absent", proxyStatus: "404", sumdbStatus: "404", wantOutput: "safe to tag", wantCalls: 2},
-		{name: "proxy record", proxyStatus: "200", sumdbStatus: "404", wantErr: true, wantOutput: "already recorded by proxy.golang.org", wantCalls: 1},
-		{name: "checksum record", proxyStatus: "404", sumdbStatus: "200", wantErr: true, wantOutput: "already recorded by sum.golang.org", wantCalls: 2},
-		{name: "transport failure", proxyStatus: "transport-error", sumdbStatus: "404", wantErr: true, wantOutput: "request failed", wantCalls: 1},
-		{name: "unexpected response", proxyStatus: "503", sumdbStatus: "404", wantErr: true, wantOutput: "HTTP 503", wantCalls: 1},
-		{name: "gone is not absence", proxyStatus: "410", sumdbStatus: "404", wantErr: true, wantOutput: "HTTP 410", wantCalls: 1},
-		{name: "malformed response", proxyStatus: "not-a-status", sumdbStatus: "404", wantErr: true, wantOutput: "malformed HTTP status", wantCalls: 1},
+		{name: "verified exact absence", remoteStatus: "404", proxyStatus: "200", proxyBody: "v0.1.0\nv0.1.10\n", sumdbStatus: "404", wantOutput: "safe to tag", wantCurl: 3},
+		{name: "proxy has no module list", remoteStatus: "404", proxyStatus: "404", sumdbStatus: "404", wantOutput: "safe to tag", wantCurl: 3},
+		{name: "remote tag", remoteStatus: "200", wantErr: true, wantOutput: "tag already exists on origin", wantCurl: 1},
+		{name: "remote transport failure", remoteStatus: "transport-error", wantErr: true, wantOutput: "request failed", wantCurl: 1},
+		{name: "remote unexpected response", remoteStatus: "503", wantErr: true, wantOutput: "HTTP 503", wantCurl: 1},
+		{name: "remote malformed status", remoteStatus: "not-a-status", wantErr: true, wantOutput: "malformed HTTP status", wantCurl: 1},
+		{name: "proxy record", remoteStatus: "404", proxyStatus: "200", proxyBody: "v0.1.1\n", sumdbStatus: "404", wantErr: true, wantOutput: "already listed by proxy.golang.org", wantCurl: 2},
+		{name: "checksum record", remoteStatus: "404", proxyStatus: "200", proxyBody: "v0.1.0\n", sumdbStatus: "200", wantErr: true, wantOutput: "already recorded by sum.golang.org", wantCurl: 3},
+		{name: "proxy transport failure", remoteStatus: "404", proxyStatus: "transport-error", sumdbStatus: "404", wantErr: true, wantOutput: "request failed", wantCurl: 2},
+		{name: "proxy unexpected response", remoteStatus: "404", proxyStatus: "503", sumdbStatus: "404", wantErr: true, wantOutput: "HTTP 503", wantCurl: 2},
+		{name: "proxy gone is not absence", remoteStatus: "404", proxyStatus: "410", sumdbStatus: "404", wantErr: true, wantOutput: "HTTP 410", wantCurl: 2},
+		{name: "proxy malformed status", remoteStatus: "404", proxyStatus: "not-a-status", sumdbStatus: "404", wantErr: true, wantOutput: "malformed HTTP status", wantCurl: 2},
+		{name: "proxy malformed version", remoteStatus: "404", proxyStatus: "200", proxyBody: "v0.1.0 garbage\n", sumdbStatus: "404", wantErr: true, wantOutput: "malformed version", wantCurl: 2},
+		{name: "proxy duplicate version", remoteStatus: "404", proxyStatus: "200", proxyBody: "v0.1.0\nv0.1.0\n", sumdbStatus: "404", wantErr: true, wantOutput: "duplicate version", wantCurl: 2},
+		{name: "proxy ambiguous empty line", remoteStatus: "404", proxyStatus: "200", proxyBody: "v0.1.0\n\nv0.1.2\n", sumdbStatus: "404", wantErr: true, wantOutput: "malformed empty version", wantCurl: 2},
+		{name: "sumdb transport failure", remoteStatus: "404", proxyStatus: "200", proxyBody: "v0.1.0\n", sumdbStatus: "transport-error", wantErr: true, wantOutput: "request failed", wantCurl: 3},
+		{name: "sumdb unexpected response", remoteStatus: "404", proxyStatus: "200", proxyBody: "v0.1.0\n", sumdbStatus: "503", wantErr: true, wantOutput: "HTTP 503", wantCurl: 3},
+		{name: "sumdb malformed status", remoteStatus: "404", proxyStatus: "200", proxyBody: "v0.1.0\n", sumdbStatus: "not-a-status", wantErr: true, wantOutput: "malformed HTTP status", wantCurl: 3},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			logPath := filepath.Join(t.TempDir(), "curl.log")
+			logDir := t.TempDir()
+			curlLog := filepath.Join(logDir, "curl.log")
 			env := append(os.Environ(),
 				"PATH="+fakeBin+string(os.PathListSeparator)+os.Getenv("PATH"),
-				"FAKE_CURL_LOG="+logPath,
+				"FAKE_CURL_LOG="+curlLog,
+				"FAKE_REMOTE_STATUS="+test.remoteStatus,
 				"FAKE_PROXY_STATUS="+test.proxyStatus,
+				"FAKE_PROXY_BODY="+test.proxyBody,
 				"FAKE_SUMDB_STATUS="+test.sumdbStatus,
 			)
 			output, err := runFailure(t, root, env, "sh", "scripts/check-jsonataddl-version-available.sh", "v0.1.1")
 			if test.wantErr == (err == nil) || !strings.Contains(string(output), test.wantOutput) {
 				t.Fatalf("pre-tag outcome = %v\n%s", err, output)
 			}
-			calls, readErr := os.ReadFile(logPath)
+			calls, readErr := os.ReadFile(curlLog)
+			if os.IsNotExist(readErr) && test.wantCurl == 0 {
+				return
+			}
 			if readErr != nil {
 				t.Fatal(readErr)
 			}
 			lines := strings.Split(strings.TrimSpace(string(calls)), "\n")
-			if len(lines) != test.wantCalls {
-				t.Fatalf("curl calls = %d, want %d:\n%s", len(lines), test.wantCalls, calls)
+			if len(lines) != test.wantCurl {
+				t.Fatalf("curl calls = %d, want %d:\n%s", len(lines), test.wantCurl, calls)
 			}
 			for _, line := range lines {
-				if !strings.Contains(line, "--proto =https --proto-redir =https") || !strings.Contains(line, "--connect-timeout 5 --max-time 15") || !strings.Contains(line, "--output /dev/null --write-out %{http_code}") {
-					t.Fatalf("curl call lacks fixed bounds or status-only output: %q", line)
+				if !strings.Contains(line, "--proto =https --proto-redir =https") || !strings.Contains(line, "--connect-timeout 5 --max-time 15") || !strings.Contains(line, "--write-out %{http_code}") {
+					t.Fatalf("curl call lacks HTTPS-only redirects or fixed bounds: %q", line)
 				}
+				if strings.Contains(line, "/@v/v0.1.1.info") {
+					t.Fatalf("absence check poisoned the per-version proxy cache: %q", line)
+				}
+			}
+			if test.wantCurl > 0 && !strings.Contains(lines[0], "api.github.com/repos/generalbusiness-ai/tailapps/git/ref/tags/jsonataddl/v0.1.1") {
+				t.Fatalf("first check did not use the exact remote-tag surface: %q", lines[0])
+			}
+			if test.wantCurl > 1 && !strings.Contains(lines[1], "/@v/list") {
+				t.Fatalf("second check did not use the version-list surface: %q", lines[1])
+			}
+		})
+	}
+}
+
+func TestCheckJSONataDDLVersionAvailableRequiresEveryTool(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("the pre-tag checker is a POSIX shell script")
+	}
+
+	root := repoRoot(t)
+	tools := []string{"curl", "find", "grep", "mktemp"}
+	for _, missing := range tools {
+		t.Run(missing, func(t *testing.T) {
+			path := t.TempDir()
+			for _, tool := range tools {
+				if tool == missing {
+					continue
+				}
+				target, err := exec.LookPath(tool)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := os.Symlink(target, filepath.Join(path, tool)); err != nil {
+					t.Fatal(err)
+				}
+			}
+			env := append(os.Environ(), "PATH="+path)
+			output, err := runFailure(t, root, env, "sh", "scripts/check-jsonataddl-version-available.sh", "v0.1.1")
+			if err == nil || !strings.Contains(string(output), missing+" is required") {
+				t.Fatalf("missing %s outcome = %v\n%s", missing, err, output)
 			}
 		})
 	}

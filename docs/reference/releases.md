@@ -22,9 +22,14 @@ Before pushing any nested-module tag, run:
 scripts/check-jsonataddl-version-available.sh v0.1.1
 ```
 
-Proceed only when the command verifies that both `proxy.golang.org` and
-`sum.golang.org` have no record for the version. A network failure, malformed
-or unexpected response, or existing record refuses the release. Then publish
+Proceed only when the command verifies that the exact tag is absent from
+`origin`, the exact version is absent from `proxy.golang.org`'s version list,
+and `sum.golang.org` has no record for it. The proxy check deliberately does
+not request the version-specific `.info` endpoint: the v0.1.1 preflight showed
+that its not-found response can remain negatively cached for 30 minutes after
+the tag is published. A missing tool, network failure, malformed, duplicate,
+mismatched, or unexpected response, or existing record refuses the release.
+Then publish
 `jsonataddl/v0.1.1` before any later root release tag, so an external consumer
 can resolve the required nested-module version without the repository-local
 replacement. Repository rules protect the `jsonataddl/v*` namespace from tag
