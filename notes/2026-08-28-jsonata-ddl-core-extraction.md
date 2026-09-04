@@ -262,29 +262,16 @@ The core does not open arbitrary files or databases, own goroutines, commit
 transactions, or expose a general SQL execution method. Those constraints keep
 the extracted library smaller than a resident application platform.
 
-## Open questions
+## Settled module boundary
 
-These decisions belong to the operator and gate the corresponding work; this
-note does not choose them.
-
-1. **Will Gitseq promote its spike to production and consume the shared
-   core?** Tailapp can extract the interface and corpus without that
-   commitment. If Gitseq adopts it, Gitseq still needs its own dialect, host
-   adapter, runtime components, storage/frontier semantics, and production
-   hardening; the spike is evidence and test material, not a second source of
-   implementation truth.
-2. **Where does the library live?** Plausible homes are a second Go module in
-   the Tailapps repository, a dedicated `jsonata-ddl-core` repository, or a
-   shared repository containing more than one related module. A Tailapps-local
-   module minimizes initial coordination; a dedicated repository gives the
-   cleanest neutral ownership and release lifecycle; a broader shared
-   repository is justified only if another concrete shared component exists.
-   The choice determines module path, release/version policy, CI ownership,
-   security reporting, and how the conformance corpus is published.
-
-Before implementation, the operator must choose the physical home. Gitseq
-adoption may remain undecided so long as the public boundary and corpus stay
-host-neutral and the extraction does not import Gitseq product code.
+The physical home is the independently versioned
+`github.com/generalbusiness-ai/tailapps/jsonataddl` module in this repository.
+Its module-path tags, CI, security checks, license, dependency manifests, and
+conformance corpus travel with that module. Tailapps consumes the same local
+source during development; external hosts resolve published versions. A
+second host still supplies its own dialect, host adapter, runtime components,
+storage and frontier semantics, and production hardening; it does not create a
+second implementation of this core.
 
 ## Completion criteria for the later implementation
 

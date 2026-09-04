@@ -22,6 +22,7 @@ without changing that sequence.
 - [Five-minute walkthrough with the shipped `signal-counts` Tailapp](../tailapps/signal-counts/README.md)
 - [Canonical OTLP record shapes](reference/otel-records.md)
 - [DDL and JSONata](reference/ddl-jsonata.md)
+- [`jsonataddl` reusable module](../jsonataddl/README.md)
 - [Query SQL](reference/query-sql.md)
 
 The shipped Tailapps are a starting kit, not a fixed catalog. Custom Tailapps use the

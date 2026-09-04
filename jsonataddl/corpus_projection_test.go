@@ -1,4 +1,4 @@
-package profile
+package jsonataddl_test
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 
@@ -37,7 +38,7 @@ func TestConformanceCorpusProjectionCases(t *testing.T) {
 		if len(manifest.Projection) == 0 {
 			continue
 		}
-		application, err := jsonataddl.LoadApplication(os.DirFS(filepath.Join(caseDir, manifest.Application)), ".", "corpus-app", jsonataddl.Tailapp(), RuntimeID)
+		application, err := jsonataddl.LoadApplication(os.DirFS(filepath.Join(caseDir, manifest.Application)), ".", "corpus-app", jsonataddl.Tailapp(), corpusRuntimeProfile)
 		if err != nil {
 			t.Fatalf("%s: compile through core: %v", entry.Name(), err)
 		}
@@ -396,4 +397,13 @@ func dumpTables(t *testing.T, connection *sqlite3.Conn, application *jsonataddl.
 
 func quoteIdentifier(identifier string) string {
 	return `"` + strings.ReplaceAll(identifier, `"`, `""`) + `"`
+}
+
+func sortedKeys[V any](values map[string]V) []string {
+	keys := make([]string, 0, len(values))
+	for key := range values {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
 }

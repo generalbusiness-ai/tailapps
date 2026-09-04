@@ -1,8 +1,7 @@
-// Package jsonataddl is the Tailapps-local home of the JSONata-with-DDL
-// application core described by notes/2026-08-28-jsonata-ddl-core-extraction.md.
-// At this migration stage it defines the host policy contract (Dialect) and
-// the composed runtime identity; behavior still lives in internal/profile
-// and moves here boundary by boundary.
+// Package jsonataddl compiles and evaluates deterministic JSONata applications
+// whose DDL declares typed events, state reads, and bounded table changes.
+// Hosts supply their source layout, event vocabulary, authority policy, limits,
+// runtime identity, storage, and transaction orchestration.
 package jsonataddl
 
 import (
@@ -152,11 +151,11 @@ type Limits struct {
 
 // Tailapp is the versioned dialect the Tailapp host supplies: the layout,
 // typed envelope, closed two-stage topology, ownership authority, and
-// bounds that internal/profile enforces today. The consistency tests bind
-// every load-bearing field to observed compiler and evaluator behavior so
-// this description cannot drift from the implementation while behavior
-// migrates. Envelope types describe the canonical record contract
-// (docs/reference/otel-records.md); envelope names are bound mechanically.
+// bounds that the Tailapp host enforces. Host-side consistency tests bind
+// every load-bearing field to observed compiler, evaluator, and producer
+// behavior so this description cannot drift from the integration contract.
+// Envelope types describe Tailapp's canonical record contract; envelope names
+// are bound mechanically.
 func Tailapp() Dialect {
 	return Dialect{
 		Identity: DialectIdentity{Name: "tailapp-otlp", Version: "1"},

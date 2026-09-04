@@ -183,8 +183,13 @@ pinned runtime profile. See the [DDL/JSONata](docs/reference/ddl-jsonata.md) and
 go test ./...
 go test -race ./...
 go vet ./...
+(cd jsonataddl && GOWORK=off go test ./...)
+(cd jsonataddl && GOWORK=off go test -race ./...)
+(cd jsonataddl && GOWORK=off go vet ./...)
 ```
 
-GitHub Actions runs the same gates with the Go version declared in `go.mod`.
+GitHub Actions runs the same gates for both modules with their declared Go
+version. The [`jsonataddl` module](jsonataddl/README.md) has an independent
+module-path release lifecycle.
 Tailapps is licensed under [Apache 2.0](LICENSE); attribution is in
 [NOTICE](NOTICE).

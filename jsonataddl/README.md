@@ -1,24 +1,22 @@
-# jsonata-ddl-core
+# jsonataddl
 
-The Tailapps-local home of the JSONata-with-DDL application core being
-extracted from `internal/profile` per
-`notes/2026-08-28-jsonata-ddl-core-extraction.md`. The shared semantic
-contract is Gitseq's `notes/2026-08-26-jsonata-ddl-application-interface.md`;
-this library adopts it behind a host-neutral boundary, with Tailapp as the
-first host and Gitseq adoption deferred.
+`jsonataddl` is a reusable JSONata-with-DDL application core. It compiles a
+bounded declarative application and evaluates its programs behind a
+host-neutral boundary. Hosts supply their own dialect, runtime identity,
+source loading, storage, and transaction orchestration.
 
-## Module layout decision
+## Install
 
-The library lives as a **package tree inside the Tailapps module**
-(`github.com/generalbusiness-ai/tailapps/jsonataddl`), not a nested module,
-for the duration of the migration: one module keeps the differential
-corpus, the `internal/profile` adapter, and the core in a single gated
-build while behavior moves boundary by boundary. A dedicated module (or
-repository) with its own release lifecycle is the intended end state *when
-a second host adopts the core*; carving it out then is a mechanical module
-split, and doing it now would only add version-skew risk between the two
-halves of a migration that must stay lock-stepped. Revisit at migration
-stage 6 or on Gitseq adoption, whichever comes first.
+The module is published from this repository with module-path tags such as
+`jsonataddl/v0.1.0`:
+
+```sh
+go get github.com/generalbusiness-ai/tailapps/jsonataddl@v0.1.0
+```
+
+Consumers resolve the versioned module directly, without a workspace or local
+replacement. See
+`ExampleLoadApplication` for a minimal compile-and-evaluate path.
 
 ## Contents
 
@@ -58,12 +56,40 @@ stage 6 or on Gitseq adoption, whichever comes first.
 - `corpus/` — the host-neutral conformance corpus and its format
   (see `corpus/README.md`).
 
-Since migration stage 4 the core carries the complete compile-and-evaluate
-behavior; since stage 5 the live path compiles through it under the
-composed runtime identity (`profile.LoadCurrent`). Stage 6 removed the
-duplicated legacy implementation: `internal/profile` is now a thin host
-façade, its `Load` is the retained legacy resolver - the same core
-compiler seeded with the legacy `RuntimeID`, justified by the stage-4
-differential freeze - the fold-input read conversion lives here as
-`ReadRowValue`, and every live fold read executes under the core's
-default-deny authorizer seated on the projection connection.
+The module owns the complete compile-and-evaluate behavior. Host adapters may
+retain compatibility resolvers or value conversions, but they consume this
+same implementation rather than carrying a copy.
+
+## Trust boundary
+
+The module validates sources, confines JSONata, enforces deterministic input,
+output, depth, range, event, fact, and row-change bounds, and supplies a
+default-deny SQLite read authorizer derived from each compiled read plan. It
+does not open host files or databases, own transactions or goroutines, expose
+ambient clock, randomness, network, or process state, or execute mutation
+plans. A host must install the authorizer on the connection used for reads and
+must apply validated mutation plans inside its own transaction boundary.
+
+## Develop
+
+From the module directory, run without workspace influence:
+
+```sh
+GOWORK=off go mod tidy
+GOWORK=off go test ./...
+GOWORK=off go test -race ./...
+GOWORK=off go vet ./...
+```
+
+The tests include the versioned `corpus/v1` compile, evaluation, logical-value,
+SQLite-read, and default-deny authorization cases. The module's production and
+test code has no dependency on packages outside this module.
+
+## Release ordering
+
+Repository maintainers release only a commit already merged to `main`, using a
+module-path tag such as `jsonataddl/v0.1.0`. The Tailapps root module requires
+`jsonataddl` v0.1.0 behind a local replacement, so `jsonataddl/v0.1.0` must be
+pushed before any later Tailapps root release tag.
+
+The module is Apache-2.0 licensed; see `LICENSE` and `NOTICE` in this directory.

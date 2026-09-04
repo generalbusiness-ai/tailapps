@@ -1,4 +1,4 @@
-package jsonataddl_test
+package profile_test
 
 import (
 	"context"
