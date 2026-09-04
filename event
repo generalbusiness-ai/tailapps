@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at jsonataddl/identity.go","body":{"commit":"db5446775c7382ccf8095ab17581f61411f276fa","path":"jsonataddl/identity.go"}}
+{"kind":"artifact","text":"Merge published the current artifact at scripts/check-jsonataddl-boundary.sh","body":{"commit":"db5446775c7382ccf8095ab17581f61411f276fa","path":"scripts/check-jsonataddl-boundary.sh"}}
