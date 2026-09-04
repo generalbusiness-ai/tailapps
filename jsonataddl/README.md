@@ -7,11 +7,12 @@ source loading, storage, and transaction orchestration.
 
 ## Install
 
-The module is published from this repository with module-path tags. The first
-usable release is `jsonataddl/v0.1.1`:
+The module is published from this repository with module-path tags. The JSON
+storage correction targets `jsonataddl/v0.1.2`; publish that tag only after
+the source is merged and verified:
 
 ```sh
-go get github.com/generalbusiness-ai/tailapps/jsonataddl@v0.1.1
+go get github.com/generalbusiness-ai/tailapps/jsonataddl@v0.1.2
 ```
 
 Consumers resolve the versioned module directly, without a workspace or local
@@ -65,6 +66,27 @@ same implementation rather than carrying a copy.
 
 ## Trust boundary
 
+Logical `JSON` table columns compile to SQLite `JSON_TEXT` (TEXT affinity).
+Hosts execute the core's `SchemaSQL`/`Table.SQL` unchanged and pass SQLite's
+declared column type to `ReadRowValue` or `LogicalColumnValue`; both recognize
+this physical spelling as logical JSON. Table and export metadata still say
+`JSON`, and source DDL must use that logical spelling. JSON query numbers now
+remain `json.Number`, including within objects and arrays, matching declared
+read values and preserving their exact re-encoded representation.
+
+`SQLiteLogicalType` maps a driver-declared type to the logical type for public
+query metadata. `SQLiteJSONType` names the required physical JSON declaration
+for hosts inspecting existing databases before continuation. Neither admits
+the physical marker in application source DDL. A current-compiled prior
+handle alone is insufficient evidence of the stored schema after recovery.
+
+This correction versions `core.grammar` as `ddl/2` and `core.value-codec` as
+`logical-values/2`. Old `JSON` storage has NUMERIC affinity and can lose scalar
+data. Its stored shape and digest differ, so it cannot be continued into the
+new shape. A host must honor the changed runtime identity and require an
+explicit safe upgrade; recompiling sources is not permission to reuse an old
+database. This module does not activate or migrate projections.
+
 The module validates sources, confines JSONata, enforces deterministic input,
 output, depth, range, event, fact, and row-change bounds, and supplies a
 default-deny SQLite read authorizer derived from each compiled read plan. It
@@ -95,7 +117,7 @@ pushing a module-path tag, run the public-record preflight for the intended
 version:
 
 ```sh
-scripts/check-jsonataddl-version-available.sh v0.1.1
+scripts/check-jsonataddl-version-available.sh v0.1.2
 ```
 
 Only a result that verifies the exact tag is absent from `origin`, the exact
@@ -105,7 +127,7 @@ has no record permits the tag push. Do not probe the proxy's version-specific
 remained cached for 30 minutes after the tag and release workflow succeeded.
 Missing tools, network failures, malformed or ambiguous responses, and
 existing records all refuse publication. The Tailapps root module requires
-`jsonataddl` v0.1.1 behind a local replacement, so `jsonataddl/v0.1.1` must be
+`jsonataddl` v0.1.2 behind a local replacement, so `jsonataddl/v0.1.2` must be
 pushed before any later Tailapps root release tag. The protected
 `jsonataddl/v*` tag namespace prevents published tags from being moved or
 deleted.

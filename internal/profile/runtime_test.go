@@ -12,17 +12,17 @@ import (
 // dialect digest - changes this string, reseeds revision digests, and
 // makes every active projection upgrade-pending. That must always be a
 // conscious, reviewed diff of this constant, never a drive-by.
-const pinnedRuntimeDescriptor = "core.grammar=ddl/1; " +
+const pinnedRuntimeDescriptor = "core.grammar=ddl/2; " +
 	"core.interface=jsonata-ddl-application-interface/2026-08-26; " +
 	"core.jsonata=jsonata-go-v206/bounded-2; " +
 	"core.sqlite=sqlite-3.53.4/read-authorizer-1; " +
-	"core.value-codec=logical-values/1; " +
+	"core.value-codec=logical-values/2; " +
 	"dialect=tailapp-otlp/1+sha256:e5607de7863520bb9859bacdddf6a537a9fb2b7db3e1e0389f1dbe9c0c5243ce; " +
 	"host.canonicalization=otlp-1.8-json-v1; " +
 	"host.orchestration=two-stage-txn/2; " +
 	"host.projection=query-values/1"
 
-const pinnedRuntimeDigest = "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1"
+const pinnedRuntimeDigest = "jsonata-ddl-runtime:sha256:dcef1473f8b16412327e5c35970296f9a796269d609438a0fdc18b479ced3f30"
 
 // The module-owned v1 corpus uses this literal to preserve its independence
 // from the Tailapps host package. Pinning the host constant here ensures that

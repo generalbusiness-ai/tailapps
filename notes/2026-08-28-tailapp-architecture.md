@@ -109,9 +109,38 @@ the reusable module.
 
 The root module replacement binds the host to the same local source for
 development. Independent consumers resolve module-path tags such as
-`jsonataddl/v0.1.0` without a workspace or replacement. Packaging the existing
+`jsonataddl/v0.1.1` without a workspace or replacement. Packaging the existing
 boundary this way does not change its runtime contract or composed identity;
 a later semantic change must still change the relevant identity component.
+
+### JSON storage compatibility correction
+
+Logical JSON columns compile to the physical SQLite type `JSON_TEXT`, whose
+TEXT affinity preserves encoded scalar values. Table and export metadata
+remain logical `JSON`; application source continues to declare `JSON`.
+The core maps the physical declared type back to logical JSON for declared
+reads, views and query results. JSON numbers remain `json.Number` at both
+read and query boundaries so storage and re-encoding cannot round them.
+SQL NULL remains the representation of a nullable JSON null.
+
+This changes `core.grammar` to `ddl/2` and `core.value-codec` to
+`logical-values/2`; the SQLite engine, authorizer and dependency pins do not
+change. The composed Tailapp runtime becomes
+`jsonata-ddl-runtime:sha256:dcef1473f8b16412327e5c35970296f9a796269d609438a0fdc18b479ced3f30`.
+The physical declaration participates in the storage shape and digest.
+An old JSON-affinity table cannot pass `ContinueCompatible` into the corrected
+shape. Hosts must treat the runtime mismatch as an explicit upgrade boundary;
+this repair performs no activation, automatic reset or data migration.
+
+Recovery may compile prior sources with the current compiler for query-only
+access. That compiled profile cannot prove the database's stored shape.
+Before continuation writes anything, the host inspects actual SQLite column
+declarations for every existing logical JSON column, using the core's physical
+type contract. Old affinity, missing columns and inspection errors refuse
+continuation without changing schema, rows, identity or frontier. Compatible
+JSON text storage, non-JSON tables and valid additive continuation remain
+supported. Query metadata uses the core's logical type mapping, so physical
+`JSON_TEXT` never becomes the application's public column type.
 
 ## Core concepts
 

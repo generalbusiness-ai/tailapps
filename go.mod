@@ -5,7 +5,7 @@ go 1.26.7
 replace github.com/generalbusiness-ai/tailapps/jsonataddl => ./jsonataddl
 
 require (
-	github.com/generalbusiness-ai/tailapps/jsonataddl v0.1.1
+	github.com/generalbusiness-ai/tailapps/jsonataddl v0.1.2
 	github.com/jsonata-go/jsonata v0.0.0-20250709164031-599f35f32e5f
 	github.com/modelcontextprotocol/go-sdk v1.7.0
 	github.com/ncruces/go-sqlite3 v0.35.3

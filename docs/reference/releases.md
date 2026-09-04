@@ -11,7 +11,7 @@ checksum manifest. It also publishes version-pinned `install.sh` and
 contains the `tailapp` binary, `LICENSE`, and `NOTICE`. The workflow also
 creates GitHub build-provenance attestations for every archive.
 
-The root module requires the nested `jsonataddl` module at v0.1.1 behind a
+The root module requires the nested `jsonataddl` module at v0.1.2 behind a
 local replacement. Version v0.1.0 is permanently unusable: its published
 module bytes conflict with the immutable public checksum-database record for
 that version. Do not move or reuse its tag.
@@ -19,7 +19,7 @@ that version. Do not move or reuse its tag.
 Before pushing any nested-module tag, run:
 
 ```sh
-scripts/check-jsonataddl-version-available.sh v0.1.1
+scripts/check-jsonataddl-version-available.sh v0.1.2
 ```
 
 Proceed only when the command verifies that the exact tag is absent from
@@ -30,7 +30,7 @@ that its not-found response can remain negatively cached for 30 minutes after
 the tag is published. A missing tool, network failure, malformed, duplicate,
 mismatched, or unexpected response, or existing record refuses the release.
 Then publish
-`jsonataddl/v0.1.1` before any later root release tag, so an external consumer
+`jsonataddl/v0.1.2` before any later root release tag, so an external consumer
 can resolve the required nested-module version without the repository-local
 replacement. Repository rules protect the `jsonataddl/v*` namespace from tag
 updates and deletion. The existing tag workflow remains the post-push check
