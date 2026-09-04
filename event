@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:596bc0bd2ae56fbda9109672d5931a848c27f466","text":"Merge retired a covered predecessor; the successor is at go.mod."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:6335af247a57bcfd09c99fc24d044d87757143e5","text":"Merge retired a covered predecessor; the successor is at docs/reference/resident-upgrade.md."}
