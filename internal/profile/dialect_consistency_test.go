@@ -1,4 +1,4 @@
-package jsonataddl_test
+package profile_test
 
 import (
 	"encoding/json"
@@ -342,7 +342,7 @@ WRITES totals;
 // record.
 func TestDialectEnvelopeTypesMatchObservedCanonicalRecords(t *testing.T) {
 	dialect := jsonataddl.Tailapp()
-	fixtures, err := filepath.Glob("../tailapps/testdata/*.json")
+	fixtures, err := filepath.Glob("../../tailapps/testdata/*.json")
 	if err != nil || len(fixtures) == 0 {
 		t.Fatalf("no observed fixtures found: %v", err)
 	}

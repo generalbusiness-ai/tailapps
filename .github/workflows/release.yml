@@ -19,7 +19,9 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version: '1.26.7'
-          cache-dependency-path: go.sum
+          cache-dependency-path: |
+            go.sum
+            jsonataddl/go.sum
       - name: Build unsigned release assets
         run: scripts/release.sh v0.0.0-pr "${RUNNER_TEMP}/dist"
       - name: Verify generated asset set
@@ -54,13 +56,18 @@ jobs:
         uses: actions/setup-go@v7
         with:
           go-version: '1.26.7'
-          cache-dependency-path: go.sum
+          cache-dependency-path: |
+            go.sum
+            jsonataddl/go.sum
 
       - name: Verify source
         run: |
           go test ./...
           go test -race ./...
           go vet ./...
+          (cd jsonataddl && GOWORK=off go test ./...)
+          (cd jsonataddl && GOWORK=off go test -race ./...)
+          (cd jsonataddl && GOWORK=off go vet ./...)
           test -z "$(git status --porcelain)"
 
       - name: Build release archives

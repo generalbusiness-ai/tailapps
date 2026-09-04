@@ -91,6 +91,28 @@ The diagram has three distinct planes:
 They share one engine process so there is one owner for ordering, activation,
 and SQLite writers.
 
+### Reusable application-semantics module
+
+The deterministic compiler and evaluator are a second Go module at
+`github.com/generalbusiness-ai/tailapps/jsonataddl`. That module owns source
+validation, DDL compilation, JSONata confinement and evaluation, logical-value
+conversion, immutable application and read/mutation plans, deterministic
+bounds, and the default-deny SQLite read authorizer. It contains no dependency
+on Tailapps internal packages.
+
+Tailapps remains the host. Its internal packages own OTLP canonicalization,
+the dialect and composed host identity, SQLite connection and transaction
+lifetime, mutation execution, projection frontiers, activation, registry,
+query, CLI, MCP, and resident lifecycle. Producer and dialect consistency tests
+stay on this side of the module boundary. The versioned core corpus stays with
+the reusable module.
+
+The root module replacement binds the host to the same local source for
+development. Independent consumers resolve module-path tags such as
+`jsonataddl/v0.1.0` without a workspace or replacement. Packaging the existing
+boundary this way does not change its runtime contract or composed identity;
+a later semantic change must still change the relevant identity component.
+
 ## Core concepts
 
 ### Delivery record

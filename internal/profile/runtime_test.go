@@ -24,7 +24,15 @@ const pinnedRuntimeDescriptor = "core.grammar=ddl/1; " +
 
 const pinnedRuntimeDigest = "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1"
 
+// The module-owned v1 corpus uses this literal to preserve its independence
+// from the Tailapps host package. Pinning the host constant here ensures that
+// its legacy resolver and those corpus goldens cannot drift apart silently.
+const pinnedLegacyRuntimeID = "tailapp-otlp-1.8-json-v1-ddl-jsonata-v206-sqlite-3.53.4@5"
+
 func TestComposedRuntimeIsPinned(t *testing.T) {
+	if RuntimeID != pinnedLegacyRuntimeID {
+		t.Fatalf("legacy RuntimeID changed; update it and the module corpus goldens together:\n got %s\nwant %s", RuntimeID, pinnedLegacyRuntimeID)
+	}
 	if descriptor := ComposedRuntime().Descriptor(); descriptor != pinnedRuntimeDescriptor {
 		t.Fatalf("composed runtime descriptor changed - this is a deliberate runtime version change that must be reviewed:\n got %s\nwant %s", descriptor, pinnedRuntimeDescriptor)
 	}

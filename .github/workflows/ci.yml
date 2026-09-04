@@ -21,19 +21,38 @@ jobs:
         uses: actions/setup-go@v7
         with:
           go-version: '1.26.7'
-          cache-dependency-path: go.sum
+          cache-dependency-path: |
+            go.sum
+            jsonataddl/go.sum
 
       - name: Test
-        run: go test ./...
+        run: |
+          go test ./...
+          (cd jsonataddl && GOWORK=off go test ./...)
 
       - name: Race test
-        run: go test -race ./...
+        run: |
+          go test -race ./...
+          (cd jsonataddl && GOWORK=off go test -race ./...)
 
       - name: Vet
-        run: go vet ./...
+        run: |
+          go vet ./...
+          (cd jsonataddl && GOWORK=off go vet ./...)
+
+      - name: Verify module boundary
+        working-directory: jsonataddl
+        run: |
+          test "$(GOWORK=off go list -m -f '{{.Path}}')" = 'github.com/generalbusiness-ai/tailapps/jsonataddl'
+          if GOWORK=off go list -deps -test ./... | grep '^github.com/generalbusiness-ai/tailapps/' | grep -Ev '^github.com/generalbusiness-ai/tailapps/jsonataddl(_test)?([/. ]|$)'; then
+            echo 'jsonataddl tests and production code must not depend on Tailapps packages outside jsonataddl' >&2
+            exit 1
+          fi
 
       - name: Scan reachable dependency vulnerabilities
-        run: ./scripts/vulncheck.sh
+        run: |
+          ./scripts/vulncheck.sh
+          (cd jsonataddl && GOWORK=off ../scripts/vulncheck.sh)
 
       - name: Demo
         run: ./scripts/demo.sh
