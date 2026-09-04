@@ -25,7 +25,7 @@ trap cleanup EXIT HUP INT TERM
 
 cd "$verify_tmp"
 go_clean() {
-  env GOFLAGS= GOPRIVATE= GONOPROXY= GONOSUMDB= GOSUMDB=sum.golang.org GOWORK=off GOPROXY="$proxy" go "$@"
+  env GOFLAGS= GOPRIVATE= GONOPROXY= GONOSUMDB= GOINSECURE= GOSUMDB=sum.golang.org GOWORK=off GOPROXY="$proxy" go "$@"
 }
 
 go_clean mod init example.invalid/jsonataddl-consumer >/dev/null
@@ -38,7 +38,15 @@ if [ "$resolved" != "$module $version" ]; then
 fi
 
 # The dependency's packaged example is the public compile-and-evaluate path.
-# Running it here proves a clean consumer can resolve, compile, and execute it
-# without maintaining a second copy of the example program.
-go_clean test -count=1 -run '^ExampleLoadApplication$' "$module"
+# Verbose output makes the exact example's passing result observable: go test
+# otherwise succeeds when -run matches no tests or examples.
+example_output=$(go_clean test -count=1 -v -run '^ExampleLoadApplication$' "$module") || {
+  printf '%s\n' "$example_output" >&2
+  exit 1
+}
+printf '%s\n' "$example_output"
+printf '%s\n' "$example_output" | grep -Eq '^--- PASS: ExampleLoadApplication([[:space:]]|$)' || {
+  echo 'published module did not run and pass ExampleLoadApplication' >&2
+  exit 1
+}
 printf 'verified %s %s through %s\n' "$module" "$version" "$proxy"

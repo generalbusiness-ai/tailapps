@@ -11,9 +11,10 @@ The root module's `replace` keeps Tailapps on the same local core source during
 development; published `jsonataddl` consumers do not use it.
 `scripts/verify-jsonataddl-module.sh` proves a tagged module through a clean
 consumer with workspace mode disabled and refuses a resolved replacement. It
-clears inherited Go flags and private-module bypasses, then requires
-`sum.golang.org`, so the public-proxy proof cannot silently skip checksum
-verification because of the caller's environment.
+clears inherited Go flags and the `GOPRIVATE`, `GONOPROXY`, `GONOSUMDB`, and
+`GOINSECURE` bypasses, then requires `sum.golang.org`, so the public-proxy
+proof cannot silently skip checksum verification because of the caller's
+environment.
 
 Run the same reachable-code vulnerability scan locally and in CI with:
 

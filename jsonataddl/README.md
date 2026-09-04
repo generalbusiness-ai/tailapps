@@ -30,23 +30,22 @@ replacement. See
 - `identity.go` — the composed runtime identity: independently versioned
   core, dialect, and host components with canonical ordered serialization,
   a human-readable descriptor, and a digest that changes when any semantic
-  component changes. Since migration stage 5 it replaces the
-  repository-global runtime string on the live path: the core names its own
+  component changes. It replaces a single host-wide runtime string with an
+  identity composed from every semantic participant: the core names its own
   components (`CoreComponents`), the host adds its dialect and host
   components, and the composed digest is the runtime identity new revisions
   and projections record.
 - `values.go` — the sole logical value codec: JSON-safe values, exact
   integers, finite numbers, lossless integer and bytes wrappers, per-type
   validation with corpus-frozen diagnostics, and the conversions between
-  logical values and SQLite values. All four Tailapp boundaries (ingest,
-  evaluation, projection, query) delegate to it since migration stage 3.
-- `load.go`, `compile.go`, `confine.go`, `evaluate.go` — the extracted
-  behavior of migration stage 4: source loading through the configured
-  layout, DDL compilation and topology/authority validation, the JSONata
-  admitted-subset confinement, bounded evaluation, and strict result and
-  mutation-plan validation. Everything is parameterized by the supplied
-  `Dialect`; the runtime identity string is a caller input, never a core
-  constant.
+  logical values and SQLite values. A host uses this codec at its ingest,
+  evaluation, projection, and query boundaries.
+- `load.go`, `compile.go`, `confine.go`, `evaluate.go` — source loading
+  through the configured layout, DDL compilation and topology/authority
+  validation, JSONata admitted-subset confinement, bounded evaluation, and
+  strict result and mutation-plan validation. Everything is parameterized by
+  the supplied `Dialect`; the runtime identity string is a caller input,
+  never a core constant.
 - `application.go` — the immutable compiled `Application` handle:
   inspection accessors that return independent copies, evaluation, read
   plans, and continue-compatibility.
