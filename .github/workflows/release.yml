@@ -64,20 +64,20 @@ jobs:
           test -z "$(git status --porcelain)"
 
       - name: Build release archives
-        run: scripts/release.sh "$GITHUB_REF_NAME" dist
+        run: scripts/release.sh "$GITHUB_REF_NAME" "${RUNNER_TEMP}/dist"
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3
 
       - name: Keylessly sign release checksums
-        run: cosign sign-blob --yes --bundle dist/checksums.txt.bundle --output-signature dist/checksums.txt.sig dist/checksums.txt
+        run: cosign sign-blob --yes --bundle "${RUNNER_TEMP}/dist/checksums.txt.bundle" --output-signature "${RUNNER_TEMP}/dist/checksums.txt.sig" "${RUNNER_TEMP}/dist/checksums.txt"
 
       - name: Attest release archives
         uses: actions/attest-build-provenance@v2
         with:
-          subject-path: 'dist/*.tar.gz'
+          subject-path: '${{ runner.temp }}/dist/*.tar.gz'
 
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/* --title "Tailapps $GITHUB_REF_NAME" --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" "${RUNNER_TEMP}"/dist/* --title "Tailapps $GITHUB_REF_NAME" --generate-notes
