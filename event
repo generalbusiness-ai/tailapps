@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at go.mod","body":{"commit":"9280be8b9b1d610c41bc6461188fe7ecbb70bf64","path":"go.mod"}}
+{"kind":"artifact","text":"Merge published the current artifact at internal/profile/runtime_test.go","body":{"commit":"9280be8b9b1d610c41bc6461188fe7ecbb70bf64","path":"internal/profile/runtime_test.go"}}
