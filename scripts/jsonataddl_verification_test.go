@@ -77,6 +77,7 @@ func TestCheckJSONataDDLBoundaryFailsClosedAndAdmitsOnlyTheModule(t *testing.T) 
 		{name: "exact module and descendants", mode: "boundary-allowed"},
 		{name: "go list failure", mode: "boundary-list-failure", wantErr: true, wantOutput: "could not enumerate"},
 		{name: "outside Tailapps dependency", mode: "boundary-disallowed", wantErr: true, wantOutput: "internal/profile"},
+		{name: "root Tailapps dependency", mode: "boundary-root", wantErr: true, wantOutput: jsonataddlModule[:strings.LastIndex(jsonataddlModule, "/")]},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			env := fakeGoEnvironment(fakeBin, filepath.Join(t.TempDir(), "go.log"), test.mode)
@@ -129,6 +130,11 @@ case "$FAKE_GO_MODE:$*" in
     printf '%s\n' \
       'github.com/generalbusiness-ai/tailapps/jsonataddl' \
       'github.com/generalbusiness-ai/tailapps/internal/profile'
+    ;;
+  boundary-root:list\ -deps\ -test\ ./...)
+    printf '%s\n' \
+      'github.com/generalbusiness-ai/tailapps/jsonataddl' \
+      'github.com/generalbusiness-ai/tailapps'
     ;;
   example-pass:list\ -m\ -f*) printf '%s\n' 'github.com/generalbusiness-ai/tailapps/jsonataddl v0.1.0' ;;
   example-missing:list\ -m\ -f*) printf '%s\n' 'github.com/generalbusiness-ai/tailapps/jsonataddl v0.1.0' ;;
