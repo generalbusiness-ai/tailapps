@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at scripts/jsonataddl_verification_test.go","body":{"commit":"db5446775c7382ccf8095ab17581f61411f276fa","path":"scripts/jsonataddl_verification_test.go"}}
+{"kind":"artifact","text":"Merge published the current artifact at scripts/verify-jsonataddl-module.sh","body":{"commit":"db5446775c7382ccf8095ab17581f61411f276fa","path":"scripts/verify-jsonataddl-module.sh"}}
