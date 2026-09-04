@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:f73a504a0610774f62c38f36af2e7c02c603fb0a"}
+{"kind":"promise","text":"I will complete the immutable shared-core release after approved source delivery: fresh availability preflight, tag and release CI, public proxy/SumDB consumer and conformance verification, exact checksums and downstream handoff."}
