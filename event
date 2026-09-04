@@ -1,1 +1,1 @@
-{"kind":"promise","text":"I will repair the jsonataddl release preflight from current main so absence checks cannot poison the version-specific Go proxy cache, preserve fail-closed collision checks and network bounds, add mutation-sensitive tests and guidance, run all requested gates, obtain independent review, and merge only the approved exact head. I will not create or modify any tag and will use no rm command."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5039eaefc687733ae4caf5ef056dce664b0d61c9"}
