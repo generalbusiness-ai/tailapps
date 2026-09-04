@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Exact pushed head 52df68a7 documents the bounded fail-closed dependency-security contract and the proof that no version-specific proxy endpoint is called.","body":{"commit":"52df68a7bf235c1d1f94277605ef050ff370d1d8","path":"docs/reference/dependency-security.md"}}
+{"kind":"artifact","text":"Exact pushed head 52df68a7 gives nested-module maintainers the corrected no-negative-cache pre-tag procedure.","body":{"commit":"52df68a7bf235c1d1f94277605ef050ff370d1d8","path":"jsonataddl/README.md"}}
