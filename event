@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at scripts/jsonataddl_verification_test.go","body":{"commit":"be621e8ae3eb12daba6a59e7e7aa147106a36ede","path":"scripts/jsonataddl_verification_test.go"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:099caaf1b9735217bfe6c5443b90e32387edbf8d","text":"Merge retired a covered predecessor; the successor is at docs/reference/dependency-security.md."}
