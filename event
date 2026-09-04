@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at .github/workflows/release.yml","body":{"commit":"a7e427014867ccaca0e29ca547c1a7b304206e8e","path":".github/workflows/release.yml"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:2607914f451deb7e56f316d68dfedcaf1f51ae80","text":"Merge retired a covered predecessor; the successor is at .github/workflows/release.yml."}
