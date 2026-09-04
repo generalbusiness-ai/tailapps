@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:55ecca7b41d6ea147f23a7061f95e7cc08faa15e","text":"Merge retired a covered predecessor; the successor is at .github/workflows/jsonataddl-release.yml."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:563b18578b3948715f91b47c4e60b36ce1c6c5cb","text":"Merge retired a covered predecessor; the successor is at notes/2026-08-28-tailapp-architecture.md."}
