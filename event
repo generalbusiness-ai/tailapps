@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:22a90ada65a8bea0cb54ea2c82fa535b540024a7","text":"Merge retired a covered predecessor; the successor is at internal/query/query.go."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:235df7bfd705a08a1fdf512ecb6330c610fa1fd7","text":"Merge retired a covered predecessor; the successor is at docs/reference/resident-upgrade.md."}
