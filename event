@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at scripts/jsonataddl_verification_test.go","body":{"commit":"9b11da6ad5b575e5637617f47ee9c87a493c1ada","path":"scripts/jsonataddl_verification_test.go"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:0a38cf2bea5866a24fc1eb6fdb211b4fac7e09a4","text":"Merge retired a covered predecessor; the successor is at scripts/check-jsonataddl-version-available.sh."}
