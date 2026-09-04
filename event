@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:78f5633ab3d9d74afae09a8ab843e79660c5dc26","text":"Merge retired a covered predecessor; the successor is at go.mod."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:7b624b1b68751f1613a8ba13296613dacf280cf1","text":"Merge retired a covered predecessor; the successor is at docs/reference/dependency-security.md."}
