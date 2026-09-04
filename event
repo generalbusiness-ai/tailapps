@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at scripts/verify-jsonataddl-module.sh","body":{"commit":"db5446775c7382ccf8095ab17581f61411f276fa","path":"scripts/verify-jsonataddl-module.sh"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:18fa838ce72fe9b06fcd3b893103f8a21d1e5ed9","text":"Merge retired a covered predecessor; the successor is at docs/reference/dependency-security.md."}
