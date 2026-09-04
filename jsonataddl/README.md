@@ -98,9 +98,13 @@ version:
 scripts/check-jsonataddl-version-available.sh v0.1.1
 ```
 
-Only a result that verifies absence from both `proxy.golang.org` and
-`sum.golang.org` permits the tag push. Network failures, unexpected responses,
-and existing records all refuse publication. The Tailapps root module requires
+Only a result that verifies the exact tag is absent from `origin`, the exact
+version is absent from `proxy.golang.org`'s version list, and `sum.golang.org`
+has no record permits the tag push. Do not probe the proxy's version-specific
+`.info` endpoint before publication. The v0.1.1 preflight did so and its 404
+remained cached for 30 minutes after the tag and release workflow succeeded.
+Missing tools, network failures, malformed or ambiguous responses, and
+existing records all refuse publication. The Tailapps root module requires
 `jsonataddl` v0.1.1 behind a local replacement, so `jsonataddl/v0.1.1` must be
 pushed before any later Tailapps root release tag. The protected
 `jsonataddl/v*` tag namespace prevents published tags from being moved or
