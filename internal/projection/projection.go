@@ -304,6 +304,9 @@ func (p *Projection) Continue(ctx context.Context, next *profile.Profile, bounda
 		return err
 	}
 	defer tx.Rollback()
+	if err := p.checkJSONStorage(ctx, tx); err != nil {
+		return err
+	}
 	for name := range next.Tables {
 		if _, exists := p.profile.Tables[name]; exists {
 			continue
@@ -355,6 +358,27 @@ func (p *Projection) Continue(ctx context.Context, next *profile.Profile, bounda
 		return err
 	}
 	p.profile = next
+	return nil
+}
+
+// Recovery can compile old source using the current core. That profile
+// describes the intended new schema, not the physical database it opened.
+// Inspect actual columns under the continuation transaction before writes.
+func (p *Projection) checkJSONStorage(ctx context.Context, tx *sql.Tx) error {
+	for _, name := range sortedKeys(p.profile.Tables) {
+		for _, column := range p.profile.Tables[name].Columns {
+			if column.Type != profile.TypeJSON {
+				continue
+			}
+			var declared string
+			if err := tx.QueryRowContext(ctx, `SELECT type FROM pragma_table_info(?) WHERE name=? COLLATE NOCASE`, name, column.Name).Scan(&declared); err != nil {
+				return fmt.Errorf("inspect JSON storage %s.%s: %w", name, column.Name, err)
+			}
+			if !strings.EqualFold(declared, jsonataddl.SQLiteJSONType) {
+				return fmt.Errorf("JSON storage %s.%s is %q; continuation requires %s and cannot migrate existing values", name, column.Name, declared, jsonataddl.SQLiteJSONType)
+			}
+		}
+	}
 	return nil
 }
 

@@ -23,6 +23,22 @@ import (
 // LogicalType is a declared column type in the shared value model.
 type LogicalType string
 
+// SQLiteJSONType is the core's physical JSON column declaration. Its TEXT
+// affinity preserves encoded values. Hosts may use it to inspect existing
+// storage before continuation; application source must still declare JSON.
+const SQLiteJSONType = "JSON_TEXT"
+
+// SQLiteLogicalType recovers a logical type from SQLite's declared column
+// type, including the core's physical JSON spelling. Unknown types remain
+// unknown; this is a representation adapter, not a source-DDL validator.
+func SQLiteLogicalType(declared string) LogicalType {
+	typeName := strings.ToUpper(declared)
+	if typeName == SQLiteJSONType {
+		return TypeJSON
+	}
+	return LogicalType(typeName)
+}
+
 const (
 	TypeText    LogicalType = "TEXT"
 	TypeInteger LogicalType = "INTEGER"
@@ -211,9 +227,11 @@ type SQLiteColumn struct {
 
 // LogicalColumnValue converts one SQLite read value to its logical JSON
 // form by declared type: BOOLEAN integers become booleans, integers beyond
-// the exact range take the integer wrapper, JSON text decodes, blobs take
+// the exact range take the integer wrapper, JSON text decodes with number
+// preservation, blobs take
 // the bytes wrapper, and non-finite floats are refused.
 func LogicalColumnValue(column SQLiteColumn, declared LogicalType) (any, error) {
+	declared = SQLiteLogicalType(string(declared))
 	switch column.Kind {
 	case ColumnNull:
 		return nil, nil
@@ -229,11 +247,10 @@ func LogicalColumnValue(column SQLiteColumn, declared LogicalType) (any, error) 
 		return column.Float, nil
 	case ColumnText:
 		if declared == TypeJSON {
-			var decoded any
-			if err := json.Unmarshal([]byte(column.Text), &decoded); err != nil {
-				return nil, err
+			if !json.Valid([]byte(column.Text)) {
+				return nil, errors.New("query returned invalid JSON")
 			}
-			return decoded, nil
+			return DecodeCanonical([]byte(column.Text))
 		}
 		return column.Text, nil
 	case ColumnBlob:
@@ -256,7 +273,7 @@ func ReadRowValue(value any, declared LogicalType) (any, error) {
 	if value == nil {
 		return nil, nil
 	}
-	switch LogicalType(strings.ToUpper(string(declared))) {
+	switch SQLiteLogicalType(string(declared)) {
 	case TypeBoolean:
 		integer, ok := value.(int64)
 		if !ok {

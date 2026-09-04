@@ -20,6 +20,16 @@ reports `rolled_back`. A failed control plane restores the known-good link and
 restarts the prior service. Use `--rollback` to select that recorded prior
 binary explicitly.
 
+The JSON storage correction changes runtime identity. Existing applications
+remain queryable while upgrade-pending, but continuation now checks actual
+stored JSON column types. A projection using the old numeric-affinity JSON
+storage cannot be continued into the corrected text storage, even if its
+source recompiles successfully. Refusal preserves its rows, schema, identity
+and frontier. Review the existing data before choosing an explicit,
+acknowledged reset; upgrading the binary does not authorize or perform one.
+Compatible JSON text storage and unaffected non-JSON projections can still
+continue, including compatible additions to their table set.
+
 The source-checkout macOS command below remains supported for building the
 current checkout. It is not a release consumer.
 

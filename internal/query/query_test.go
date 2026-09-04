@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -13,6 +14,42 @@ import (
 	"github.com/generalbusiness-ai/tailapps/internal/projection"
 	"github.com/generalbusiness-ai/tailapps/tailapps"
 )
+
+func TestJSONQueryPreservesLogicalTypeAndNumbers(t *testing.T) {
+	ctx := context.Background()
+	app, err := profile.LoadCurrent(os.DirFS("../../jsonataddl/corpus/v1/basic/app"), ".", "json-query")
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(t.TempDir(), "state.sqlite")
+	p, err := projection.Create(ctx, path, app, 0, "reset")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer p.Close()
+	if _, err = p.Database().Exec("INSERT INTO totals (key,total,extra) VALUES ('a',0,?)", "9007199254740993"); err != nil {
+		t.Fatal(err)
+	}
+	frontier, err := p.Frontier(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sandbox, err := Open(Namespace{Path: path, Profile: app, Frontier: frontier}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sandbox.Close()
+	result, err := sandbox.Query(ctx, Request{SQL: "SELECT extra AS payload FROM totals"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Columns) != 1 || result.Columns[0].Type != "JSON" || result.Columns[0].Name != "payload" {
+		t.Fatalf("query exposed a physical type: %#v", result.Columns)
+	}
+	if len(result.Rows) != 1 || result.Rows[0][0] != json.Number("9007199254740993") {
+		t.Fatalf("query lost JSON number precision: %#v", result.Rows)
+	}
+}
 
 func TestBoundedQueryJoinsOnlyExplicitExportsAtAlignedFrontier(t *testing.T) {
 	guardProfile, err := tailapps.Load("agent-guard")

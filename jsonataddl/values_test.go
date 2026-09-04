@@ -146,8 +146,13 @@ func TestLogicalColumnValueMatchesQueryRules(t *testing.T) {
 		t.Fatalf("non-finite column error = %v", err)
 	}
 	decoded, err := LogicalColumnValue(SQLiteColumn{Kind: ColumnText, Text: `{"k":1}`}, TypeJSON)
-	if err != nil || !reflect.DeepEqual(decoded, map[string]any{"k": float64(1)}) {
+	if err != nil || !reflect.DeepEqual(decoded, map[string]any{"k": json.Number("1")}) {
 		t.Fatalf("JSON column = %#v, %v", decoded, err)
+	}
+	for _, text := range []string{`{"k":1} {"k":2}`, `42 trailing`, `{`} {
+		if _, err := LogicalColumnValue(SQLiteColumn{Kind: ColumnText, Text: text}, TypeJSON); err == nil {
+			t.Fatalf("invalid stored JSON admitted: %s", text)
+		}
 	}
 	if value, _ := LogicalColumnValue(SQLiteColumn{Kind: ColumnText, Text: "x"}, TypeText); value != "x" {
 		t.Fatalf("text column = %#v", value)

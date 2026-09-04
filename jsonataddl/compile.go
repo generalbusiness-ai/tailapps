@@ -26,6 +26,7 @@ const evaluationWallTimeMilliseconds = 2000
 var (
 	createEventRE       = regexp.MustCompile(`(?is)^CREATE\s+EVENT\s+([A-Za-z_][A-Za-z0-9_]*)\s*\((.*)\)$`)
 	createTableRE       = regexp.MustCompile(`(?is)^CREATE\s+TABLE\s+([A-Za-z_][A-Za-z0-9_]*)\s*\((.*)\)$`)
+	jsonColumnTypeRE    = regexp.MustCompile(`(?is)^\s*[A-Za-z_][A-Za-z0-9_]*\s+(JSON)(?:\s|$)`)
 	createIndexRE       = regexp.MustCompile(`(?is)^CREATE\s+(?:UNIQUE\s+)?INDEX\s+([A-Za-z_][A-Za-z0-9_]*)\b`)
 	createViewRE        = regexp.MustCompile(`(?is)^CREATE\s+VIEW\s+([A-Za-z_][A-Za-z0-9_]*)\s+AS\s+(.+)$`)
 	createExportRE      = regexp.MustCompile(`(?is)^CREATE\s+EXPORT\s+([A-Za-z_][A-Za-z0-9_]*)\s+AS\s+(.+)$`)
@@ -281,6 +282,23 @@ func (c *coreCompiler) compileTable(statement string) error {
 		return fmt.Errorf("table %q requires an explicit primary key", name)
 	}
 	unique = append([][]string{append([]string(nil), primary...)}, unique...)
+	// JSON has NUMERIC affinity in SQLite, which coerces encoded scalars.
+	// Change only the declared type token, never a name or CHECK literal.
+	parts, err := splitTopLevelComma(match[2])
+	if err != nil {
+		return err
+	}
+	changed := false
+	for i, part := range parts {
+		if location := jsonColumnTypeRE.FindStringSubmatchIndex(part); location != nil {
+			parts[i] = part[:location[2]] + SQLiteJSONType + part[location[3]:]
+			changed = true
+		}
+	}
+	if changed {
+		location := createTableRE.FindStringSubmatchIndex(statement)
+		statement = statement[:location[4]] + strings.Join(parts, ", ") + statement[location[5]:]
+	}
 	c.app.tables[name] = Table{
 		Name: name, Columns: columns, PrimaryKey: primary, UniqueKeys: unique,
 		StorageShape: normalizeSQLTokens(statement), SQL: statement,
@@ -865,7 +883,7 @@ func (c *coreCompiler) compileExports(database *sql.DB, queries map[string]strin
 				return fmt.Errorf("export %q has empty or duplicate output column %q", name, columnName)
 			}
 			seen[strings.ToLower(columnName)] = true
-			logical := LogicalType(strings.ToUpper(columnType.DatabaseTypeName()))
+			logical := SQLiteLogicalType(columnType.DatabaseTypeName())
 			if !validCoreLogicalType(logical) {
 				return fmt.Errorf("export %q column %q has no fixed logical type", name, columnName)
 			}

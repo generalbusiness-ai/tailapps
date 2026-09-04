@@ -475,7 +475,7 @@ func bind(statement *sqlite3.Stmt, position int, value any) error {
 }
 
 func columnType(statement *sqlite3.Stmt, index int) string {
-	declared := strings.ToUpper(statement.ColumnDeclType(index))
+	declared := string(jsonataddl.SQLiteLogicalType(statement.ColumnDeclType(index)))
 	if declared != "" {
 		return declared
 	}
