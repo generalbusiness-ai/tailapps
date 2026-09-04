@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:235df7bfd705a08a1fdf512ecb6330c610fa1fd7","text":"Merge retired a covered predecessor; the successor is at docs/reference/resident-upgrade.md."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:321bc5ef63b839223437840b74501c717a1f8fef","text":"Merge retired a covered predecessor; the successor is at jsonataddl/identity.go."}
