@@ -22,6 +22,8 @@ jobs:
           cache-dependency-path: |
             go.sum
             jsonataddl/go.sum
+      - name: Verify root public dependency and paired workspace
+        run: ./scripts/check-root-module.sh
       - name: Build unsigned release assets
         run: scripts/release.sh v0.0.0-pr "${RUNNER_TEMP}/dist"
       - name: Verify generated asset set
@@ -69,6 +71,9 @@ jobs:
           (cd jsonataddl && GOWORK=off go test -race ./...)
           (cd jsonataddl && GOWORK=off go vet ./...)
           test -z "$(git status --porcelain)"
+
+      - name: Verify root public dependency and paired workspace
+        run: ./scripts/check-root-module.sh
 
       - name: Build release archives
         run: scripts/release.sh "$GITHUB_REF_NAME" "${RUNNER_TEMP}/dist"

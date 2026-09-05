@@ -33,4 +33,5 @@ if [ -n "$version" ]; then
 fi
 
 cd "$repo_root"
-go build -ldflags "$flags" -o "$output" ./cmd/tailapp
+# Release binaries use the public dependency graph, never the local workspace.
+GOWORK=off go build -mod=readonly -ldflags "$flags" -o "$output" ./cmd/tailapp

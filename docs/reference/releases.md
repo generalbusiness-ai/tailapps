@@ -51,12 +51,29 @@ version, source, checksums, identity and observed public resolution as the
 consumer handoff. The verifier runs the packaged example; it does not perform
 that expected-checksum comparison itself.
 
-The root module still requires v0.1.2 behind a local replacement in this
-source. After v0.2.0 is publicly resolvable, update that requirement in a
-separately reviewed source change before cutting another root release. A
-consumer does not inherit a dependency's local replacement. Do not claim the
-new core is publicly consumable through a root release while its requirement
-still selects the older version.
+The root module requires the verified public `jsonataddl v0.2.0`, with no
+module-level replacement. Its `go.sum` records the reviewed module checksum
+`h1:rD0TyYRPHT+DapFEacbd+jLQKHo6I+mi2ufpcCd+eKY=` and go.mod checksum
+`h1:fpGrE/1ODSULhyxThhr3TL4JtpfcX3PdA4kJBnKWJRY=`. A consumer does not inherit
+a dependency’s workspace: the committed `go.work` pairs the two modules only
+for checkout development. Root and local-core tests still run together; the
+separate `scripts/check-root-module.sh` gate selects `GOWORK=off` and verifies
+the public version, checksums, absence of replacements across all dependencies
+and root tests. Both PR release dry-runs and tag releases run that gate before
+building archives. `scripts/build.sh` uses `GOWORK=off` and `-mod=readonly`, so
+release archives and versioned `go install` select the same public core. The
+release test inspects the archive-installed binary for its core version and
+checksum. Ordinary `go build` still uses the paired workspace for development.
+
+From this source checkout, `GOWORK=off go install -mod=readonly ./cmd/tailapp`
+builds the root command against the public core. To install a reviewed remote
+source commit, use `go install github.com/generalbusiness-ai/tailapps/cmd/tailapp@COMMIT`
+with its full commit ID. Versioned `go install` ignores a workspace and refuses
+a module-level replace directive; removing that directive resolves the earlier
+source arrangement’s restriction. This source change publishes no root tag
+and does not repair older immutable root releases. Use a root version only
+after that version is independently released and verified; `jsonataddl/v0.2.0`
+is the core module’s tag, not a Tailapp command release.
 
 Download the archive matching your operating system and CPU together with
 `checksums.txt`, `checksums.txt.sig`, and `checksums.txt.bundle` from the same
