@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:8aa1ea72f4d0c00a16cbd41fd8950ef10ee92922","text":"Merge retired a covered predecessor; the successor is at scripts/check-root-module.sh."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:a4d2f09a46a87de33437cca0e4af753c891b033e","text":"Merge retired a covered predecessor; the successor is at docs/reference/releases.md."}
