@@ -1,0 +1,4 @@
+=== RUN   TestPublishedBuiltins
+--- PASS: TestPublishedBuiltins (0.02s)
+PASS
+ok  	example.invalid/tail-root-consumer	0.300s

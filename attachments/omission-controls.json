@@ -1,0 +1,24 @@
+{
+  "candidate": "3606dd8a7a65e2dd4aa5531202b8147a8d562229",
+  "scratch": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-root-v020-omissions-c5jt5_gf",
+  "results": [
+    {
+      "omission": "old-pin",
+      "exit": 1,
+      "expected_refusal": "root module must select the exact public",
+      "log": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-root-v020-omissions-c5jt5_gf/old-pin.log"
+    },
+    {
+      "omission": "missing-workspace-module",
+      "exit": 1,
+      "expected_refusal": "paired development must use this checkout",
+      "log": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-root-v020-omissions-c5jt5_gf/missing-workspace-module.log"
+    },
+    {
+      "omission": "local-replacement",
+      "exit": 1,
+      "expected_refusal": "root module must select the exact public",
+      "log": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-root-v020-omissions-c5jt5_gf/local-replacement.log"
+    }
+  ]
+}
