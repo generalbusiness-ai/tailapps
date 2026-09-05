@@ -1,0 +1,15 @@
+{
+  "GOENV": "off",
+  "GOFLAGS": "",
+  "GOPRIVATE": "",
+  "GONOPROXY": "",
+  "GONOSUMDB": "",
+  "GOINSECURE": "",
+  "GOSUMDB": "sum.golang.org",
+  "GOWORK": "off",
+  "GOPROXY": "https://proxy.golang.org",
+  "GOMODCACHE": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-i5-v020-public-_7lg17xw/modcache",
+  "GOCACHE": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-i5-v020-public-_7lg17xw/buildcache",
+  "GOPATH": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-i5-v020-public-_7lg17xw/gopath",
+  "scratch": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-i5-v020-public-_7lg17xw"
+}

@@ -1,0 +1,9 @@
+62207377
+github.com/generalbusiness-ai/tailapps/jsonataddl v0.2.0 h1:rD0TyYRPHT+DapFEacbd+jLQKHo6I+mi2ufpcCd+eKY=
+github.com/generalbusiness-ai/tailapps/jsonataddl v0.2.0/go.mod h1:fpGrE/1ODSULhyxThhr3TL4JtpfcX3PdA4kJBnKWJRY=
+
+go.sum database tree
+62207630
+6l3Z+stixDcOLMhzP9+e5tWHumbAzDqF9vPgxX8Z3RI=
+
+— sum.golang.org Az3grkSXrnb+EAQwhWtmZUz1LvjsftH6jJNSQhX+rNSyyV6bB9du4bmBriNd0CFx6FSgJWDlJqpuzQmBKlHIpN5ycQo=
