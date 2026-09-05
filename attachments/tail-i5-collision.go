@@ -1,0 +1,3 @@
+package main
+import("fmt"; j "github.com/generalbusiness-ai/tailapps/jsonataddl")
+func main(){a,b:=j.Tailapp(),j.Tailapp();a.HostEvent=j.NewEventContract("otlp_record",j.EnvelopeField{Name:"id",Type:"TEXT"},j.EnvelopeField{Name:"signal",Type:"TEXT"});b.HostEvent=j.NewEventContract("otlp_record",j.EnvelopeField{Name:"id",Type:"TEXT/nullable=false\nhost-event.field.signal=TEXT"});fmt.Printf("distinct field counts %d and %d; canonical collision=%v; component collision=%v\n",len(a.HostEvent.Fields()),len(b.HostEvent.Fields()),a.Canonical()==b.Canonical(),j.DialectComponent(a)==j.DialectComponent(b))}
