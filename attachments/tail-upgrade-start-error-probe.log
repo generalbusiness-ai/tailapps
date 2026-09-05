@@ -1,0 +1,10 @@
+--- FAIL: TestReleaseAssetsAreVersionPinnedAndInstallable (23.07s)
+    service_test.go:37: test service restart failed: fork/exec /nonexistent-tailapps-start-diagnostic-probe: no such file or directory
+    release_test.go:280: failed-start upgrade outcome = exit status 1
+        curl: (22) The requested URL returned error: 500
+        new resident did not become healthy and rollback also failed
+    service_test.go:51: All resident startup/exit attempts:
+        starting /nonexistent-tailapps-start-diagnostic-probe
+FAIL
+FAIL	github.com/generalbusiness-ai/tailapps/scripts	23.590s
+FAIL
