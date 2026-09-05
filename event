@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at scripts/root_module_test.go","body":{"commit":"a3b29b3becdd0c298f5e200a9f6f279a1db18b71","path":"scripts/root_module_test.go"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:1067b3a68ddfc88d92d5feb551d4410c6a3a9522","text":"Merge retired a covered predecessor; the successor is at .github/workflows/ci.yml."}
