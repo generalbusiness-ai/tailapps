@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at tailapps/url_reputation_test.go","body":{"commit":"c57f34b26d2f879c813ea01b8854981c04c0e722","path":"tailapps/url_reputation_test.go"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:01283a9e48b548efdb8b55d06bf19289ef9ff6f8","text":"Merge retired a covered predecessor; the successor is at docs/reference/resident-upgrade.md."}
