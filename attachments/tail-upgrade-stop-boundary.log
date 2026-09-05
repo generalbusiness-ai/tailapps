@@ -1,6 +1,0 @@
-=== RUN   TestServiceResidentProcess
---- PASS: TestServiceResidentProcess (0.00s)
-=== RUN   TestServiceRestartWaitsForResidentExit
---- PASS: TestServiceRestartWaitsForResidentExit (0.04s)
-PASS
-ok  	github.com/generalbusiness-ai/tailapps/scripts	0.447s
