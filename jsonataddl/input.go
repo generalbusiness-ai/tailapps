@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strings"
 )
 
 // ValidateProgramInput checks metadata and the complete event before a host
@@ -192,7 +193,7 @@ func (app *Application) validateInputRows(program Program, value any) error {
 			field := InputField{Name: name, Kind: InputScalar, Type: string(TypeJSON), Nullable: true}
 			if isTable {
 				for _, column := range table.Columns {
-					if column.Name == name {
+					if strings.EqualFold(column.Name, name) {
 						field.Type, field.Nullable = string(column.Type), !column.NotNull
 						break
 					}

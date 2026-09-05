@@ -15,7 +15,8 @@ func inputTestSources() fstest.MapFS {
 	return sources
 }
 
-func TestReadInputShapesAndPrivateEventAdmission(t *testing.T) {
+func readInputTestSources(t *testing.T) fstest.MapFS {
+	t.Helper()
 	files := fstest.MapFS{}
 	for _, name := range []string{"application.sql", "folds/normalize.jsonata", "folds/settle.jsonata", "folds/shadow.jsonata"} {
 		data, err := os.ReadFile("corpus/v1/projection-state/app/" + name)
@@ -26,6 +27,11 @@ func TestReadInputShapesAndPrivateEventAdmission(t *testing.T) {
 	}
 	// A constant output isolates input validation from the program's use of rows.
 	files["folds/settle.jsonata"].Data = []byte(`{"decision":"effective","facts":[],"tables":{}}`)
+	return files
+}
+
+func TestReadInputShapesAndPrivateEventAdmission(t *testing.T) {
+	files := readInputTestSources(t)
 	load := func() *Application {
 		t.Helper()
 		app, err := LoadApplication(files, ".", "reads", Tailapp(), "test/1")
@@ -319,5 +325,40 @@ func TestInputStringArrayPreservesOrderAndDuplicates(t *testing.T) {
 	encoded, err := json.Marshal(result.Facts[0]["tags"])
 	if err != nil || string(encoded) != `["b","a","b"]` {
 		t.Fatalf("semantic array reordered or deduplicated: %s, %v", encoded, err)
+	}
+}
+
+func TestReadColumnCasePreservesTypeAdmission(t *testing.T) {
+	for _, selected := range []string{"balance", "BALANCE", "BaLaNcE"} {
+		t.Run(selected, func(t *testing.T) {
+			files := readInputTestSources(t)
+			files["application.sql"].Data = []byte(strings.Replace(string(files["application.sql"].Data), "SELECT key, balance\n  FROM ledger\n", "SELECT key, "+selected+"\n  FROM ledger\n", 1))
+			app, err := LoadApplication(files, ".", "reads", Tailapp(), "test/1")
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, test := range []struct {
+				name  string
+				value any
+				valid bool
+			}{
+				{"integer", 1, true}, {"string", "1", false}, {"null", nil, false}, {"fraction", 1.5, false}, {"object", map[string]any{}, false},
+			} {
+				t.Run(test.name, func(t *testing.T) {
+					input := EvaluationInput{
+						Meta:  map[string]any{"position": 1, "event_id": "r#0", "event_type": "otel_event"},
+						Event: map[string]any{"key": "k", "amount": 3, "retire": nil},
+						Rows:  map[string]any{"prior": map[string]any{"key": "k", selected: test.value}, "marks": []any{}, "positive": nil},
+					}
+					_, err := app.Evaluate("settle", input)
+					if test.valid && err != nil {
+						t.Fatalf("valid INTEGER refused: %v", err)
+					}
+					if !test.valid && (err == nil || !strings.Contains(err.Error(), "input rows read")) {
+						t.Fatalf("invalid INTEGER input: %v", err)
+					}
+				})
+			}
+		})
 	}
 }

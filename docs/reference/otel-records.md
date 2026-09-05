@@ -186,7 +186,8 @@ or metric attribute without that signal’s dictionary.
 One canonical record is at most 256 KiB. The complete encoded evaluation input,
 including metadata, envelope and read results, must also fit 256 KiB and at
 most 1024 nested containers, counting its root as depth 1. These checks run
-before evaluation; the separate JSONata execution-depth limit remains 64. The receiver accepts OTLP/HTTP JSON or
-protobuf at `/v1/logs`, `/v1/traces`, and `/v1/metrics`; it does not accept
+before evaluation; the separate JSONata execution-depth limit remains 64.
+
+The receiver accepts OTLP/HTTP JSON or protobuf at `/v1/logs`, `/v1/traces`, and `/v1/metrics`; it does not accept
 OTLP/gRPC. Source records are retained only in the bounded inbox until every
 captured Tailapp consumes or detaches from them.

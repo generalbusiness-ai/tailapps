@@ -354,3 +354,61 @@ func TestFoldReadsExecuteUnderTheDefaultDenyAuthorizer(t *testing.T) {
 		t.Fatalf("host writes must be unrestricted after the plan releases the guard: %v", err)
 	}
 }
+
+// Empty MANY results must remain arrays through the actual SQL read and fold;
+// otherwise input admission turns a valid delivery into a permanent gap.
+func TestManyReadEmptyAndPopulatedDelivery(t *testing.T) {
+	for _, selected := range []string{"value", "VALUE"} {
+		t.Run(selected, func(t *testing.T) {
+			compiled, err := profile.Load(fstest.MapFS{
+				"application.sql": {Data: []byte(`
+CREATE EVENT otel_event (id TEXT NOT NULL);
+CREATE TABLE state (id TEXT PRIMARY KEY, value INTEGER NOT NULL);
+CREATE NORMALIZER normalize ON otlp_record USING 'folds/normalize.jsonata' EMITS otel_event;
+CREATE FOLD count_prior ON otel_event
+READ prior MANY LIMIT 10 AS SELECT id, ` + selected + ` FROM state ORDER BY id
+USING 'folds/count.jsonata' WRITES state;
+CREATE EXPORT state AS SELECT id, value FROM state;`)},
+				"folds/normalize.jsonata": {Data: []byte(`{"decision":"effective","facts":[],"events":{"otel_event":[{"id":meta.event_id}]},"tables":{}}`)},
+				"folds/count.jsonata":     {Data: []byte(`{"decision":"effective","facts":[],"tables":{"state":{"insert":[{"id":event.id,"value":$count(rows.prior)}]}}}`)},
+			}, ".", "many-read")
+			if err != nil {
+				t.Fatal(err)
+			}
+			ctx := context.Background()
+			path := filepath.Join(t.TempDir(), "state.sqlite")
+			item, err := Create(ctx, path, compiled, 0, "reset")
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer func() {
+				if item != nil {
+					item.Close()
+				}
+			}()
+			for position := int64(1); position <= 2; position++ {
+				if _, err := item.Process(ctx, guardDelivery(position, "codex", "count", map[string]any{})); err != nil {
+					t.Fatalf("delivery %d: %v", position, err)
+				}
+				frontier, err := item.Frontier(ctx)
+				if err != nil || frontier.InterpretedPosition != position || !frontier.Complete || frontier.GapPosition != nil {
+					t.Fatalf("delivery %d frontier = %#v, %v", position, frontier, err)
+				}
+				assertCount(t, item, `SELECT value FROM state WHERE id=?`, int(position-1), fmt.Sprintf("local:%d", position))
+			}
+			if err := item.Close(); err != nil {
+				t.Fatal(err)
+			}
+			item = nil
+			item, err = Open(ctx, path, compiled)
+			if err != nil {
+				t.Fatal(err)
+			}
+			result, err := item.Process(ctx, guardDelivery(2, "codex", "count", map[string]any{}))
+			if err != nil || !result.AlreadyApplied {
+				t.Fatalf("reopened retry: %#v, %v", result, err)
+			}
+			assertCount(t, item, `SELECT COUNT(*) FROM state`, 2)
+		})
+	}
+}

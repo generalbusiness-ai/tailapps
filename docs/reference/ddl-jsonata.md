@@ -216,7 +216,10 @@ ID (for example `local:57#0`), never a separate metadata member. Every private
 event column must be present with its declared type and nullability.
 
 `rows` is a non-null closed object with exactly one member per declared read,
-or `{}` for no reads. Each row has exactly the selected columns. Table reads
+or `{}` for no reads. Each row has exactly the selected columns, using the
+spelling in the read declaration. SQL column matching remains case-insensitive;
+selecting `BALANCE` still enforces the type and nullability of a declared
+`balance` column. Hosts map SQL result columns to those selected names. Table reads
 use their declared logical types and nullability; view reads preserve the
 selected-column shape with JSON-valued members, including null. Missing or
 extra reads/columns, `MANY: null`, or wrong cardinality refuse before JSONata.

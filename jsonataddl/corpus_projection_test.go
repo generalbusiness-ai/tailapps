@@ -190,6 +190,9 @@ func executePlanRead(connection *sqlite3.Conn, read jsonataddl.Read, event map[s
 			return nil, err
 		}
 	}
+	if statement.ColumnCount() != len(read.Columns) {
+		return nil, fmt.Errorf("read result columns differ from the declared selection")
+	}
 	values := make([]map[string]any, 0)
 	for statement.Step() {
 		row := make(map[string]any, statement.ColumnCount())
@@ -198,7 +201,7 @@ func executePlanRead(connection *sqlite3.Conn, read jsonataddl.Read, event map[s
 			if err != nil {
 				return nil, fmt.Errorf("column %q: %w", statement.ColumnName(index), err)
 			}
-			row[statement.ColumnName(index)] = value
+			row[read.Columns[index]] = value
 		}
 		values = append(values, row)
 	}

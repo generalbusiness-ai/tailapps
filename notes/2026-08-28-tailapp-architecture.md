@@ -164,7 +164,9 @@ preserving semantic array order.
 
 The Tailapp profile supplies all three required metadata fields and all nine
 envelope scalars plus `record`. The projection validates metadata/event before
-binding read SQL and constructs empty `MANY` results as `[]`. Full evaluation
+binding read SQL and constructs empty `MANY` results as `[]`. It maps SQL
+result columns to the read declaration's selected spelling; core resolves table
+column types and nullability with SQL's case-insensitive matching. Full evaluation
 repeats admission including rows; neither path supplies missing defaults.
 Failure rolls back application changes and interpreted progress; the existing
 separate gap-reporting path may record why delivery stopped.

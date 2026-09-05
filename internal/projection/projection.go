@@ -562,6 +562,9 @@ func executeRead(ctx context.Context, tx *sql.Tx, read profile.Read, event map[s
 	if err != nil {
 		return nil, err
 	}
+	if len(columnTypes) != len(read.Columns) {
+		return nil, errors.New("read result columns differ from the declared selection")
+	}
 	values := make([]map[string]any, 0)
 	for rows.Next() {
 		scans := make([]any, len(columnTypes))
@@ -578,7 +581,9 @@ func executeRead(ctx context.Context, tx *sql.Tx, read profile.Read, event map[s
 			if err != nil {
 				return nil, fmt.Errorf("column %q: %w", column.Name(), err)
 			}
-			row[column.Name()] = converted
+			// SQL matches column identifiers without case, but the input contract
+			// names fields using the declared SELECT spelling.
+			row[read.Columns[index]] = converted
 		}
 		values = append(values, row)
 	}

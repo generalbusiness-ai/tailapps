@@ -113,6 +113,8 @@ Call `Application.ValidateProgramInput` before binding read parameters, then
 same encoded representation without filling missing keys or coercing null to
 an empty array. Read results follow the plan's exact names, cardinality,
 selected columns and table logical types; view values remain bounded JSON.
+Row keys use the selected spelling. Table column type and nullability lookup
+is case-insensitive, so changing identifier case cannot bypass admission.
 `Limits.MaxInputDepth` bounds encoded containers separately from evaluator
 execution depth. The Tailapp constructor selects 1024 and retains the existing
 256 KiB input-byte and 64 execution-depth limits.
