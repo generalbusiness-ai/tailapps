@@ -11,15 +11,21 @@ checksum manifest. It also publishes version-pinned `install.sh` and
 contains the `tailapp` binary, `LICENSE`, and `NOTICE`. The workflow also
 creates GitHub build-provenance attestations for every archive.
 
-The root module requires the nested `jsonataddl` module at v0.1.2 behind a
-local replacement. Version v0.1.0 is permanently unusable: its published
-module bytes conflict with the immutable public checksum-database record for
-that version. Do not move or reuse its tag.
+The declared-input contract targets the separately reviewed nested-module
+release `jsonataddl/v0.2.0`. Hosts moving from v0.1.2 must add their complete
+`Input` contracts and positive `Limits.MaxInputDepth`, then re-pin their
+composed runtime identities. Publication, consumer adoption and production
+activation remain separate gates. Version v0.1.0 is permanently unusable: its
+published bytes conflict with the immutable public checksum-database record.
+Do not move or reuse its tag.
 
-Before pushing any nested-module tag, run:
+Prepare the exact merged source, version, module and go.mod checksums, and
+composed identity for independent review. A module's README is part of its
+immutable archive and must describe that version. After exact approval and
+ratification, immediately before pushing the nested-module tag, run:
 
 ```sh
-scripts/check-jsonataddl-version-available.sh v0.1.2
+scripts/check-jsonataddl-version-available.sh v0.2.0
 ```
 
 Proceed only when the command verifies that the exact tag is absent from
@@ -29,13 +35,28 @@ not request the version-specific `.info` endpoint: the v0.1.1 preflight showed
 that its not-found response can remain negatively cached for 30 minutes after
 the tag is published. A missing tool, network failure, malformed, duplicate,
 mismatched, or unexpected response, or existing record refuses the release.
-Then publish
-`jsonataddl/v0.1.2` before any later root release tag, so an external consumer
-can resolve the required nested-module version without the repository-local
-replacement. Repository rules protect the `jsonataddl/v*` namespace from tag
-updates and deletion. The existing tag workflow remains the post-push check
-that the immutable tag names merged source and that the module passes its full
-verification suite.
+Publish only the approved `jsonataddl/v0.2.0` tag at its exact reviewed merged
+source. Repository rules protect the `jsonataddl/v*` namespace from tag updates
+and deletion. The tag workflow is a post-publication check, not a gate that
+prevents consumers resolving the tag; run its module gates before publication
+and require the actual workflow to pass afterwards.
+
+Verify the published version from an external module with `GOWORK=off`, fresh
+module/build caches, no replacement and no private proxy exemption. Run
+`scripts/verify-jsonataddl-module.sh v0.2.0`; separately obtain
+`go mod download -json github.com/generalbusiness-ai/tailapps/jsonataddl@v0.2.0`
+and compare `Sum` and `GoModSum` with the reviewed source-derived values.
+Record the exact
+version, source, checksums, identity and observed public resolution as the
+consumer handoff. The verifier runs the packaged example; it does not perform
+that expected-checksum comparison itself.
+
+The root module still requires v0.1.2 behind a local replacement in this
+source. After v0.2.0 is publicly resolvable, update that requirement in a
+separately reviewed source change before cutting another root release. A
+consumer does not inherit a dependency's local replacement. Do not claim the
+new core is publicly consumable through a root release while its requirement
+still selects the older version.
 
 Download the archive matching your operating system and CPU together with
 `checksums.txt`, `checksums.txt.sig`, and `checksums.txt.bundle` from the same

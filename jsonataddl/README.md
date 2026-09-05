@@ -7,25 +7,24 @@ source loading, storage, and transaction orchestration.
 
 ## Install
 
-The module is published from this repository with module-path tags. The JSON
-storage correction targets `jsonataddl/v0.1.2`; publish that tag only after
-the source is merged and verified:
+The declared-input contract release is `jsonataddl/v0.2.0`. Once that
+independently reviewed tag is published, install its exact module version:
 
 ```sh
-go get github.com/generalbusiness-ai/tailapps/jsonataddl@v0.1.2
+go get github.com/generalbusiness-ai/tailapps/jsonataddl@v0.2.0
 ```
 
 Consumers resolve the versioned module directly, without a workspace or local
-replacement. See
-`ExampleLoadApplication` for a minimal compile-and-evaluate path.
+replacement. See `ExampleLoadApplication` for a minimal compile-and-evaluate
+path. Hosts upgrading from v0.1.2 must declare their complete `Input` contracts
+and positive `Limits.MaxInputDepth`, and re-pin their composed runtime identity.
+The change does not authorize activation or relabel an existing projection;
+see [complete input contracts](#complete-input-contracts) and
+`corpus/README.md` for migration.
 
 Do not use v0.1.0. Its published module bytes conflict with the immutable
 public checksum-database record for that version, so a normal Go consumer
 correctly rejects it.
-
-The declared-input contract in current source is a later integration; the
-v0.1.2 install command above does not include it. Its nested-module release is
-separate from source delivery.
 
 ## Contents
 
@@ -143,24 +142,10 @@ test code has no dependency on packages outside this module.
 
 ## Release ordering
 
-Repository maintainers release only a commit already merged to `main`. Before
-pushing a module-path tag, run the public-record preflight for the intended
-version:
-
-```sh
-scripts/check-jsonataddl-version-available.sh v0.1.2
-```
-
-Only a result that verifies the exact tag is absent from `origin`, the exact
-version is absent from `proxy.golang.org`'s version list, and `sum.golang.org`
-has no record permits the tag push. Do not probe the proxy's version-specific
-`.info` endpoint before publication. The v0.1.1 preflight did so and its 404
-remained cached for 30 minutes after the tag and release workflow succeeded.
-Missing tools, network failures, malformed or ambiguous responses, and
-existing records all refuse publication. The Tailapps root module requires
-`jsonataddl` v0.1.2 behind a local replacement, so `jsonataddl/v0.1.2` must be
-pushed before any later Tailapps root release tag. The protected
-`jsonataddl/v*` tag namespace prevents published tags from being moved or
-deleted.
+Maintainers follow the repository's
+[release procedure](https://github.com/generalbusiness-ai/tailapps/blob/main/docs/reference/releases.md).
+It covers independent approval, immutable merged-source tags, public-record
+preflight, checksum verification and the separate root-module release order.
+Publishing this module does not activate Tailapp or another host.
 
 The module is Apache-2.0 licensed; see `LICENSE` and `NOTICE` in this directory.
