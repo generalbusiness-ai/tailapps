@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:ba6d5d6a8310e6f3dd8d0c04e251f076ad8942c3","text":"Merge retired a covered predecessor; the successor is at jsonataddl/corpus/v1/misbehavior/inputs/mode-delete-by-key.json."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:bb62ef74a70c5957286c4f2f42a43ad575ebe957","text":"Merge retired a covered predecessor; the successor is at jsonataddl/corpus/v1/projection-state/expected/settle-first.json."}
