@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5c3e48a978272794e3d2cd99d2d7e90acc3c0f96","text":"Merge retired a covered predecessor; the successor is at jsonataddl/corpus/v1/misbehavior/inputs/mode-undeclared-column.json."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:62c9434ec86c20ae45dddcc428d13fd07bafd3c4","text":"Merge retired a covered predecessor; the successor is at docs/reference/otel-records.md."}
