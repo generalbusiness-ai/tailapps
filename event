@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:de104c92efa71388e596d7fa4cecef9934ff88af","text":"Merge retired a covered predecessor; the successor is at scripts/service_test.go."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:7dcade4be31cfada339d73a8e53a81b0240f521c","text":"Author cleanup after sealed upgrade-test delivery at e0c83a8. This older c1f73e10 candidate's implementation commitment is now satisfied and no unsettled commitment protects it. Preserve the historical receipt and current delivered successor."}
