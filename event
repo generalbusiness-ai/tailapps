@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:ca9066c58b6db4e89aa249f91fa73ba12749bc5a","text":"Merge retired a covered predecessor; the successor is at jsonataddl/application.go."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:cb38f719314c8d1b4563d690ef6d035fb767bf96","text":"Merge retired a covered predecessor; the successor is at jsonataddl/corpus/v1/projection-state/expected/identity.json."}
