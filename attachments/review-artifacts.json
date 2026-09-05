@@ -1,0 +1,47 @@
+[
+  {
+    "path": ".github/workflows/ci.yml",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:119bb2e0dd9f06e13f81610fa050a64e9ce3152b",
+    "head": "3606dd8a7a65e2dd4aa5531202b8147a8d562229"
+  },
+  {
+    "path": ".github/workflows/release.yml",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:6a48813e28c0230dab2748604294f0662eade5cf",
+    "head": "3606dd8a7a65e2dd4aa5531202b8147a8d562229"
+  },
+  {
+    "path": "README.md",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:ecb5b14333854369641e05336db6d1fb789f7499",
+    "head": "3606dd8a7a65e2dd4aa5531202b8147a8d562229"
+  },
+  {
+    "path": "docs/reference/releases.md",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:d4cad4d581d234d374b7b0fa1f0cbcc079e9191a",
+    "head": "3606dd8a7a65e2dd4aa5531202b8147a8d562229"
+  },
+  {
+    "path": "go.mod",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:856843ed54e1102947ce0e7a433cbbd85d89ce80",
+    "head": "3606dd8a7a65e2dd4aa5531202b8147a8d562229"
+  },
+  {
+    "path": "go.sum",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:63ef90765fccd1bddb493001595a9cbd4a605f2d",
+    "head": "3606dd8a7a65e2dd4aa5531202b8147a8d562229"
+  },
+  {
+    "path": "go.work",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:d41be29d321c56cfdd9780a3e1d368c632f7fa18",
+    "head": "3606dd8a7a65e2dd4aa5531202b8147a8d562229"
+  },
+  {
+    "path": "notes/2026-08-28-tailapp-architecture.md",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:eec28dc4ba0ae8c1f3ec7aacdf366e41ce066789",
+    "head": "3606dd8a7a65e2dd4aa5531202b8147a8d562229"
+  },
+  {
+    "path": "scripts/check-root-module.sh",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:659550c3d14a353e123430d157176ea0d6062c08",
+    "head": "3606dd8a7a65e2dd4aa5531202b8147a8d562229"
+  }
+]
