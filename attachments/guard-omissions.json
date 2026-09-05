@@ -1,0 +1,24 @@
+{
+  "candidate": "62c0d8f42adcf56963ba89df27aa09f90c3c7532",
+  "scratch": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-root-v020-corrected-omissions-ciwh4qyr",
+  "results": [
+    {
+      "omission": "release-workspace",
+      "test": "TestReleaseAssetsAreVersionPinnedAndInstallable",
+      "expected_failure": "release archive must name the public core version and checksum",
+      "log": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-root-v020-corrected-omissions-ciwh4qyr/release-workspace.log"
+    },
+    {
+      "omission": "public-environment",
+      "test": "TestRootModuleGateChecksSelectionAndCleansPublicEnvironment/passing",
+      "expected_failure": "public Go subprocess inherited a forbidden setting",
+      "log": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-root-v020-corrected-omissions-ciwh4qyr/public-environment.log"
+    },
+    {
+      "omission": "other-replacement",
+      "test": "TestRootModuleGateChecksSelectionAndCleansPublicEnvironment/other-replacement",
+      "expected_failure": "gate refusal = <nil>",
+      "log": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-root-v020-corrected-omissions-ciwh4qyr/other-replacement.log"
+    }
+  ]
+}

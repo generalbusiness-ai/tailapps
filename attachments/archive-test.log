@@ -1,0 +1,4 @@
+=== RUN   TestReleaseAssetsAreVersionPinnedAndInstallable
+--- PASS: TestReleaseAssetsAreVersionPinnedAndInstallable (23.99s)
+PASS
+ok  	github.com/generalbusiness-ai/tailapps/scripts	24.251s
