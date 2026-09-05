@@ -1,0 +1,18 @@
+go: creating new go.mod: module example.invalid/jsonataddl-consumer
+go: downloading github.com/generalbusiness-ai/tailapps/jsonataddl v0.2.0
+go: downloading github.com/ncruces/go-sqlite3 v0.35.3
+go: downloading github.com/jsonata-go/jsonata v0.0.0-20250709164031-599f35f32e5f
+go: downloading golang.org/x/sys v0.47.0
+go: downloading github.com/ncruces/julianday v1.0.0
+go: downloading github.com/ncruces/go-sqlite3-wasm/v3 v3.2.35304
+go: added github.com/generalbusiness-ai/tailapps/jsonataddl v0.2.0
+go: added github.com/jsonata-go/jsonata v0.0.0-20250709164031-599f35f32e5f
+go: added github.com/ncruces/go-sqlite3 v0.35.3
+go: added github.com/ncruces/go-sqlite3-wasm/v3 v3.2.35304
+go: added github.com/ncruces/julianday v1.0.0
+go: added golang.org/x/sys v0.47.0
+=== RUN   ExampleLoadApplication
+--- PASS: ExampleLoadApplication (0.00s)
+PASS
+ok  	github.com/generalbusiness-ai/tailapps/jsonataddl	0.302s
+verified github.com/generalbusiness-ai/tailapps/jsonataddl v0.2.0 through https://proxy.golang.org
