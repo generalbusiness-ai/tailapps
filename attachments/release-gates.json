@@ -1,0 +1,150 @@
+[
+  {
+    "gate": "go-version",
+    "command": [
+      "go",
+      "version"
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp-worktrees/declared-input-module-release",
+    "exit_code": 0,
+    "seconds": 0.006,
+    "log": "/tmp/tail-i5-release-go-version.log"
+  },
+  {
+    "gate": "module-download",
+    "command": [
+      "go",
+      "mod",
+      "download",
+      "-json"
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp-worktrees/declared-input-module-release/jsonataddl",
+    "exit_code": 0,
+    "seconds": 3.005,
+    "log": "/tmp/tail-i5-release-module-download.log"
+  },
+  {
+    "gate": "module-tidy",
+    "command": [
+      "go",
+      "mod",
+      "tidy"
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp-worktrees/declared-input-module-release/jsonataddl",
+    "exit_code": 0,
+    "seconds": 0.183,
+    "log": "/tmp/tail-i5-release-module-tidy.log"
+  },
+  {
+    "gate": "module-verify",
+    "command": [
+      "go",
+      "mod",
+      "verify"
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp-worktrees/declared-input-module-release/jsonataddl",
+    "exit_code": 0,
+    "seconds": 0.139,
+    "log": "/tmp/tail-i5-release-module-verify.log"
+  },
+  {
+    "gate": "module-boundary",
+    "command": [
+      "./scripts/check-jsonataddl-boundary.sh"
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp-worktrees/declared-input-module-release",
+    "exit_code": 0,
+    "seconds": 0.362,
+    "log": "/tmp/tail-i5-release-module-boundary.log"
+  },
+  {
+    "gate": "module-tests",
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./..."
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp-worktrees/declared-input-module-release/jsonataddl",
+    "exit_code": 0,
+    "seconds": 5.871,
+    "log": "/tmp/tail-i5-release-module-tests.log"
+  },
+  {
+    "gate": "module-race",
+    "command": [
+      "go",
+      "test",
+      "-race",
+      "-count=1",
+      "./..."
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp-worktrees/declared-input-module-release/jsonataddl",
+    "exit_code": 0,
+    "seconds": 11.034,
+    "log": "/tmp/tail-i5-release-module-race.log"
+  },
+  {
+    "gate": "module-vet",
+    "command": [
+      "go",
+      "vet",
+      "./..."
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp-worktrees/declared-input-module-release/jsonataddl",
+    "exit_code": 0,
+    "seconds": 1.205,
+    "log": "/tmp/tail-i5-release-module-vet.log"
+  },
+  {
+    "gate": "module-vuln",
+    "command": [
+      "../scripts/vulncheck.sh"
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp-worktrees/declared-input-module-release/jsonataddl",
+    "exit_code": 0,
+    "seconds": 5.078,
+    "log": "/tmp/tail-i5-release-module-vuln.log"
+  },
+  {
+    "gate": "module-list",
+    "command": [
+      "go",
+      "list",
+      "-m",
+      "-json",
+      "all"
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp-worktrees/declared-input-module-release/jsonataddl",
+    "exit_code": 0,
+    "seconds": 0.168,
+    "log": "/tmp/tail-i5-release-module-list.log"
+  },
+  {
+    "gate": "host-identity",
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./internal/profile",
+      "-run",
+      "^TestComposedRuntimeIsPinned$"
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp-worktrees/declared-input-module-release",
+    "exit_code": 0,
+    "seconds": 3.98,
+    "log": "/tmp/tail-i5-release-host-identity.log"
+  },
+  {
+    "gate": "clean-tree",
+    "command": [
+      "git",
+      "status",
+      "--porcelain"
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp-worktrees/declared-input-module-release",
+    "exit_code": 0,
+    "seconds": 0.013,
+    "log": "/tmp/tail-i5-release-clean-tree.log"
+  }
+]
