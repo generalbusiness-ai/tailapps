@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:417ddfb7dbb3971e8031f33a18970d2ea08e4394","text":"Merge retired a covered predecessor; the successor is at .github/workflows/release.yml."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5446b76c3ce535b33bbdcf78dd3b922f20fa7a26","text":"Merge retired a covered predecessor; the successor is at scripts/root_module_test.go."}
