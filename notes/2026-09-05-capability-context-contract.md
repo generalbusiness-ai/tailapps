@@ -11,6 +11,8 @@ rests_on:
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:0cf7f9765b5e7bf4a7a9cc50aa12095a30055c2a
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:130607b9b4598cba6618faf2290e914577a62a2b
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:7f8eea0b09e7e4e7a6725faf3701668b3e8b8db8
+  - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:52e5fe63af0d3708040d02f925b73d8870f74af8
+  - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:b0088c7108efe0e1e91ebe31ada8651a80f5b4b0
 ---
 
 # Bounded capabilities and exact-record context
@@ -28,6 +30,15 @@ eight gates of the stable-extensions note, both at immutable Gitseq source
 `860ee61a07aa753dcbc2d50e74da2b7b6547625b`. Chess is the first consumer.
 No Chess type, identity scheme, rules library or host import enters this core.
 
+| Adopted rule | Enforcing part of this decision |
+|---|---|
+| Explicit | DDL declarations and the per-program AST allowlist |
+| Identified by meaning | Immutable contracts and canonical registry digest |
+| No ambient authority | Reviewed argument-only providers and separate verified context |
+| Total within bounds | Pre-operation meters and admission proofs |
+| Data, not effects | Validated results; JSONata output and host-owned transaction |
+| Failures retain meaning | Typed domain refusals, fixed interpretation errors and rollback |
+
 ## Current evidence and the admission limit
 
 Source is Tailapps `1eef3c1964642f691fff59d2a8ac2de10170d7ab`; runtime files
@@ -40,6 +51,15 @@ Chess observations use source `e7a65612a8270b12f676a35e97c66aaf2a705a30`
 and its pinned Gitseq host `7152e79a741e` and notnil/chess v1.10.0. The core
 directory artifact at `96712c14` describes the unchanged application/evaluation
 files; the newer exact-file artifacts describe compiler and identity changes.
+The live exact `application.go` artifact `ca9066c5` names older `8c6d5e21`
+bytes without the mutex, so it cannot support the serialization claim. The
+directory basis is intentional. `evaluate.go` has no exact artifact. The
+exact `dialect.go` and MCP-tools bases are historically stale but live and
+match the inspected bytes; neither describes a superseded world. The missing
+current exact application/evaluation pointers are provenance gaps: the directory
+basis names their inspected bytes, but a carried wider pointer alone does not
+guarantee that later exact-file succession makes this note flare. The heads
+implementing these changes must publish their exact-file artifacts.
 
 `jsonataddl/confine.go` admits nineteen fixed functions, refuses lambdas and
 dynamic calls, and has no program extension allowlist. `compile.go` sets depth,
@@ -54,6 +74,19 @@ called a bound function once, then refused it on a second invocation without
 bindings. A second control returned an error containing a synthetic invitation
 canary: the evaluator exposed that string. Provider errors therefore require
 sanitization inside the adapter, before evaluator error formatting.
+Both checks are in one executable attached to workroom artifact
+`292dcd9949d624910a56f59cac0172a9960064a9`, with its JSON output. In a
+Tailapps checkout containing the workroom history, retrieve them with:
+
+```sh
+git show 292dcd9949d624910a56f59cac0172a9960064a9:attachments/tail-i7-provider-control.go > /tmp/tail-i7-provider-control.go
+git show 292dcd9949d624910a56f59cac0172a9960064a9:attachments/tail-i7-provider-control.json
+cd jsonataddl
+GOWORK=off go run /tmp/tail-i7-provider-control.go
+```
+
+The expected output records one successful call, refusal of the next unbound
+call, and `raw_callback_error_contains_canary: true`. The canary is synthetic.
 
 The evaluator's entry callback can count AST visits. It does not intercept
 allocations or all work inside built-ins. Its existing depth/range/time limits
@@ -68,6 +101,10 @@ only after that patch proves the bounds below; no unreviewed replacement,
 `replace` directive or timer-only fallback qualifies. If this cannot be done,
 leave extensions unavailable and report the blocker. This is also the adoption
 plan's existing production evaluation limit, not a new claim about old hosts.
+Develop the patch in an isolated evaluator checkout with a temporary workspace
+or module override for proof runs. Record that override in the evidence; it
+must not enter the delivered module. Publish a reviewed immutable evaluator
+revision and use its ordinary exact dependency pin for final admission tests.
 
 ## Declaration and immutable loading
 
@@ -144,6 +181,9 @@ resolves context. Evaluation validates the complete rows and consumes the
 prepared handle once. A failed preparation also poisons the session. The
 existing `Evaluate` remains available for extension-free applications; it
 refuses an extension-enabled application rather than bypassing preparation.
+I5's proposed `Application.ValidateProgramInput` also refuses that application:
+`Prepare` subsumes its pre-read base-input validation, rejects caller context,
+then inserts and validates the core-owned context before returning the handle.
 The host verifies record/snapshot authenticity; the core checks their matching
 token and handle ownership. The core does not pretend to verify Git signatures.
 
@@ -155,6 +195,12 @@ application, variable reassignment/shadowing, function-value references and
 indirect apply forms; retain all current refusals for the rest of JSONata.
 Return fresh owned values, never mutable provider state. Simultaneous sessions
 must not share counters, arguments, results or context.
+Use per-evaluation bindings for entry instrumentation too; `Assign` mutates the
+cached expression's environment and would share a meter between sessions.
+The pinned library also exposes package-global registration. The compile-time
+allowlist keeps names outside the nineteen built-ins and selected aliases
+unreachable; admission must separately prohibit replacement of those allowed
+built-ins. No host may register an extension globally or alter that frame.
 
 Before calling a provider, validate arity, complete shape, nulls, canonical
 encoding, byte/collection/depth limits and the remaining budgets. Charge
@@ -165,6 +211,14 @@ the bound is refused before an unbounded output allocation. No invocation
 memoization is implemented: every executed call consumes a call allowance and
 its work. This uses the stable note's optional-cache policy without introducing
 cache-dependent accounting.
+This requires deterministic dispatch from the exact admitted evaluator: no
+common-subexpression elimination or speculative/repeated evaluation of a
+logical call is permitted in its admitted subset. Gate 3 pins that behavior
+with repeated identical call sites, conditional branches and bounded loops,
+checking exact call/work counts and boundary judgments. Remove a dispatch or
+repeat it and the corpus must fail. A future optimizing adapter must preserve
+the adopted logical-invocation accounting through event-local deduplication;
+it cannot inherit admission merely because its returned values match.
 
 The enforcement contract is explicit:
 
@@ -270,8 +324,13 @@ A valid domain refusal is ordinary typed data. JSONata decides whether to
 turn it into an ineffective decision/facts. Any extension interpretation
 failure returns no mutation plan, rolls back all normalizer/fold changes and
 keeps the interpreted frontier before the record. The host may separately
-record gap diagnostics, as today; it must not publish a partial decision or
-advance delivery. Keep the existing timeout retry distinction.
+record gap diagnostics; it must not publish a partial decision or advance
+delivery. For extension failures, those diagnostics contain only the fixed
+extension code. Today `internal/projection/projection.go`'s `recordGap` writes
+`processErr.Error()` into `gap_reason`, and `internal/mcp/tools.go` exposes it
+through `tailapp_status`. The host integration must sanitize this persistence
+boundary as well as returned errors; retaining the raw-error path is forbidden.
+Keep the existing timeout retry distinction using the typed error class.
 
 The disposable invocation relation stores only event/program/alias, semantic
 identifier, argument/result digests, encoded sizes, consumed work and fixed
@@ -296,6 +355,9 @@ escaping, sorted semantic identifiers and sorted object members; argument
 order and tagged-union alternatives have explicitly fixed order. Include
 all limits, shape/null rules, corpus digest, work schedule and fixed failure
 vocabulary. Reject duplicate identifiers, malformed digests and cyclic shapes.
+The component value is the scheme-prefixed SHA-256 digest of this canonical
+encoding, following `DialectComponent`, never the JSON itself; it must satisfy
+`ComposeIdentity`'s existing delimiter restrictions.
 The application source revision already binds aliases, narrowed limits and
 program allowlists; the dialect canonical form additionally binds extension
 policy and event totals. The loader verifies all three agree.
@@ -309,6 +371,10 @@ Crossing runtime identities requires a fresh acknowledged projection reset,
 with I5's stored-identity guard also protecting continuation. No module release
 may activate extensions on old unguarded hosts. Preserve old stored identity
 recognition without restoring a historical evaluator.
+Adding extension policy and event totals to the dialect canonical form changes
+every existing host's dialect digest, even with an empty registry. Together
+with the tenth component this requires the same acknowledged reset; preserving
+extension-free program behavior does not preserve its old runtime identity.
 
 ## Delivery and admission gates
 
@@ -328,7 +394,7 @@ bounded requests, not assignments made by this note.
 2. **Host and release:** wire event sessions, context preparation, rollback,
    telemetry, ten-component identity and protected reset into Tailapp's host;
    update activation/upgrade docs, including `resident-upgrade.md`. Retain empty
-   registry behavior for existing apps. After all gates pass, separately review
+registry behavior for existing apps. After all gates pass, separately review
    and publish the nested module, verifying immutable public resolution and
    both hosts' conformance at its exact pin.
 3. **Providers and host context:** separately design/admit bounded primitives
@@ -358,7 +424,7 @@ The eight adopted gates have concrete checks, each with a positive control:
 | 3. Failure atomicity and bounds | Missing/wrong-signature providers, malformed args/results, panic and each local/aggregate budget crossing leave all tables and frontier unchanged after a staged normalizer write. At-bound succeeds, one-over refuses before the next operation/allocation. Remove each charge or rollback guard and observe actual extra work/allocation or leaked rows/frontier. Include builtin loops/codecs, context preparation, overflow and error-then-next-session reset. |
 | 4. Domain refusal | A typed refusal reaches JSONata and produces the expected ineffective result, without converting provider failures into decisions. Mutate failure-to-refusal mapping and compare exact decision-row presence/absence. |
 | 5. Equivalent implementations | When a second implementation is supported, run both over identical conformance vectors and boundary inputs; require identical canonical outputs, fixed failures and deterministic cost accounting. Different provider implementation with the old contract but changed meaning must fail admission. |
-| 6. No secret diagnostics | Canary in args, malformed results, nested fields, provider errors/panics and evaluator errors is absent from returned errors, logs, HTTP/MCP and invocation rows. Remove inner or outer sanitation and reproduce the leak; the pinned raw callback control already demonstrates one path. |
+| 6. No secret diagnostics | Canary in args, malformed results, nested fields, provider errors/panics and evaluator errors is absent from returned errors, logs, stored gap_reason, HTTP/MCP (including tailapp_status after reopen) and invocation rows. Remove inner, outer or persistence-boundary sanitation and reproduce the leak; the pinned raw callback control already demonstrates one path. |
 | 7. Exact-record context | Anchor/delegate/revoke and root-grant replay at tied timestamps; scope mismatch, unknown strength, expiry equality and one-second-over, chain boundary, unknown/mismatched record. Compare pinned host results, then remove position/token/ancestor checks and observe unauthorized seat authority or false unanchored data. |
 | 8. Provider change | Remove or change a declared provider and reject loading before any replay write; an unrelated unchanged registry still loads. Mutate registry/digest verification and demonstrate silent partial replay would otherwise occur. |
 
