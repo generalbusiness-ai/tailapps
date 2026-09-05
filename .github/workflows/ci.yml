@@ -45,6 +45,9 @@ jobs:
           test "$(cd jsonataddl && GOWORK=off go list -m -f '{{.Path}}')" = 'github.com/generalbusiness-ai/tailapps/jsonataddl'
           ./scripts/check-jsonataddl-boundary.sh
 
+      - name: Verify root public dependency and paired workspace
+        run: ./scripts/check-root-module.sh
+
       - name: Scan reachable dependency vulnerabilities
         run: |
           ./scripts/vulncheck.sh

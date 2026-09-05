@@ -107,11 +107,14 @@ query, CLI, MCP, and resident lifecycle. Producer and dialect consistency tests
 stay on this side of the module boundary. The versioned core corpus stays with
 the reusable module.
 
-The root module replacement binds the host to the same local source for
-development. Independent consumers resolve module-path tags such as
-`jsonataddl/v0.1.1` without a workspace or replacement. Packaging the existing
-boundary this way does not change its runtime contract or composed identity;
-a later semantic change must still change the relevant identity component.
+The committed Go workspace pairs the root host with `./jsonataddl` for local
+development. The root module has no replacement directive and requires the
+verified public `jsonataddl v0.2.0`; `GOWORK=off` builds and external consumers
+resolve that exact module and its reviewed checksums. CI checks both module
+selections and runs the host against the public core as well as the local
+checkout. This source/development arrangement changes no runtime contract or
+composed identity. A later semantic change must still change its relevant
+identity component and pass paired development plus public-release gates.
 
 ### JSON storage compatibility correction
 

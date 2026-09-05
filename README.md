@@ -73,6 +73,12 @@ resident, and installs all five built-in bundles. See
 [first-time resident setup](docs/reference/first-time-setup.md) for its dry
 run and platform details.
 
+These commands run from a source checkout. Its committed `go.work` pairs the
+root with the local `jsonataddl` module. To build against the exact published
+core instead, run `GOWORK=off go build -mod=readonly -o tailapp ./cmd/tailapp`.
+See [release and source installation](docs/reference/releases.md) for the
+version boundary.
+
 To build and start the resident manually instead:
 
 ```sh
@@ -179,6 +185,11 @@ pinned runtime profile. See the [DDL/JSONata](docs/reference/ddl-jsonata.md) and
 
 ## Develop
 
+The committed Go 1.26.7 workspace keeps root tests and builds on the local
+core during paired changes. The root `go.mod` contains no replacement and
+requires public `jsonataddl v0.2.0`; consumers outside this checkout use that
+version. Keep both paths checked:
+
 ```sh
 go test ./...
 go test -race ./...
@@ -186,6 +197,7 @@ go vet ./...
 (cd jsonataddl && GOWORK=off go test ./...)
 (cd jsonataddl && GOWORK=off go test -race ./...)
 (cd jsonataddl && GOWORK=off go vet ./...)
+./scripts/check-root-module.sh
 ```
 
 GitHub Actions runs the same gates for both modules with their declared Go

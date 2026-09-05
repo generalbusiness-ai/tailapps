@@ -70,6 +70,9 @@ jobs:
           (cd jsonataddl && GOWORK=off go vet ./...)
           test -z "$(git status --porcelain)"
 
+      - name: Verify root public dependency and paired workspace
+        run: ./scripts/check-root-module.sh
+
       - name: Build release archives
         run: scripts/release.sh "$GITHUB_REF_NAME" "${RUNNER_TEMP}/dist"
 
