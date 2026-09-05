@@ -1,0 +1,62 @@
+[
+  {
+    "path": ".github/workflows/ci.yml",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:bf301d11f2d7a60377f927ff7451ad3f653430a2",
+    "head": "62c0d8f42adcf56963ba89df27aa09f90c3c7532"
+  },
+  {
+    "path": ".github/workflows/release.yml",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:66ad1bc42c7603826e8ecb733f4f3d837288f028",
+    "head": "62c0d8f42adcf56963ba89df27aa09f90c3c7532"
+  },
+  {
+    "path": "README.md",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:39d7a70a3982c0481a1213f314af8a0a53366e84",
+    "head": "62c0d8f42adcf56963ba89df27aa09f90c3c7532"
+  },
+  {
+    "path": "docs/reference/releases.md",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:78d29eb19d02f6a04ab2bf2925433b45dc643e6a",
+    "head": "62c0d8f42adcf56963ba89df27aa09f90c3c7532"
+  },
+  {
+    "path": "go.mod",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:3ebd2c84347d64101d93ac6fbffb8375f6e92c18",
+    "head": "62c0d8f42adcf56963ba89df27aa09f90c3c7532"
+  },
+  {
+    "path": "go.sum",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:b1e8cf419fc837ff0fb42ae3888719286c1dc0ac",
+    "head": "62c0d8f42adcf56963ba89df27aa09f90c3c7532"
+  },
+  {
+    "path": "go.work",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:bd5f48bb4607c605acce49943d2b80a8243083a0",
+    "head": "62c0d8f42adcf56963ba89df27aa09f90c3c7532"
+  },
+  {
+    "path": "notes/2026-08-28-tailapp-architecture.md",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:16a5202bcb8a77171695328979c3aea55ff199a9",
+    "head": "62c0d8f42adcf56963ba89df27aa09f90c3c7532"
+  },
+  {
+    "path": "scripts/build.sh",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:bc8b98988b30bf0e7d5b18ba86eade7e375bee08",
+    "head": "62c0d8f42adcf56963ba89df27aa09f90c3c7532"
+  },
+  {
+    "path": "scripts/check-root-module.sh",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:8aa1ea72f4d0c00a16cbd41fd8950ef10ee92922",
+    "head": "62c0d8f42adcf56963ba89df27aa09f90c3c7532"
+  },
+  {
+    "path": "scripts/release_test.go",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:70d2a3ba606b1cde567ab30871120661628dab46",
+    "head": "62c0d8f42adcf56963ba89df27aa09f90c3c7532"
+  },
+  {
+    "path": "scripts/root_module_test.go",
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5446b76c3ce535b33bbdcf78dd3b922f20fa7a26",
+    "head": "62c0d8f42adcf56963ba89df27aa09f90c3c7532"
+  }
+]
