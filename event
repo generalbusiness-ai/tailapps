@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:bf301d11f2d7a60377f927ff7451ad3f653430a2","text":"Merge retired a covered predecessor; the successor is at .github/workflows/ci.yml."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:cb0f457b55250c5b1f556a89e5147b3ca2f0d27f","text":"Merge retired a covered predecessor; the successor is at notes/2026-08-28-tailapp-architecture.md."}
