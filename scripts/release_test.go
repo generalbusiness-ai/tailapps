@@ -3,6 +3,7 @@ package scripts_test
 import (
 	"bytes"
 	"crypto/sha256"
+	"debug/buildinfo"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -115,6 +116,27 @@ func TestReleaseAssetsAreVersionPinnedAndInstallable(t *testing.T) {
 	}
 	if _, err := os.Stat(wantTarget); err != nil {
 		t.Fatal(err)
+	}
+	// Inspect the actual archive-installed binary: a workspace build loses the
+	// public core version and checksum even when its source currently matches.
+	info, err := buildinfo.ReadFile(wantTarget)
+	if err != nil {
+		t.Fatal(err)
+	}
+	foundCore := false
+	for _, dep := range info.Deps {
+		if dep.Replace != nil {
+			t.Fatalf("release archive dependency has replacement: %+v", dep)
+		}
+		if dep.Path == jsonataddlModule {
+			foundCore = true
+			if dep.Version != "v0.2.0" || dep.Sum != "h1:rD0TyYRPHT+DapFEacbd+jLQKHo6I+mi2ufpcCd+eKY=" {
+				t.Fatalf("release archive must name the public core version and checksum: %+v", dep)
+			}
+		}
+	}
+	if !foundCore {
+		t.Fatal("release archive has no jsonataddl build information")
 	}
 	cosignArgs, err := os.ReadFile(cosignLog)
 	if err != nil {

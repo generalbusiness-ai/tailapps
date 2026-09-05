@@ -116,6 +116,11 @@ checkout. This source/development arrangement changes no runtime contract or
 composed identity. A later semantic change must still change its relevant
 identity component and pass paired development plus public-release gates.
 
+Release builds through
+`scripts/build.sh` explicitly disable the workspace and keep module files
+read-only. Archive build metadata must name the public core version and checksum;
+CI and release dry-runs check that artifact as well as module selection.
+
 ### JSON storage compatibility correction
 
 Logical JSON columns compile to the physical SQLite type `JSON_TEXT`, whose

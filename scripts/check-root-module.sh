@@ -20,6 +20,11 @@ public=$(go list -mod=readonly -m -f '{{.Version}}|{{.Sum}}|{{.GoModSum}}|{{if .
   echo 'root module must select the exact public jsonataddl v0.2.0 and reviewed checksums without replacement' >&2
   exit 1
 }
+replacements=$(go list -mod=readonly -m -f '{{if .Replace}}{{.Path}}{{end}}' all)
+if printf '%s' "$replacements" | grep -q '[^[:space:]]'; then
+  echo 'public root-module dependencies must not contain replacements' >&2
+  exit 1
+fi
 go mod verify
 go test -mod=readonly ./...
 printf '%s\n' 'verified paired development and public root-module dependency'

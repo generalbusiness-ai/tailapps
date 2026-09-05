@@ -58,7 +58,12 @@ module-level replacement. Its `go.sum` records the reviewed module checksum
 a dependency’s workspace: the committed `go.work` pairs the two modules only
 for checkout development. Root and local-core tests still run together; the
 separate `scripts/check-root-module.sh` gate selects `GOWORK=off` and verifies
-the public version, checksums, absence of replacement and root tests.
+the public version, checksums, absence of replacements across all dependencies
+and root tests. Both PR release dry-runs and tag releases run that gate before
+building archives. `scripts/build.sh` uses `GOWORK=off` and `-mod=readonly`, so
+release archives and versioned `go install` select the same public core. The
+release test inspects the archive-installed binary for its core version and
+checksum. Ordinary `go build` still uses the paired workspace for development.
 
 From this source checkout, `GOWORK=off go install -mod=readonly ./cmd/tailapp`
 builds the root command against the public core. To install a reviewed remote

@@ -22,6 +22,8 @@ jobs:
           cache-dependency-path: |
             go.sum
             jsonataddl/go.sum
+      - name: Verify root public dependency and paired workspace
+        run: ./scripts/check-root-module.sh
       - name: Build unsigned release assets
         run: scripts/release.sh v0.0.0-pr "${RUNNER_TEMP}/dist"
       - name: Verify generated asset set

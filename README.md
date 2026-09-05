@@ -76,6 +76,7 @@ run and platform details.
 These commands run from a source checkout. Its committed `go.work` pairs the
 root with the local `jsonataddl` module. To build against the exact published
 core instead, run `GOWORK=off go build -mod=readonly -o tailapp ./cmd/tailapp`.
+`scripts/build.sh` and release archives always use this public dependency path.
 See [release and source installation](docs/reference/releases.md) for the
 version boundary.
 
