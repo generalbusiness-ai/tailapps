@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:d500a3c6d7d2d52151bbdcc4481acdf32de13866","text":"Merge retired a covered predecessor; the successor is at docs/reference/ddl-jsonata.md."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:d87063b41122905a0022f52820070856809a7726","text":"Merge retired a covered predecessor; the successor is at jsonataddl/corpus/v1/basic/expected/identity.json."}
