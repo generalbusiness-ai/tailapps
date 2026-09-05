@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at .github/workflows/ci.yml","body":{"commit":"a3b29b3becdd0c298f5e200a9f6f279a1db18b71","path":".github/workflows/ci.yml"}}
+{"kind":"artifact","text":"Merge published the current artifact at .github/workflows/release.yml","body":{"commit":"a3b29b3becdd0c298f5e200a9f6f279a1db18b71","path":".github/workflows/release.yml"}}
