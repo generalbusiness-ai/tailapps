@@ -170,7 +170,7 @@ func TestReleaseAssetsAreVersionPinnedAndInstallable(t *testing.T) {
 		t.Fatalf("fallback discarded verified binary: %v", err)
 	}
 
-	// Exercise the published upgrade surface with a mocked launchd boundary:
+	// Exercise the published upgrade surface with a mocked service-manager boundary:
 	// it restarts the stable link, returns machine-readable readiness, and can
 	// restore the recorded known-good target without touching Tailapps.
 	upgradeRoot := filepath.Join(t.TempDir(), "local")
@@ -219,7 +219,6 @@ func TestReleaseAssetsAreVersionPinnedAndInstallable(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	servicePID := filepath.Join(t.TempDir(), "resident.pid")
 	failNextStart := filepath.Join(t.TempDir(), "fail-next-start")
 	unloaded := filepath.Join(t.TempDir(), "unloaded")
 	serviceCommand := launchctl
@@ -230,14 +229,7 @@ print)
   exit
   ;;
 kickstart)
-  if [ -f "$TAILAPPS_TEST_PID" ]; then kill "$(cat "$TAILAPPS_TEST_PID")" >/dev/null 2>&1 || true; fi
-  if [ -f "$TAILAPPS_TEST_FAIL_NEXT_START" ]; then
-    unlink "$TAILAPPS_TEST_FAIL_NEXT_START"
-    exit 0
-  fi
-  TAILAPP_HOME="$TAILAPP_HOME" "$TAILAPPS_TEST_BIN" serve --otlp-http 127.0.0.1:0 >"$TAILAPPS_TEST_LOG" 2>&1 &
-  echo $! >"$TAILAPPS_TEST_PID"
-  exit 0
+  exec curl --fail --silent --show-error "$TAILAPPS_TEST_RESTART"
   ;;
 esac
 exit 1
@@ -254,14 +246,7 @@ daemon-reload)
   exit 0
   ;;
 restart)
-  if [ -f "$TAILAPPS_TEST_PID" ]; then kill "$(cat "$TAILAPPS_TEST_PID")" >/dev/null 2>&1 || true; fi
-  if [ -f "$TAILAPPS_TEST_FAIL_NEXT_START" ]; then
-    unlink "$TAILAPPS_TEST_FAIL_NEXT_START"
-    exit 0
-  fi
-  TAILAPP_HOME="$TAILAPP_HOME" "$TAILAPPS_TEST_BIN" serve --otlp-http 127.0.0.1:0 >"$TAILAPPS_TEST_LOG" 2>&1 &
-  echo $! >"$TAILAPPS_TEST_PID"
-  exit 0
+  exec curl --fail --silent --show-error "$TAILAPPS_TEST_RESTART"
   ;;
 esac
 exit 1
@@ -270,27 +255,19 @@ exit 1
 	if err := os.WriteFile(serviceCommand, []byte(serviceScript), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(fakeBin, "sleep"), []byte("#!/bin/sh\n/bin/sleep 0.1\n"), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if bytes, err := os.ReadFile(servicePID); err == nil {
-			if process, err := os.FindProcess(parsePID(t, string(bytes))); err == nil {
-				_ = process.Kill()
-			}
-		}
-	})
 	upgradeLog := filepath.Join(t.TempDir(), "upgrade-resident.log")
+	service := newTestService(t, upgradeLog, failNextStart, func() *exec.Cmd {
+		cmd := exec.Command(upgradeLink, "serve", "--otlp-http", "127.0.0.1:0")
+		cmd.Env = append(os.Environ(), "TAILAPP_HOME="+upgradeHome)
+		return cmd
+	})
 	upgradeEnv := append(os.Environ(),
 		"HOME="+upgradeUserHome,
 		"XDG_CONFIG_HOME="+filepath.Join(upgradeUserHome, ".config"),
 		"TAILAPPS_RELEASE_BASE_URL=file://"+releaseRoot,
 		"TAILAPPS_INSTALL_ROOT="+upgradeRoot,
 		"TAILAPP_HOME="+upgradeHome,
-		"TAILAPPS_TEST_BIN="+upgradeLink,
-		"TAILAPPS_TEST_PID="+servicePID,
-		"TAILAPPS_TEST_LOG="+upgradeLog,
-		"TAILAPPS_TEST_FAIL_NEXT_START="+failNextStart,
+		"TAILAPPS_TEST_RESTART="+service.URL,
 		"TAILAPPS_TEST_UNLOADED="+unloaded,
 		"TAILAPPS_COSIGN_LOG="+filepath.Join(t.TempDir(), "upgrade-cosign.log"),
 		"PATH="+fakeBin+":"+os.Getenv("PATH"),
@@ -432,13 +409,4 @@ func runFailure(t *testing.T, directory string, env []string, program string, ar
 	command.Dir = directory
 	command.Env = env
 	return command.CombinedOutput()
-}
-
-func parsePID(t *testing.T, value string) int {
-	t.Helper()
-	var pid int
-	if _, err := fmt.Sscan(value, &pid); err != nil || pid <= 0 {
-		t.Fatalf("service pid %q: %v", value, err)
-	}
-	return pid
 }
