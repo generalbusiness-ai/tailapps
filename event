@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:d35c79ca87ebcb889917bbfffaaa17348f0e40bc","text":"Merge retired a covered predecessor; the successor is at internal/engine/engine_test.go."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:d4b6f1f53e26de81e3a724648ae5b5d579ce9755","text":"Merge retired a covered predecessor; the successor is at docs/reference/ddl-jsonata.md."}
