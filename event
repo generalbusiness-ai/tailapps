@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:7490f8ba8c811ca1f26a97d33dc8932bee746798","text":"Merge retired a covered predecessor; the successor is at jsonataddl/corpus/v1/basic/inputs/accumulate-first.json."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:74a8f887a19c89b314144103e7dbb6d090fd696e","text":"Merge retired a covered predecessor; the successor is at jsonataddl/corpus/v1/misbehavior/inputs/generic-fold.json."}
