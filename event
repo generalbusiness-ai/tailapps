@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at internal/profile/runtime.go","body":{"commit":"c57f34b26d2f879c813ea01b8854981c04c0e722","path":"internal/profile/runtime.go"}}
+{"kind":"artifact","text":"Merge published the current artifact at internal/profile/runtime_test.go","body":{"commit":"c57f34b26d2f879c813ea01b8854981c04c0e722","path":"internal/profile/runtime_test.go"}}
