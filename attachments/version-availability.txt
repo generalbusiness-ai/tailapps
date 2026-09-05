@@ -1,4 +1,0 @@
-verified absent from origin: refs/tags/jsonataddl/v0.2.0
-verified absent from proxy.golang.org version list: v0.2.0
-verified absent from sum.golang.org: v0.2.0
-safe to tag: github.com/generalbusiness-ai/tailapps/jsonataddl v0.2.0 has no remote tag, proxy-list entry, or checksum-database record
