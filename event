@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:8dfcb74b65efd0f697d6fd60624076f74e94c45b","text":"Merge retired a covered predecessor; the successor is at jsonataddl/corpus/v1/basic/expected/identity.json."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:901209868cc0f85e905bc5f637bbb55aa2559133","text":"Merge retired a covered predecessor; the successor is at docs/reference/resident-upgrade.md."}
