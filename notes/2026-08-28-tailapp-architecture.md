@@ -47,9 +47,9 @@ replay caches.
    analytic state. Ordinary SQL names need no global prefix, and a broken fold
    cannot stop other tailapps.
 5. **Editing and activation are separate.** Agents manipulate draft elements
-   with optimistic revision checks. A storage-compatible revision can continue
-   over existing tables; an incompatible writable-table change requires an
-   explicit reset and begins with future events.
+   with optimistic revision checks. A storage-compatible revision in the same
+   runtime can continue over existing tables; an incompatible writable-table
+   change requires an explicit reset and begins with future events.
 6. **MCP is the primary product interface; the CLI has parity.** Both adapt one
    internal application service and therefore share validation, bounds, and
    error semantics.
@@ -125,8 +125,9 @@ SQL NULL remains the representation of a nullable JSON null.
 
 This changes `core.grammar` to `ddl/2` and `core.value-codec` to
 `logical-values/2`; the SQLite engine, authorizer and dependency pins do not
-change. The composed Tailapp runtime becomes
-`jsonata-ddl-runtime:sha256:dcef1473f8b16412327e5c35970296f9a796269d609438a0fdc18b479ced3f30`.
+change. That correction introduced runtime
+`jsonata-ddl-runtime:sha256:dcef1473f8b16412327e5c35970296f9a796269d609438a0fdc18b479ced3f30`;
+the input-contract transition below supersedes it.
 The physical declaration participates in the storage shape and digest.
 An old JSON-affinity table cannot pass `ContinueCompatible` into the corrected
 shape. Hosts must treat the runtime mismatch as an explicit upgrade boundary;
@@ -139,8 +140,51 @@ declarations for every existing logical JSON column, using the core's physical
 type contract. Old affinity, missing columns and inspection errors refuse
 continuation without changing schema, rows, identity or frontier. Compatible
 JSON text storage, non-JSON tables and valid additive continuation remain
-supported. Query metadata uses the core's logical type mapping, so physical
-`JSON_TEXT` never becomes the application's public column type.
+supported within one runtime identity. Query metadata uses the core's logical
+type mapping, so physical `JSON_TEXT` never becomes the application's public column type.
+
+### Declared input and runtime continuation
+
+The core compiler requires an explicit immutable dialect contract for metadata
+and the complete normalizer event. Metadata is a closed scalar object. The
+existing envelope owns scalar read parameters; separately declared string
+arrays, closed scalar objects and opaque JSON objects are program inputs.
+Analytic event fields come from the private event declaration, and read-result
+shape comes from the compiled read plan. No DDL, capabilities or evaluator
+mechanism is added.
+
+Core evaluation validates one encoded input before invoking JSONata: closed
+object membership, independent optional/null flags, existing scalar value
+rules, exact read names and columns, and read cardinality. Input bytes remain
+bounded at 256 KiB. Container depth is separately bounded at 1024, with root
+depth 1; evaluator execution depth remains 64. Opaque JSON retains its existing
+number representation and evaluator behavior. Fixed-order escaped JSON
+canonicalization includes every dialect field, sorting declaration names and
+preserving semantic array order.
+
+The Tailapp profile supplies all three required metadata fields and all nine
+envelope scalars plus `record`. The projection validates metadata/event before
+binding read SQL and constructs empty `MANY` results as `[]`. Full evaluation
+repeats admission including rows; neither path supplies missing defaults.
+Failure rolls back application changes and interpreted progress; the existing
+separate gap-reporting path may record why delivery stopped.
+
+Continuation requires equal runtime identities in the core/profile contract.
+The engine checks the actual persisted runtime before creating an activation
+journal or detaching queued obligations. Projection continuation repeats the
+persisted check inside its transaction before schema, frontier or identity
+writes. Query-only recovery with a current compiled profile cannot relabel an
+old database. Interrupted activation recovery trusts the complete physical
+identity and aborts an incomplete transition. Runtime changes require explicit
+acknowledged reset at the existing delivery boundary, with no historical replay.
+
+This changes `core.interface` to
+`jsonata-ddl-application-interface/2026-09-05`, the Tailapp dialect to
+`tailapp-otlp/2`, and `host.orchestration` to `two-stage-txn/3`. The composed
+runtime is `jsonata-ddl-runtime:sha256:3e60ce38390fa376d766b5880cb8f79ebd9196f0e4036335beb9285783efbd33`.
+Grammar, JSONata, value codec, SQLite, OTLP canonicalization and query-value
+components remain unchanged. The closed component set gains no extra member.
+The integration does not publish a module release or activate another host.
 
 ## Core concepts
 
@@ -230,8 +274,8 @@ runtime profile unless a later design says so.
 Every tailapp has at most one mutable draft and one active immutable revision.
 Element changes advance the draft revision. Validation compiles a snapshot of
 that draft. Activation changes behavior at a precise delivery boundary.
-Continue compatibility is based on stored writable-table shape, not the whole
-DDL text: every existing writable table must retain its columns, types,
+Continue compatibility requires equal stored runtime identities and compares
+stored writable-table shape, not the whole DDL text: every existing writable table must retain its columns, types,
 constraints, and primary key, while new empty tables may be added. Event,
 normalizer, fold, index, view, and export changes are continue-safe; indexes
 and views are rebuilt at the boundary. Changing or removing an existing
@@ -246,9 +290,9 @@ does not affect the inbox obligations or materialized state of other tailapps.
 An engine upgrade never silently reinterprets an active revision under a new
 runtime profile. If the binary no longer supplies the active profile, control
 and query remain available but OTLP readiness is held closed. The operator or
-agent revalidates each source set under the new profile and continue-activates
-it when its writable tables are compatible, or explicitly resets/deactivates
-it. Ingestion resumes only after every active projection is runnable.
+agent revalidates each source set under the new profile and explicitly
+acknowledges reset, or deactivates it. Matching table shapes do not permit
+continuation across runtime identities. Ingestion resumes only after every active projection is runnable.
 
 ### Projection frontier and gap
 

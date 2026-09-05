@@ -13,25 +13,24 @@ import (
 // makes every active projection upgrade-pending. That must always be a
 // conscious, reviewed diff of this constant, never a drive-by.
 const pinnedRuntimeDescriptor = "core.grammar=ddl/2; " +
-	"core.interface=jsonata-ddl-application-interface/2026-08-26; " +
+	"core.interface=jsonata-ddl-application-interface/2026-09-05; " +
 	"core.jsonata=jsonata-go-v206/bounded-2; " +
 	"core.sqlite=sqlite-3.53.4/read-authorizer-1; " +
 	"core.value-codec=logical-values/2; " +
-	"dialect=tailapp-otlp/1+sha256:e5607de7863520bb9859bacdddf6a537a9fb2b7db3e1e0389f1dbe9c0c5243ce; " +
+	"dialect=tailapp-otlp/2+sha256:59524300ac2d079e8abccaafc6c161294f853c560f2ced69105ff43f8eabc464; " +
 	"host.canonicalization=otlp-1.8-json-v1; " +
-	"host.orchestration=two-stage-txn/2; " +
+	"host.orchestration=two-stage-txn/3; " +
 	"host.projection=query-values/1"
 
-const pinnedRuntimeDigest = "jsonata-ddl-runtime:sha256:dcef1473f8b16412327e5c35970296f9a796269d609438a0fdc18b479ced3f30"
+const pinnedRuntimeDigest = "jsonata-ddl-runtime:sha256:3e60ce38390fa376d766b5880cb8f79ebd9196f0e4036335beb9285783efbd33"
 
-// The module-owned v1 corpus uses this literal to preserve its independence
-// from the Tailapps host package. Pinning the host constant here ensures that
-// its legacy resolver and those corpus goldens cannot drift apart silently.
+// Keep the historical identity available for recognizing old projections.
+// The current corpus has its own new identity for the input-contract semantics.
 const pinnedLegacyRuntimeID = "tailapp-otlp-1.8-json-v1-ddl-jsonata-v206-sqlite-3.53.4@5"
 
 func TestComposedRuntimeIsPinned(t *testing.T) {
 	if RuntimeID != pinnedLegacyRuntimeID {
-		t.Fatalf("legacy RuntimeID changed; update it and the module corpus goldens together:\n got %s\nwant %s", RuntimeID, pinnedLegacyRuntimeID)
+		t.Fatalf("historical RuntimeID changed:\n got %s\nwant %s", RuntimeID, pinnedLegacyRuntimeID)
 	}
 	if descriptor := ComposedRuntime().Descriptor(); descriptor != pinnedRuntimeDescriptor {
 		t.Fatalf("composed runtime descriptor changed - this is a deliberate runtime version change that must be reviewed:\n got %s\nwant %s", descriptor, pinnedRuntimeDescriptor)
@@ -70,8 +69,8 @@ func TestLoadCurrentChangesOnlyIdentity(t *testing.T) {
 		t.Fatal("storage and export digests must not depend on the runtime identity")
 	}
 	result, err := current.Evaluate(legacy.Normalizer.Name, EvaluationInput{
-		Meta:  map[string]any{"position": 1},
-		Event: map[string]any{"record": map[string]any{"attributes": map[string]any{"key": "alpha", "count": 1, "ratio": nil, "flag": nil, "payload": nil, "extra": nil}}},
+		Meta:  map[string]any{"position": 1, "event_id": "local:1", "event_type": "otlp_record"},
+		Event: map[string]any{"id": "local:1", "signal": "logs", "name": "example", "source": "test", "time_unix_nano": nil, "observed_unix_nano": nil, "trace_id": nil, "span_id": nil, "content_digest": "test", "record": map[string]any{"attributes": map[string]any{"key": "alpha", "count": 1, "ratio": nil, "flag": nil, "payload": nil, "extra": nil}}},
 		Rows:  map[string]any{},
 	})
 	if err != nil {

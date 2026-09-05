@@ -168,11 +168,11 @@ Read results appear in JSONata as `rows.<name>`:
 
 - `ONE`: object
 - `OPTIONAL ONE`: object or `null`
-- `MANY`: array of objects
+- `MANY`: ordered array of zero through the declared limit of objects; empty is `[]`
 
 ## JSONata input
 
-Every program receives:
+A normalizer with no declared reads receives this complete input shape:
 
 ```json
 {
@@ -181,12 +181,21 @@ Every program receives:
     "event_id": "local:57",
     "event_type": "otlp_record"
   },
-  "event": {},
+  "event": {
+    "id": "local:57", "signal": "log", "name": "example", "source": "demo",
+    "time_unix_nano": null, "observed_unix_nano": null,
+    "trace_id": null, "span_id": null, "content_digest": "example-digest",
+    "record": {"attributes": {}}
+  },
   "rows": {}
 }
 ```
 
-For a normalizer, `event` has scalar envelope fields:
+All three metadata keys and every envelope key below are required. Unknown
+metadata or event members refuse; absent and null are distinct. The time and
+trace/span fields permit null. The other envelope scalars are non-null TEXT.
+`meta.position` is an exact-range INTEGER; event IDs and types are non-null TEXT.
+For a normalizer, `event` has these scalar envelope fields and one object:
 
 - `id`, `signal`, `name`, `source`
 - `time_unix_nano`, `observed_unix_nano`
@@ -202,7 +211,21 @@ log, span, and metric-point shapes and value rules.
 
 For an analytic fold, `event` is one object emitted against the declared
 `otel_event` schema. `meta.event_id` adds an emission ordinal, while
-`meta.position` remains the source inbox position.
+`meta.position` remains the source inbox position. The ordinal is part of the
+ID (for example `local:57#0`), never a separate metadata member. Every private
+event column must be present with its declared type and nullability.
+
+`rows` is a non-null closed object with exactly one member per declared read,
+or `{}` for no reads. Each row has exactly the selected columns. Table reads
+use their declared logical types and nullability; view reads preserve the
+selected-column shape with JSON-valued members, including null. Missing or
+extra reads/columns, `MANY: null`, or wrong cardinality refuse before JSONata.
+
+The core validates the same encoded input it passes to JSONata, preserving
+JSON numbers without coercion. The host also calls `ValidateProgramInput`
+before binding event values to read SQL. Opaque `record` contents retain their
+host-defined canonicalization and existing evaluator behavior; scalar INTEGER
+and REAL restrictions do not apply recursively inside opaque JSON.
 
 ## JSONata output
 
@@ -259,7 +282,8 @@ $uppercase
 
 Because unquoted `*` is forbidden, JSONata block comments are unavailable.
 Use descriptive variable names and formatting instead. Programs are limited to
-64 KiB, input/output are each limited to 256 KiB, evaluator depth is 64, and a
+64 KiB, input/output are each limited to 256 KiB, encoded input container depth
+is limited to 1024 (root depth 1), evaluator execution depth remains 64, and a
 250 ms wall deadline is retained as a secondary process-safety limit.
 
 JSON integers written to `INTEGER` must be exactly representable in the

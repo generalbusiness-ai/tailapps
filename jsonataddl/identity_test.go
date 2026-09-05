@@ -1,6 +1,8 @@
 package jsonataddl
 
 import (
+	"encoding/json"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -16,6 +18,126 @@ func fullComponents() []Component {
 		{Key: "host.canonicalization", Value: "otlp-canonical/1"},
 		{Key: "host.orchestration", Value: "two-stage-txn/1"},
 		{Key: "host.projection", Value: "query-values/1"},
+	}
+}
+
+func TestInputIdentityIsCanonicalCompleteAndImmutable(t *testing.T) {
+	base := declaredInputDialect()
+	identity := DialectComponent(base)
+	mutations := map[string]func(*Dialect){
+		"input depth":     func(d *Dialect) { d.Limits.MaxInputDepth++ },
+		"input bytes":     func(d *Dialect) { d.Limits.MaxInputBytes++ },
+		"meta absent":     func(d *Dialect) { d.Input.Meta = ObjectContract{} },
+		"meta root null":  func(d *Dialect) { d.Input.Meta = NewObjectContract(true, d.Input.Meta.Fields()...) },
+		"event root null": func(d *Dialect) { d.Input.Event = NewObjectContract(true, d.Input.Event.Fields()...) },
+		"envelope optional": func(d *Dialect) {
+			f := d.HostEvent.Fields()
+			f[0].Optional = true
+			d.HostEvent = NewEventContract(d.HostEvent.Name, f...)
+		},
+		"meta type": func(d *Dialect) {
+			f := d.Input.Meta.Fields()
+			f[0].Type = "REAL"
+			d.Input.Meta = NewObjectContract(false, f...)
+		},
+		"meta optional": func(d *Dialect) {
+			f := d.Input.Meta.Fields()
+			f[0].Optional = true
+			d.Input.Meta = NewObjectContract(false, f...)
+		},
+		"meta nullable": func(d *Dialect) {
+			f := d.Input.Meta.Fields()
+			f[0].Nullable = true
+			d.Input.Meta = NewObjectContract(false, f...)
+		},
+		"event kind": func(d *Dialect) {
+			f := d.Input.Event.Fields()
+			f[0].Kind = InputStringArray
+			d.Input.Event = NewObjectContract(false, f...)
+		},
+		"event name": func(d *Dialect) {
+			f := d.Input.Event.Fields()
+			f[0].Name = "other"
+			d.Input.Event = NewObjectContract(false, f...)
+		},
+		"event optional": func(d *Dialect) {
+			f := d.Input.Event.Fields()
+			f[0].Optional = true
+			d.Input.Event = NewObjectContract(false, f...)
+		},
+		"event nullable": func(d *Dialect) {
+			f := d.Input.Event.Fields()
+			f[0].Nullable = true
+			d.Input.Event = NewObjectContract(false, f...)
+		},
+		"nested type": func(d *Dialect) {
+			f := d.Input.Event.Fields()
+			f[2].Members[0].Type = "BLOB"
+			d.Input.Event = NewObjectContract(false, f...)
+		},
+		"nested optional": func(d *Dialect) {
+			f := d.Input.Event.Fields()
+			f[2].Members[0].Optional = true
+			d.Input.Event = NewObjectContract(false, f...)
+		},
+		"nested nullable": func(d *Dialect) {
+			f := d.Input.Event.Fields()
+			f[2].Members[0].Nullable = true
+			d.Input.Event = NewObjectContract(false, f...)
+		},
+	}
+	for name, mutate := range mutations {
+		t.Run(name, func(t *testing.T) {
+			d := base
+			mutate(&d)
+			if DialectComponent(d) == identity {
+				t.Fatal("semantic mutation retained identity")
+			}
+		})
+	}
+	reordered := base
+	meta, event, envelope := base.Input.Meta.Fields(), base.Input.Event.Fields(), base.HostEvent.Fields()
+	slices.Reverse(meta)
+	slices.Reverse(event)
+	slices.Reverse(envelope)
+	for i := range event {
+		slices.Reverse(event[i].Members)
+	}
+	reordered.Input = InputContract{Meta: NewObjectContract(false, meta...), Event: NewObjectContract(false, event...)}
+	reordered.HostEvent = NewEventContract(base.HostEvent.Name, envelope...)
+	if DialectComponent(reordered) != identity {
+		t.Fatal("declaration ordering changed identity")
+	}
+	// Constructor arguments and accessor results must not mutate a shared copy.
+	event[0].Members[0].Name = "constructor-leak"
+	leaked := reordered.Input.Event.Fields()
+	leaked[0].Members[0].Name = "accessor-leak"
+	if DialectComponent(reordered) != identity || DialectComponent(base) != identity {
+		t.Fatal("nested contract mutation escaped defensive copy")
+	}
+	app := inputTestApplication(t, base)
+	appCopy := app.Dialect()
+	fields := appCopy.Input.Event.Fields()
+	fields[2].Members[0].Name = "compiled-leak"
+	if DialectComponent(app.Dialect()) != identity {
+		t.Fatal("compiled contract is mutable")
+	}
+	// Even strings that compilation refuses have an unambiguous serialization.
+	escaped := base
+	escaped.Layout.ProgramRoot = "a\n\";Type=TEXT\\b"
+	var decoded any
+	if err := json.Unmarshal([]byte(escaped.Canonical()), &decoded); err != nil {
+		t.Fatalf("canonical strings are not escaped: %v", err)
+	}
+	if escaped.Canonical() == base.Canonical() {
+		t.Fatal("escaped field disappeared")
+	}
+	separate := base
+	separate.HostEvent = NewEventContract("host_record", EnvelopeField{Name: "id", Type: "TEXT"}, EnvelopeField{Name: "signal", Type: "TEXT"})
+	injected := base
+	injected.HostEvent = NewEventContract("host_record", EnvelopeField{Name: "id", Type: "TEXT/nullable=false\nhost-event.field.signal=TEXT"})
+	if separate.Canonical() == injected.Canonical() || DialectComponent(separate) == DialectComponent(injected) {
+		t.Fatal("newline-injected scalar type collided with two declarations")
 	}
 }
 
@@ -99,7 +221,7 @@ func TestDescriptorIsSortedAndReadable(t *testing.T) {
 
 func TestDialectComponentBindsEverySemanticField(t *testing.T) {
 	base := DialectComponent(Tailapp())
-	if base.Key != "dialect" || !strings.HasPrefix(base.Value, "tailapp-otlp/1+sha256:") {
+	if base.Key != "dialect" || !strings.HasPrefix(base.Value, "tailapp-otlp/2+sha256:") {
 		t.Fatalf("dialect component = %#v", base)
 	}
 	// Changing any semantic field changes the component value mechanically,
@@ -143,7 +265,7 @@ func TestDialectComponentBindsEverySemanticField(t *testing.T) {
 	}
 	// The full digest participates: the component carries the complete
 	// sha256, not a truncation.
-	if got := len(strings.TrimPrefix(base.Value, "tailapp-otlp/1+sha256:")); got != 64 {
+	if got := len(strings.TrimPrefix(base.Value, "tailapp-otlp/2+sha256:")); got != 64 {
 		t.Fatalf("dialect component digest is %d hex characters, want the full 64", got)
 	}
 }

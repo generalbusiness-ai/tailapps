@@ -189,13 +189,9 @@ func (e *Engine) recover(ctx context.Context) error {
 			e.unavailable[app.Name] = err.Error()
 			continue
 		}
-		// The stored runtime selects the resolver. The current composed
-		// runtime opens strictly; the legacy RuntimeID keeps the retained
-		// legacy compiler so its projections stay recognizable under their
-		// exact original semantics; any other runtime is compiled with the
-		// current resolver for query only. Every non-current runtime is
-		// upgrade-pending: queryable, never delivered to, until an explicit
-		// continue or reset re-activates it under the composed runtime.
+		// Historical identities are retained for query-only recognition, not replay
+		// with historical evaluation semantics. Every non-current runtime stays
+		// upgrade-pending until an acknowledged reset creates a fresh projection.
 		var compiled *profile.Profile
 		if runtime == profile.RuntimeID {
 			compiled, err = legacyCompile(app.Name, sources)
@@ -626,6 +622,13 @@ func (e *Engine) activateLocked(ctx context.Context, name, expected, mode string
 		}
 		if err := profile.ContinueCompatible(current.Profile(), compiled); err != nil {
 			return projection.Frontier{}, err
+		}
+		storedRuntime, err := current.StoredRuntime(ctx)
+		if err != nil {
+			return projection.Frontier{}, err
+		}
+		if storedRuntime != compiled.RuntimeProfile {
+			return projection.Frontier{}, errors.New("stored runtime profile changed; acknowledged reset is required")
 		}
 		frontier, err := current.Frontier(ctx)
 		if err != nil {

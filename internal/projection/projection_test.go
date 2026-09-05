@@ -319,11 +319,17 @@ func TestFoldReadsExecuteUnderTheDefaultDenyAuthorizer(t *testing.T) {
 	if fold.Name == "" || len(fold.Reads) == 0 {
 		t.Fatal("fixture fold with reads is missing")
 	}
-	event := map[string]any{
-		"harness": "codex", "session_id": "s1",
-		"tool_capability": "tool-observation", "target_capability": "target-detail",
-		"progress_capability": "progress-detail",
+	source, err := deliveryEvent(guardDelivery(1, "codex", "codex.tool_result", map[string]any{"conversation.id": "s1", "tool_name": "read", "target": "/workspace", "success": true}))
+	if err != nil {
+		t.Fatal(err)
 	}
+	normalized, err := guard.Evaluate(guard.Normalizer.Name, profile.EvaluationInput{
+		Meta: map[string]any{"position": 1, "event_id": "e1", "event_type": "otlp_record"}, Event: source, Rows: map[string]any{},
+	})
+	if err != nil || len(normalized.Events["otel_event"]) != 1 {
+		t.Fatalf("producer-shaped event: %#v, %v", normalized, err)
+	}
+	event := normalized.Events["otel_event"][0]
 	input, err := projection.evaluationInput(ctx, tx, fold, 1, "e1", "otel_event", event)
 	if err != nil {
 		t.Fatalf("the compiled plan must execute under its own authorizer: %v", err)
@@ -337,6 +343,12 @@ func TestFoldReadsExecuteUnderTheDefaultDenyAuthorizer(t *testing.T) {
 	_, err = projection.evaluationInput(ctx, tx, doctored, 1, "e1", "otel_event", event)
 	if err == nil || !(strings.Contains(err.Error(), "prohibited") || strings.Contains(err.Error(), "not authorized")) {
 		t.Fatalf("a read outside the compiled plan must be denied at execution time: %v", err)
+	}
+	// Invalid input must refuse before even attempting this forbidden SQL.
+	delete(event, "action_fingerprint")
+	_, err = projection.evaluationInput(ctx, tx, doctored, 1, "e1", "otel_event", event)
+	if err == nil || !strings.Contains(err.Error(), `input event: field "action_fingerprint" is required`) {
+		t.Fatalf("read binding preceded input admission: %v", err)
 	}
 	if _, err := tx.ExecContext(ctx, `UPDATE tailapp_stats SET consumed_records = consumed_records WHERE singleton=1`); err != nil {
 		t.Fatalf("host writes must be unrestricted after the plan releases the guard: %v", err)

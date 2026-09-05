@@ -1,6 +1,6 @@
 {
- "revision": "sha256:df6fb6aaa4a40b8f91c96b51d60ef2d10ae4e9ee23c39950432b9528db1c1868",
- "runtime_profile": "tailapp-otlp-1.8-json-v1-ddl-jsonata-v206-sqlite-3.53.4@5",
+ "revision": "sha256:369cb9bb0772c2d76914bcf3046dcf678e3d63b4a002f630f128fc7e5144e8bf",
+ "runtime_profile": "tailapp-otlp-1.8-json-v1-ddl-jsonata-v206-sqlite-3.53.4-input-contract@6",
  "storage_schema_digest": "sha256:a6824d33527334df4d2bf585cb5cbd8118be108f6fe95c7c3f1f6f2577723fb6",
  "export_contract_digest": "sha256:ffea0355d9cc51522516837f8c5f2a3d3b254b9662b253d2812dc7800719d7f8"
 }

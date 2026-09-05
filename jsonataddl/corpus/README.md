@@ -74,6 +74,28 @@ v1/<case>/
   authorizer denials: a sibling fold's table, an undeclared host table,
   SQL functions, PRAGMAs, and writes.
 
-The host supplies the runtime identity used by each corpus run. Host-specific
-tests must pin any compatibility identity to this corpus value so an existing
-projection cannot be reclassified by an accidental edit.
+The corpus uses its own explicit runtime literal, separate from a host's
+composed descriptor/digest fixture. A host must pin its own current composed
+identity and retain historical identities needed to recognize stored data.
+
+## Declared-input migration
+
+The input-contract source assigns
+`tailapp-otlp-1.8-json-v1-ddl-jsonata-v206-sqlite-3.53.4-input-contract@6` to this
+corpus. The immutable v0.1.2 release retains the historical input bytes and
+runtime literal. This migration removes only the vestigial
+`meta.emission_ordinal` key from eight analytic fixtures (two basic inputs and
+six misbehavior inputs). Other input bytes and malformed-output diagnostics
+remain unchanged. The production Tailapp dialect is used throughout.
+
+Empty `MANY` reads are now `[]`, so `projection-state/settle-first` reports
+`marks_seen: 0` instead of counting null as one value. The three identity
+fixtures have new revision/runtime values; their storage and export digests
+are unchanged. Other evaluation and projection goldens remain unchanged.
+This is an explicit semantic migration, not a claim of byte compatibility with
+the historical extraction corpus.
+
+Regenerate deliberately with `GOWORK=off go test ./... -run
+TestConformanceCorpus -update-corpus` from the module directory, then inspect
+every changed golden. An input-admission refusal must not replace the output
+error a misbehavior case is intended to exercise.

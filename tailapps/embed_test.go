@@ -57,7 +57,7 @@ func TestSignalCountsRetainsFirstAndLastObservedTimestamps(t *testing.T) {
 	}
 	firstEvent := first.Events["otel_event"][0]
 	firstFold, err := counts.Evaluate("count_signal", profile.EvaluationInput{
-		Meta: map[string]any{"position": 1}, Event: firstEvent, Rows: map[string]any{"prior": nil},
+		Meta: map[string]any{"position": 1, "event_id": "local#0", "event_type": "otel_event"}, Event: firstEvent, Rows: map[string]any{"prior": nil},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -70,7 +70,7 @@ func TestSignalCountsRetainsFirstAndLastObservedTimestamps(t *testing.T) {
 		t.Fatal(err)
 	}
 	secondFold, err := counts.Evaluate("count_signal", profile.EvaluationInput{
-		Meta: map[string]any{"position": 2}, Event: second.Events["otel_event"][0], Rows: map[string]any{"prior": firstRow},
+		Meta: map[string]any{"position": 2, "event_id": "local#0", "event_type": "otel_event"}, Event: second.Events["otel_event"][0], Rows: map[string]any{"prior": firstRow},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -103,7 +103,7 @@ func TestAgentGuardProducesViolationUnknownAndLoopEvidence(t *testing.T) {
 		event := cloneMap(events[0])
 		event["source_position"] = position
 		analytic, err = guard.Evaluate("update_guard_analytics", profile.EvaluationInput{
-			Meta:  map[string]any{"position": position, "event_id": "local", "event_type": "otel_event", "emission_ordinal": 0},
+			Meta:  map[string]any{"position": position, "event_id": "local#0", "event_type": "otel_event"},
 			Event: event,
 			Rows:  guardAnalyticRows(prior),
 		})
@@ -133,7 +133,7 @@ func TestAgentGuardProducesViolationUnknownAndLoopEvidence(t *testing.T) {
 		t.Fatal(err)
 	}
 	unknownAnalytic, err := guard.Evaluate("update_guard_analytics", profile.EvaluationInput{
-		Meta:  map[string]any{"position": 9, "event_id": "local:9", "event_type": "otel_event", "emission_ordinal": 0},
+		Meta:  map[string]any{"position": 9, "event_id": "local#0", "event_type": "otel_event"},
 		Event: unknown.Events["otel_event"][0], Rows: guardAnalyticRows(nil),
 	})
 	if err != nil {
@@ -160,7 +160,7 @@ func TestAgentGuardProducesViolationUnknownAndLoopEvidence(t *testing.T) {
 		event := cloneMap(unknown.Events["otel_event"][0])
 		event["source_position"] = position
 		unknownAnalytic, err = guard.Evaluate("update_guard_analytics", profile.EvaluationInput{
-			Meta:  map[string]any{"position": position, "event_id": "local", "event_type": "otel_event", "emission_ordinal": 0},
+			Meta:  map[string]any{"position": position, "event_id": "local#0", "event_type": "otel_event"},
 			Event: event,
 			Rows:  guardAnalyticRows(prior),
 		})
@@ -193,8 +193,8 @@ func TestSessionCostAccumulates(t *testing.T) {
 		t.Fatal(err)
 	}
 	result, err := cost.Evaluate("accumulate_cost", profile.EvaluationInput{
-		Meta:  map[string]any{"position": 1, "event_id": "local:1", "event_type": "otel_event", "emission_ordinal": 0},
-		Event: normalized.Events["otel_event"][0], Rows: map[string]any{"prior": nil},
+		Meta:  map[string]any{"position": 1, "event_id": "local#0", "event_type": "otel_event"},
+		Event: normalized.Events["otel_event"][0], Rows: map[string]any{"prior": nil, "detail": nil},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -262,7 +262,7 @@ func TestSessionCostRetainsTelemetryDimensions(t *testing.T) {
 		t.Fatalf("dimensions = %#v", event)
 	}
 	result, err := cost.Evaluate("accumulate_cost", profile.EvaluationInput{
-		Meta:  map[string]any{"position": 12, "event_id": "local:12", "event_type": "otel_event", "emission_ordinal": 0},
+		Meta:  map[string]any{"position": 12, "event_id": "local#0", "event_type": "otel_event"},
 		Event: event,
 		Rows:  map[string]any{"prior": nil, "detail": nil},
 	})
@@ -290,7 +290,7 @@ func TestSessionCostDetailKeepsMixedModelsSeparate(t *testing.T) {
 		}
 		event := normalized.Events["otel_event"][0]
 		result, err := cost.Evaluate("accumulate_cost", profile.EvaluationInput{
-			Meta:  map[string]any{"position": position + 20, "event_id": fmt.Sprintf("local:%d", position+20), "event_type": "otel_event", "emission_ordinal": 0},
+			Meta:  map[string]any{"position": position + 20, "event_id": "local#0", "event_type": "otel_event"},
 			Event: event,
 			Rows:  map[string]any{"prior": nil, "detail": nil},
 		})
@@ -319,7 +319,7 @@ func TestAgentGuardRetainsFailedToolTelemetry(t *testing.T) {
 	}
 	event := normalized.Events["otel_event"][0]
 	result, err := guard.Evaluate("update_guard_analytics", profile.EvaluationInput{
-		Meta:  map[string]any{"position": 13, "event_id": "local:13", "event_type": "otel_event", "emission_ordinal": 0},
+		Meta:  map[string]any{"position": 13, "event_id": "local#0", "event_type": "otel_event"},
 		Event: event,
 		Rows:  guardAnalyticRows(nil),
 	})
@@ -361,7 +361,7 @@ func TestAgentGuardFindingAndCoverageTimestamps(t *testing.T) {
 			"progress_coverage_prior": coverageRows["progress-detail"],
 		}
 		result, err = guard.Evaluate("update_guard_analytics", profile.EvaluationInput{
-			Meta: map[string]any{"position": position}, Event: event, Rows: rows,
+			Meta: map[string]any{"position": position, "event_id": fmt.Sprint(input.Meta["event_id"]) + "#0", "event_type": "otel_event"}, Event: event, Rows: rows,
 		})
 		if err != nil {
 			t.Fatal(err)
@@ -770,9 +770,9 @@ func TestSessionCostMapsObservedCodexSSEUsage(t *testing.T) {
 		}
 	}
 	result, err := cost.Evaluate("accumulate_cost", profile.EvaluationInput{
-		Meta:  map[string]any{"position": 43, "event_id": "local:43", "event_type": "otel_event", "emission_ordinal": 0},
+		Meta:  map[string]any{"position": 43, "event_id": fmt.Sprint(input.Meta["event_id"]) + "#0", "event_type": "otel_event"},
 		Event: event,
-		Rows:  map[string]any{"prior": nil},
+		Rows:  map[string]any{"prior": nil, "detail": nil},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -870,14 +870,15 @@ func TestActivityStatsFoldsCoverageAndLatencyBuckets(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	normalized, err := stats.Evaluate("normalize_activity", observedCodexInputs(t)["api_request"])
+	input := observedCodexInputs(t)["api_request"]
+	normalized, err := stats.Evaluate("normalize_activity", input)
 	if err != nil {
 		t.Fatal(err)
 	}
 	event := normalized.Events["otel_event"][0]
 	for _, fold := range []string{"update_event_inventory", "update_session_activity", "update_request_performance"} {
 		result, err := stats.Evaluate(fold, profile.EvaluationInput{
-			Meta:  map[string]any{"position": 46, "event_id": "local:46", "event_type": "otel_event", "emission_ordinal": 0},
+			Meta:  map[string]any{"position": 46, "event_id": fmt.Sprint(input.Meta["event_id"]) + "#0", "event_type": "otel_event"},
 			Event: event, Rows: map[string]any{"prior": nil},
 		})
 		if err != nil {

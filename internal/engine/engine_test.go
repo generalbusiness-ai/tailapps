@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
@@ -738,11 +739,55 @@ func TestRuntimeProfileUpgradeKeepsQueryAndControlButClosesIngestion(t *testing.
 		t.Fatal(err)
 	}
 
+	// Simulate a crash after recording a new-runtime continuation journal but
+	// before the physical projection was changed. Recovery must abort it.
+	registry, err := definition.Open(filepath.Join(home, "control.sqlite"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := registry.BeginActivation(ctx, definition.ActivationJournal{Name: "agent-guard", NewRevision: active.Revision, Runtime: profile.CurrentRuntimeID(), Mode: "continue", Boundary: 99, ExpectedDraft: app.DraftRevision, OldRevision: &active.Revision}); err != nil {
+		t.Fatal(err)
+	}
+	if err := registry.Close(); err != nil {
+		t.Fatal(err)
+	}
+	pendingQueue, err := inbox.Open(filepath.Join(home, "control.sqlite"), inbox.Limits{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pendingQueue.Enqueue(ctx, []inbox.Record{{Signal: "log", Name: "before-crash", Source: "test", ContentDigest: "sha256:crash", JSON: []byte(`{"attributes":{}}`)}}, []inbox.Consumer{{Tailapp: "agent-guard", Revision: active.Revision}}); err != nil {
+		t.Fatal(err)
+	}
+	crashPending, err := pendingQueue.Pending(ctx, "agent-guard", 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := pendingQueue.Close(); err != nil {
+		t.Fatal(err)
+	}
+
 	upgraded, err := Open(ctx, home)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer upgraded.Close()
+	recoveredPending, err := upgraded.queue.Pending(ctx, "agent-guard", 10)
+	if err != nil || !reflect.DeepEqual(crashPending, recoveredPending) {
+		t.Fatalf("journal recovery changed queued work: %#v, %v", recoveredPending, err)
+	}
+	journals, err := upgraded.registry.ActivationJournals(ctx)
+	if err != nil || len(journals) != 0 {
+		t.Fatalf("incomplete journal was not aborted: %#v, %v", journals, err)
+	}
+	recoveredFrontier, err := upgraded.active["agent-guard"].Frontier(ctx)
+	if err != nil || !reflect.DeepEqual(active, recoveredFrontier) {
+		t.Fatalf("incomplete continuation changed stored frontier: %#v, %v", recoveredFrontier, err)
+	}
+	recoveredRuntime, err := upgraded.active["agent-guard"].StoredRuntime(ctx)
+	if err != nil || recoveredRuntime != "legacy-profile" {
+		t.Fatalf("journal recovery relabelled runtime: %s, %v", recoveredRuntime, err)
+	}
+
 	status, err := upgraded.Status(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -767,9 +812,7 @@ func TestRuntimeProfileUpgradeKeepsQueryAndControlButClosesIngestion(t *testing.
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := upgraded.Activate(ctx, "agent-guard", current.DraftRevision, "continue", false); err != nil {
-		t.Fatal(err)
-	}
+	assertUpgradeRequiresReset(t, upgraded, current.DraftRevision)
 	status, err = upgraded.Status(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -782,10 +825,9 @@ func TestRuntimeProfileUpgradeKeepsQueryAndControlButClosesIngestion(t *testing.
 // TestLegacyRuntimeProjectionFollowsTheExplicitUpgradePath builds a home
 // whose durable identity is the real legacy RuntimeID - revision digests
 // seeded with the legacy string, exactly as the pre-switchover binary
-// recorded them - and asserts the stage-5 contract: recovery resolves it
-// through the retained legacy compiler, keeps it queryable and recognizable,
-// holds ingestion, and only an explicit continue re-activates it under the
-// composed runtime with a new revision.
+// recorded them. Recovery keeps it queryable and recognizable, holds
+// ingestion, and requires an acknowledged reset under the current runtime.
+// The legacy resolver recognizes identity; it does not replay old semantics.
 func TestLegacyRuntimeProjectionFollowsTheExplicitUpgradePath(t *testing.T) {
 	ctx := context.Background()
 	home := filepath.Join(t.TempDir(), "home")
@@ -879,15 +921,13 @@ func TestLegacyRuntimeProjectionFollowsTheExplicitUpgradePath(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := upgraded.Activate(ctx, "agent-guard", current.DraftRevision, "continue", false); err != nil {
-		t.Fatalf("continue activation under the composed runtime: %v", err)
-	}
+	assertUpgradeRequiresReset(t, upgraded, current.DraftRevision)
 	status, err = upgraded.Status(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !status.IngestionReady {
-		t.Fatal("continue activation did not reopen ingestion")
+		t.Fatal("acknowledged reset did not reopen ingestion")
 	}
 	identityDB, err := sqlite3.Open(filepath.Join(home, "projections", "agent-guard", "state.sqlite"))
 	if err != nil {
@@ -904,10 +944,74 @@ func TestLegacyRuntimeProjectionFollowsTheExplicitUpgradePath(t *testing.T) {
 	}
 	revision, runtime := statement.ColumnText(0), statement.ColumnText(1)
 	if runtime != profile.CurrentRuntimeID() {
-		t.Fatalf("continued projection runtime = %q", runtime)
+		t.Fatalf("reset projection runtime = %q", runtime)
 	}
 	if revision == legacy.Revision {
-		t.Fatal("continue activation kept the legacy revision digest")
+		t.Fatal("reset kept the legacy revision digest")
+	}
+}
+
+// The unknown-runtime recovery path has a current compiled Profile, so only
+// checking that in-memory profile would silently detach the old obligations.
+func assertUpgradeRequiresReset(t *testing.T, e *Engine, draft string) {
+	t.Helper()
+	ctx := context.Background()
+	current := e.active["agent-guard"]
+	stored, err := current.StoredRuntime(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	before, err := current.Frontier(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	existingPending, err := e.queue.Pending(ctx, "agent-guard", 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.queue.Enqueue(ctx, []inbox.Record{{Signal: "log", Name: "pending", Source: "test", ContentDigest: "sha256:pending", JSON: []byte(`{"attributes":{}}`)}}, []inbox.Consumer{{Tailapp: "agent-guard", Revision: before.Revision}}); err != nil {
+		t.Fatal(err)
+	}
+	pending, err := e.queue.Pending(ctx, "agent-guard", 10)
+	if err != nil || len(pending) != len(existingPending)+1 {
+		t.Fatalf("missing pending control: %#v, %v", pending, err)
+	}
+	stats, err := e.queue.Stats(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, mode := range []string{"continue", "reset"} {
+		_, err := e.Activate(ctx, "agent-guard", draft, mode, false)
+		if err == nil {
+			t.Fatalf("%s admitted an old runtime without acknowledged reset", mode)
+		}
+		after, err := current.Frontier(ctx)
+		if err != nil || !reflect.DeepEqual(before, after) {
+			t.Fatalf("%s changed frontier: %#v, %v", mode, after, err)
+		}
+		gotRuntime, err := current.StoredRuntime(ctx)
+		if err != nil || gotRuntime != stored {
+			t.Fatalf("%s relabelled stored runtime: %s, %v", mode, gotRuntime, err)
+		}
+		gotPending, err := e.queue.Pending(ctx, "agent-guard", 10)
+		if err != nil || !reflect.DeepEqual(pending, gotPending) {
+			t.Fatalf("%s changed obligations: %#v, %v", mode, gotPending, err)
+		}
+		gotStats, err := e.queue.Stats(ctx)
+		if err != nil || !reflect.DeepEqual(stats, gotStats) {
+			t.Fatalf("%s changed queue: %#v, %v", mode, gotStats, err)
+		}
+		journals, err := e.registry.ActivationJournals(ctx)
+		if err != nil || len(journals) != 0 {
+			t.Fatalf("%s left an activation journal: %#v, %v", mode, journals, err)
+		}
+		app, err := e.registry.Get(ctx, "agent-guard")
+		if err != nil || app.ActiveRevision == nil || *app.ActiveRevision != before.Revision {
+			t.Fatalf("%s changed registry identity: %#v, %v", mode, app, err)
+		}
+	}
+	if _, err := e.Activate(ctx, "agent-guard", draft, "reset", true); err != nil {
+		t.Fatalf("acknowledged reset: %v", err)
 	}
 }
 

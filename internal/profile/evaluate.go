@@ -21,6 +21,15 @@ type EvaluationResult struct {
 	Tables   map[string]TableChanges     `json:"tables"`
 }
 
+// ValidateProgramInput checks the declared metadata/event before the host
+// binds a read query. Evaluate still validates the complete input and rows.
+func (p *Profile) ValidateProgramInput(programName string, meta, event map[string]any) error {
+	if p.core == nil {
+		return errors.New("profile has no compiled application handle")
+	}
+	return p.core.ValidateProgramInput(programName, meta, event)
+}
+
 // Evaluate runs one named program through the core handle and returns its
 // validated result; bounded evaluation and strict result and mutation-plan
 // validation live in the core.

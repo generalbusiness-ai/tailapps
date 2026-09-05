@@ -24,6 +24,10 @@ func renamedDialect() Dialect {
 		EnvelopeField{Name: "id", Type: "TEXT", Nullable: false},
 		EnvelopeField{Name: "topic", Type: "TEXT", Nullable: true},
 	)
+	dialect.Input = InputContract{
+		Meta:  NewObjectContract(false, InputField{Name: "position", Kind: InputScalar, Type: "INTEGER"}),
+		Event: NewObjectContract(false, InputField{Name: "body", Kind: InputJSONObject}),
+	}
 	dialect.PrivateEvent = PrivateEventPolicy{Name: "inner_event", ExactlyOne: true}
 	return dialect
 }
@@ -116,7 +120,11 @@ func TestRenamedDialectCompilesAndEvaluates(t *testing.T) {
 		t.Fatalf("fold mutation plan = %#v", folded.Tables)
 	}
 	// The dialect names surface in diagnostics exactly as configured.
-	if _, err := application.Evaluate("shape", EvaluationInput{Event: map[string]any{"body": map[string]any{}}}); err == nil ||
+	if _, err := application.Evaluate("shape", EvaluationInput{
+		Meta:  map[string]any{"position": 1},
+		Event: map[string]any{"id": "r-2", "topic": "alpha", "body": map[string]any{}},
+		Rows:  map[string]any{"mine": nil},
+	}); err == nil ||
 		!strings.Contains(err.Error(), "inner_event") {
 		t.Fatalf("diagnostic must carry the configured private event name: %v", err)
 	}
@@ -303,6 +311,8 @@ func TestConcurrentEvaluateOnOneHandle(t *testing.T) {
 	}
 	const goroutines = 16
 	const repeats = 8
+	shadowInput := input
+	shadowInput.Rows = map[string]any{} // The sibling program declares no reads.
 	results := make(chan string, goroutines*2*repeats)
 	var group sync.WaitGroup
 	for worker := 0; worker < goroutines; worker++ {
@@ -319,7 +329,7 @@ func TestConcurrentEvaluateOnOneHandle(t *testing.T) {
 				results <- string(encoded)
 				// The sibling program concurrently, so distinct locks are
 				// held at once without deadlock.
-				if _, err := application.Evaluate("shadow", input); err != nil {
+				if _, err := application.Evaluate("shadow", shadowInput); err != nil {
 					results <- "ERROR: " + err.Error()
 				} else {
 					results <- "shadow-ok"
@@ -356,6 +366,13 @@ func TestContinueCompatibleOverCoreHandles(t *testing.T) {
 	next := loadCorpusApplication(t, "corpus/v1/projection-state/app")
 	if err := ContinueCompatible(existing, next); err != nil {
 		t.Fatalf("identical applications must be continue-compatible: %v", err)
+	}
+	otherRuntime, err := LoadApplication(os.DirFS("corpus/v1/projection-state/app"), ".", "corpus-app", Tailapp(), "different-runtime")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := ContinueCompatible(existing, otherRuntime); err == nil || !strings.Contains(err.Error(), "runtime") {
+		t.Fatalf("same storage under different runtime: %v", err)
 	}
 	basic := loadCorpusApplication(t, "corpus/v1/basic/app")
 	if err := ContinueCompatible(existing, basic); err == nil {

@@ -201,13 +201,16 @@ func (app *Application) lookup(name string) (Program, bool) {
 	return Program{}, false
 }
 
-// ContinueCompatible checks the storage rule for a continue activation:
+// ContinueCompatible requires the same runtime and checks the storage rule:
 // every existing writable table must retain its complete stored shape. The
 // next revision may add tables; the host creates those empty at its
 // delivery boundary.
 func ContinueCompatible(existing, next *Application) error {
 	if existing == nil || next == nil {
 		return fmt.Errorf("both existing and next applications are required")
+	}
+	if existing.runtimeProfile != next.runtimeProfile {
+		return fmt.Errorf("runtime profile changed; acknowledged reset is required")
 	}
 	for name, prior := range existing.tables {
 		candidate, ok := next.tables[name]

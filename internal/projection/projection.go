@@ -124,9 +124,9 @@ func Open(ctx context.Context, path string, compiled *profile.Profile) (*Project
 	return openExisting(ctx, path, compiled, compiled.Revision, false)
 }
 
-// OpenForUpgrade opens an identity-matching legacy projection for query and
-// explicit lifecycle repair only. The engine must not deliver events through
-// it until a current-profile continuation or reset succeeds.
+// OpenForUpgrade opens an identity-matching old projection for query and
+// acknowledged reset only. Its physical identity remains in the database:
+// a profile recompiled by the current core does not relabel the stored runtime.
 func OpenForUpgrade(ctx context.Context, path string, compiled *profile.Profile, expectedRevision string) (*Projection, error) {
 	return openExisting(ctx, path, compiled, expectedRevision, true)
 }
@@ -290,8 +290,18 @@ func (p *Projection) Database() *sql.DB         { return p.db }
 func (p *Projection) Profile() *profile.Profile { return p.profile }
 func (p *Projection) Path() string              { return p.path }
 
+// StoredRuntime reads physical identity, including after OpenForUpgrade has
+// opened the database with a profile compiled under a different runtime.
+func (p *Projection) StoredRuntime(ctx context.Context) (string, error) {
+	var runtime string
+	if err := p.db.QueryRowContext(ctx, `SELECT runtime_profile FROM tailapp_projection_identity WHERE singleton=1`).Scan(&runtime); err != nil {
+		return "", fmt.Errorf("read stored runtime: %w", err)
+	}
+	return runtime, nil
+}
+
 // Continue atomically preserves existing writable tables, adds new tables,
-// replaces derived schema objects and switches the runtime profile at the
+// and replaces derived schema objects within the same runtime at the
 // already-drained activation boundary.
 func (p *Projection) Continue(ctx context.Context, next *profile.Profile, boundary int64) error {
 	p.mu.Lock()
@@ -304,6 +314,13 @@ func (p *Projection) Continue(ctx context.Context, next *profile.Profile, bounda
 		return err
 	}
 	defer tx.Rollback()
+	var storedRuntime string
+	if err := tx.QueryRowContext(ctx, `SELECT runtime_profile FROM tailapp_projection_identity WHERE singleton=1`).Scan(&storedRuntime); err != nil {
+		return fmt.Errorf("read stored runtime: %w", err)
+	}
+	if storedRuntime != next.RuntimeProfile {
+		return errors.New("stored runtime profile changed; acknowledged reset is required")
+	}
 	if err := p.checkJSONStorage(ctx, tx); err != nil {
 		return err
 	}
@@ -499,6 +516,10 @@ func pointerValue(value *string) any {
 }
 
 func (p *Projection) evaluationInput(ctx context.Context, tx *sql.Tx, program profile.Program, position int64, eventID, eventType string, event map[string]any) (profile.EvaluationInput, error) {
+	meta := map[string]any{"position": position, "event_id": eventID, "event_type": eventType}
+	if err := p.profile.ValidateProgramInput(program.Name, meta, event); err != nil {
+		return profile.EvaluationInput{}, err
+	}
 	readValues := make(map[string]any, len(program.Reads))
 	if len(program.Reads) > 0 {
 		// The compiled read plan executes under the core's default-deny
@@ -520,7 +541,7 @@ func (p *Projection) evaluationInput(ctx context.Context, tx *sql.Tx, program pr
 		}
 		readValues[read.Name] = value
 	}
-	return profile.EvaluationInput{Meta: map[string]any{"position": position, "event_id": eventID, "event_type": eventType}, Event: event, Rows: readValues}, nil
+	return profile.EvaluationInput{Meta: meta, Event: event, Rows: readValues}, nil
 }
 
 func executeRead(ctx context.Context, tx *sql.Tx, read profile.Read, event map[string]any) (any, error) {
@@ -541,7 +562,7 @@ func executeRead(ctx context.Context, tx *sql.Tx, read profile.Read, event map[s
 	if err != nil {
 		return nil, err
 	}
-	var values []map[string]any
+	values := make([]map[string]any, 0)
 	for rows.Next() {
 		scans := make([]any, len(columnTypes))
 		destinations := make([]any, len(columnTypes))
