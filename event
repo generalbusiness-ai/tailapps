@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:803dd4f2efc108dc97c1c04d28a5afec9c9d2fb5","text":"Merge retired a covered predecessor; the successor is at jsonataddl/corpus/v1/basic/inputs/accumulate-prior.json."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:88b415d7b11cc9d615c9ddad4e4d159299ba1749","text":"Merge retired a covered predecessor; the successor is at internal/profile/runtime_test.go."}
