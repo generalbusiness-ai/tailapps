@@ -1,0 +1,18 @@
+=== RUN   TestReleaseAssetsAreVersionPinnedAndInstallable
+    release_test.go:329: sh /var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/TestReleaseAssetsAreVersionPinnedAndInstallable310640936/001/upgrade.sh: exit status 1
+        new resident did not become healthy; restored the known-good prior binary
+    release_test.go:294: ALL RESIDENT ATTEMPTS: {
+          "control_socket": "/tmp/tailapps-upgrade-1623270669/engine.sock",
+          "home": "/tmp/tailapps-upgrade-1623270669",
+          "otlp_http": "http://127.0.0.1:63322"
+        }
+        tailapp: engine_already_running
+        {
+          "control_socket": "/tmp/tailapps-upgrade-1623270669/engine.sock",
+          "home": "/tmp/tailapps-upgrade-1623270669",
+          "otlp_http": "http://127.0.0.1:63325"
+        }
+--- FAIL: TestReleaseAssetsAreVersionPinnedAndInstallable (12.33s)
+FAIL
+FAIL	github.com/generalbusiness-ai/tailapps/scripts	12.663s
+FAIL

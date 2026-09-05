@@ -1,0 +1,11 @@
+=== RUN   TestServiceRestartWaitsForResidentExit
+    service_test.go:202: restart returned before old resident exit: <nil>
+    service_test.go:50: All resident startup/exit attempts:
+        starting /var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/go-build2403931920/b001/scripts.test
+        starting /var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/go-build2403931920/b001/scripts.test
+        engine_already_running
+        pid 62736 exited: exit status 1
+--- FAIL: TestServiceRestartWaitsForResidentExit (0.03s)
+FAIL
+FAIL	github.com/generalbusiness-ai/tailapps/scripts	0.417s
+FAIL
