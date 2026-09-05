@@ -319,11 +319,17 @@ func TestFoldReadsExecuteUnderTheDefaultDenyAuthorizer(t *testing.T) {
 	if fold.Name == "" || len(fold.Reads) == 0 {
 		t.Fatal("fixture fold with reads is missing")
 	}
-	event := map[string]any{
-		"harness": "codex", "session_id": "s1",
-		"tool_capability": "tool-observation", "target_capability": "target-detail",
-		"progress_capability": "progress-detail",
+	source, err := deliveryEvent(guardDelivery(1, "codex", "codex.tool_result", map[string]any{"conversation.id": "s1", "tool_name": "read", "target": "/workspace", "success": true}))
+	if err != nil {
+		t.Fatal(err)
 	}
+	normalized, err := guard.Evaluate(guard.Normalizer.Name, profile.EvaluationInput{
+		Meta: map[string]any{"position": 1, "event_id": "e1", "event_type": "otlp_record"}, Event: source, Rows: map[string]any{},
+	})
+	if err != nil || len(normalized.Events["otel_event"]) != 1 {
+		t.Fatalf("producer-shaped event: %#v, %v", normalized, err)
+	}
+	event := normalized.Events["otel_event"][0]
 	input, err := projection.evaluationInput(ctx, tx, fold, 1, "e1", "otel_event", event)
 	if err != nil {
 		t.Fatalf("the compiled plan must execute under its own authorizer: %v", err)
@@ -338,7 +344,71 @@ func TestFoldReadsExecuteUnderTheDefaultDenyAuthorizer(t *testing.T) {
 	if err == nil || !(strings.Contains(err.Error(), "prohibited") || strings.Contains(err.Error(), "not authorized")) {
 		t.Fatalf("a read outside the compiled plan must be denied at execution time: %v", err)
 	}
+	// Invalid input must refuse before even attempting this forbidden SQL.
+	delete(event, "action_fingerprint")
+	_, err = projection.evaluationInput(ctx, tx, doctored, 1, "e1", "otel_event", event)
+	if err == nil || !strings.Contains(err.Error(), `input event: field "action_fingerprint" is required`) {
+		t.Fatalf("read binding preceded input admission: %v", err)
+	}
 	if _, err := tx.ExecContext(ctx, `UPDATE tailapp_stats SET consumed_records = consumed_records WHERE singleton=1`); err != nil {
 		t.Fatalf("host writes must be unrestricted after the plan releases the guard: %v", err)
+	}
+}
+
+// Empty MANY results must remain arrays through the actual SQL read and fold;
+// otherwise input admission turns a valid delivery into a permanent gap.
+func TestManyReadEmptyAndPopulatedDelivery(t *testing.T) {
+	for _, selected := range []string{"value", "VALUE"} {
+		t.Run(selected, func(t *testing.T) {
+			compiled, err := profile.Load(fstest.MapFS{
+				"application.sql": {Data: []byte(`
+CREATE EVENT otel_event (id TEXT NOT NULL);
+CREATE TABLE state (id TEXT PRIMARY KEY, value INTEGER NOT NULL);
+CREATE NORMALIZER normalize ON otlp_record USING 'folds/normalize.jsonata' EMITS otel_event;
+CREATE FOLD count_prior ON otel_event
+READ prior MANY LIMIT 10 AS SELECT id, ` + selected + ` FROM state ORDER BY id
+USING 'folds/count.jsonata' WRITES state;
+CREATE EXPORT state AS SELECT id, value FROM state;`)},
+				"folds/normalize.jsonata": {Data: []byte(`{"decision":"effective","facts":[],"events":{"otel_event":[{"id":meta.event_id}]},"tables":{}}`)},
+				"folds/count.jsonata":     {Data: []byte(`{"decision":"effective","facts":[],"tables":{"state":{"insert":[{"id":event.id,"value":$count(rows.prior)}]}}}`)},
+			}, ".", "many-read")
+			if err != nil {
+				t.Fatal(err)
+			}
+			ctx := context.Background()
+			path := filepath.Join(t.TempDir(), "state.sqlite")
+			item, err := Create(ctx, path, compiled, 0, "reset")
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer func() {
+				if item != nil {
+					item.Close()
+				}
+			}()
+			for position := int64(1); position <= 2; position++ {
+				if _, err := item.Process(ctx, guardDelivery(position, "codex", "count", map[string]any{})); err != nil {
+					t.Fatalf("delivery %d: %v", position, err)
+				}
+				frontier, err := item.Frontier(ctx)
+				if err != nil || frontier.InterpretedPosition != position || !frontier.Complete || frontier.GapPosition != nil {
+					t.Fatalf("delivery %d frontier = %#v, %v", position, frontier, err)
+				}
+				assertCount(t, item, `SELECT value FROM state WHERE id=?`, int(position-1), fmt.Sprintf("local:%d", position))
+			}
+			if err := item.Close(); err != nil {
+				t.Fatal(err)
+			}
+			item = nil
+			item, err = Open(ctx, path, compiled)
+			if err != nil {
+				t.Fatal(err)
+			}
+			result, err := item.Process(ctx, guardDelivery(2, "codex", "count", map[string]any{}))
+			if err != nil || !result.AlreadyApplied {
+				t.Fatalf("reopened retry: %#v, %v", result, err)
+			}
+			assertCount(t, item, `SELECT COUNT(*) FROM state`, 2)
+		})
 	}
 }

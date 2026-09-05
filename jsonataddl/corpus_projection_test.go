@@ -96,8 +96,14 @@ func runProjectionCase(t *testing.T, caseDir string, application *jsonataddl.App
 		t.Fatalf("program %q has no read plan", projection.Program)
 	}
 	outcome := ""
+	if err := application.ValidateProgramInput(projection.Program, projection.Meta, event); err != nil {
+		outcome = "ERROR: " + err.Error() + "\n"
+	}
 	rows := make(map[string]any, len(plan))
 	for _, read := range plan {
+		if outcome != "" {
+			break
+		}
 		value, err := executePlanRead(connection, read, event)
 		if err != nil {
 			outcome = "ERROR: read " + read.Name + ": " + err.Error() + "\n"
@@ -184,7 +190,10 @@ func executePlanRead(connection *sqlite3.Conn, read jsonataddl.Read, event map[s
 			return nil, err
 		}
 	}
-	var values []map[string]any
+	if statement.ColumnCount() != len(read.Columns) {
+		return nil, fmt.Errorf("read result columns differ from the declared selection")
+	}
+	values := make([]map[string]any, 0)
 	for statement.Step() {
 		row := make(map[string]any, statement.ColumnCount())
 		for index := 0; index < statement.ColumnCount(); index++ {
@@ -192,7 +201,7 @@ func executePlanRead(connection *sqlite3.Conn, read jsonataddl.Read, event map[s
 			if err != nil {
 				return nil, fmt.Errorf("column %q: %w", statement.ColumnName(index), err)
 			}
-			row[statement.ColumnName(index)] = value
+			row[read.Columns[index]] = value
 		}
 		values = append(values, row)
 	}

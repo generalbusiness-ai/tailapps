@@ -141,6 +141,11 @@ func TestRevisionAndStorageCompatibilityAreSeparate(t *testing.T) {
 	if err := ContinueCompatible(prior, next); err != nil {
 		t.Fatalf("program-only continuation: %v", err)
 	}
+	otherRuntime := *next
+	otherRuntime.RuntimeProfile += "-changed"
+	if err := ContinueCompatible(prior, &otherRuntime); err == nil || !strings.Contains(err.Error(), "runtime") {
+		t.Fatalf("different runtime accepted: %v", err)
+	}
 	formattedDDL := strings.Replace(validDDL, "calls INTEGER NOT NULL", "calls    INTEGER    NOT NULL", 1)
 	formatted, err := Load(validFS(formattedDDL), ".", "agent-guard")
 	if err != nil {

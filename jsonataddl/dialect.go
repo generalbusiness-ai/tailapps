@@ -7,8 +7,8 @@ package jsonataddl
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
-	"strings"
+	"encoding/json"
+	"sort"
 )
 
 // Dialect is the complete host policy a compiler receives instead of
@@ -28,6 +28,7 @@ type Dialect struct {
 	Identity     DialectIdentity
 	Layout       SourceLayout
 	HostEvent    EventContract
+	Input        InputContract
 	PrivateEvent PrivateEventPolicy
 	Topology     TopologyPolicy
 	Authority    AuthorityPolicy
@@ -59,6 +60,8 @@ type EnvelopeField struct {
 	Type string
 	// Nullable is whether the host may deliver the field as null.
 	Nullable bool
+	// Optional permits an absent key; false keeps the scalar required.
+	Optional bool
 }
 
 // EventContract describes the host event a normalizer receives: its name
@@ -140,6 +143,7 @@ type Limits struct {
 	MaxSourceBytes  int
 	MaxProgramBytes int
 	MaxInputBytes   int
+	MaxInputDepth   int
 	MaxOutputBytes  int
 	MaxDepth        int
 	MaxRange        int
@@ -158,7 +162,7 @@ type Limits struct {
 // are bound mechanically.
 func Tailapp() Dialect {
 	return Dialect{
-		Identity: DialectIdentity{Name: "tailapp-otlp", Version: "1"},
+		Identity: DialectIdentity{Name: "tailapp-otlp", Version: "2"},
 		Layout: SourceLayout{
 			DefinitionPath: "application.sql",
 			ProgramRoot:    "folds",
@@ -175,6 +179,13 @@ func Tailapp() Dialect {
 			EnvelopeField{Name: "span_id", Type: "TEXT", Nullable: true},
 			EnvelopeField{Name: "content_digest", Type: "TEXT", Nullable: false},
 		),
+		Input: InputContract{
+			Meta: NewObjectContract(false,
+				InputField{Name: "position", Kind: InputScalar, Type: "INTEGER"},
+				InputField{Name: "event_id", Kind: InputScalar, Type: "TEXT"},
+				InputField{Name: "event_type", Kind: InputScalar, Type: "TEXT"}),
+			Event: NewObjectContract(false, InputField{Name: "record", Kind: InputJSONObject}),
+		},
 		PrivateEvent: PrivateEventPolicy{Name: "otel_event", ExactlyOne: true},
 		Topology: TopologyPolicy{
 			ExactlyOneNormalizer: true,
@@ -191,6 +202,7 @@ func Tailapp() Dialect {
 			MaxSourceBytes:  512 << 10,
 			MaxProgramBytes: 64 << 10,
 			MaxInputBytes:   256 << 10,
+			MaxInputDepth:   1024,
 			MaxOutputBytes:  256 << 10,
 			MaxDepth:        64,
 			MaxRange:        4096,
@@ -206,39 +218,45 @@ func Tailapp() Dialect {
 // field, in a fixed order. It is the basis of the dialect's identity
 // digest: any field change changes it.
 func (dialect Dialect) Canonical() string {
-	var builder strings.Builder
-	write := func(key string, value any) {
-		fmt.Fprintf(&builder, "%s=%v\n", key, value)
+	type object struct {
+		Specified bool
+		Nullable  bool
+		Fields    []InputField
 	}
-	write("identity.name", dialect.Identity.Name)
-	write("identity.version", dialect.Identity.Version)
-	write("layout.definition", dialect.Layout.DefinitionPath)
-	write("layout.program-root", dialect.Layout.ProgramRoot)
-	write("layout.program-suffix", dialect.Layout.ProgramSuffix)
-	write("host-event.name", dialect.HostEvent.Name)
-	for _, field := range dialect.HostEvent.Fields() {
-		write("host-event.field."+field.Name, field.Type+"/nullable="+fmt.Sprint(field.Nullable))
+	canonicalObject := func(contract ObjectContract) object {
+		fields := contract.Fields()
+		sort.Slice(fields, func(i, j int) bool { return fields[i].Name < fields[j].Name })
+		for i := range fields {
+			members := make([]EnvelopeField, len(fields[i].Members))
+			copy(members, fields[i].Members)
+			sort.Slice(members, func(i, j int) bool { return members[i].Name < members[j].Name })
+			fields[i].Members = members
+		}
+		return object{contract.specified, contract.nullable, fields}
 	}
-	write("private-event.name", dialect.PrivateEvent.Name)
-	write("private-event.exactly-one", dialect.PrivateEvent.ExactlyOne)
-	write("topology.exactly-one-normalizer", dialect.Topology.ExactlyOneNormalizer)
-	write("topology.at-least-one-fold", dialect.Topology.AtLeastOneFold)
-	write("topology.folds-may-emit-events", dialect.Topology.FoldsMayEmitEvents)
-	write("authority.normalizer-reads", dialect.Authority.NormalizerReads)
-	write("authority.fold-reads", dialect.Authority.FoldReads)
-	write("authority.single-writer-tables", dialect.Authority.SingleWriterTables)
-	write("limits.element-bytes", dialect.Limits.MaxElementBytes)
-	write("limits.source-bytes", dialect.Limits.MaxSourceBytes)
-	write("limits.program-bytes", dialect.Limits.MaxProgramBytes)
-	write("limits.input-bytes", dialect.Limits.MaxInputBytes)
-	write("limits.output-bytes", dialect.Limits.MaxOutputBytes)
-	write("limits.depth", dialect.Limits.MaxDepth)
-	write("limits.range", dialect.Limits.MaxRange)
-	write("limits.events", dialect.Limits.MaxEvents)
-	write("limits.facts", dialect.Limits.MaxFacts)
-	write("limits.row-changes", dialect.Limits.MaxRowChanges)
-	write("limits.many-rows", dialect.Limits.MaxManyRows)
-	return builder.String()
+	fields := dialect.HostEvent.Fields()
+	sort.Slice(fields, func(i, j int) bool { return fields[i].Name < fields[j].Name })
+	// Fixed-order records, explicit defaults and JSON string escaping prevent
+	// member delimiters or newlines from aliasing another dialect. Object
+	// declarations are sets; values such as input string arrays retain order.
+	value := struct {
+		Encoding     string
+		Identity     DialectIdentity
+		Layout       SourceLayout
+		HostEvent    string
+		Envelope     []EnvelopeField
+		Meta         object
+		Event        object
+		PrivateEvent PrivateEventPolicy
+		Topology     TopologyPolicy
+		Authority    AuthorityPolicy
+		Limits       Limits
+	}{"jsonataddl-dialect/2", dialect.Identity, dialect.Layout,
+		dialect.HostEvent.Name, fields, canonicalObject(dialect.Input.Meta),
+		canonicalObject(dialect.Input.Event), dialect.PrivateEvent,
+		dialect.Topology, dialect.Authority, dialect.Limits}
+	encoded, _ := json.Marshal(value) // This record contains no unsupported JSON types.
+	return string(encoded)
 }
 
 // DialectComponent renders a dialect as its runtime identity component:

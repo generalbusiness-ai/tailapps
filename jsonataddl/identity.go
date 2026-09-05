@@ -108,7 +108,7 @@ func (identity RuntimeIdentity) Component(key string) (string, bool) {
 // because orchestration and canonicalization are not its to name.
 func CoreComponents() []Component {
 	return []Component{
-		{Key: "core.interface", Value: "jsonata-ddl-application-interface/2026-08-26"},
+		{Key: "core.interface", Value: "jsonata-ddl-application-interface/2026-09-05"},
 		{Key: "core.grammar", Value: "ddl/2"},
 		{Key: "core.jsonata", Value: "jsonata-go-v206/bounded-2"},
 		{Key: "core.value-codec", Value: "logical-values/2"},

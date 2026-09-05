@@ -375,7 +375,7 @@ func BenchmarkURLReputationPipelineFold(b *testing.B) {
 		b.Fatal(err)
 	}
 	foldInput := profile.EvaluationInput{
-		Meta:  map[string]any{"position": 1, "event_id": "local:1:0", "event_type": "otel_event"},
+		Meta:  map[string]any{"position": 1, "event_id": fmt.Sprint(input.Meta["event_id"]) + "#0", "event_type": "otel_event"},
 		Event: normalized.Events["otel_event"][0], Rows: emptyURLPipelineRows(),
 	}
 	b.ReportAllocs()
@@ -439,7 +439,7 @@ func foldURLEvent(t testing.TB, compiled *profile.Profile, event map[string]any,
 	t.Helper()
 	result, err := compiled.Evaluate(urlPipelineFold, profile.EvaluationInput{
 		Meta: map[string]any{
-			"position": event["source_position"], "event_id": "local:fold", "event_type": "otel_event", "emission_ordinal": 0,
+			"position": event["source_position"], "event_id": fmt.Sprintf("local:%v#0", event["source_position"]), "event_type": "otel_event",
 		},
 		Event: event,
 		Rows:  rows,

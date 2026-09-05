@@ -7,13 +7,10 @@ import (
 	"github.com/generalbusiness-ai/tailapps/jsonataddl"
 )
 
-// Load is the retained legacy resolver: the core compiler under the
-// Tailapp dialect seeded with the legacy RuntimeID, so a pre-switchover
-// revision compiles to its original digest, diagnostics, and semantics.
-// The stage-4 differential corpus proved the core identical to the removed
-// legacy implementation over the frozen goldens; that freeze is what
-// justifies this resolver standing in for the old code. Live compilation
-// is LoadCurrent.
+// Load recognizes revisions seeded with the historical RuntimeID for query-only
+// recovery. It uses the current compiler and does not reproduce historical
+// evaluation semantics. Live compilation uses LoadCurrent; old projections
+// require an acknowledged reset before delivery resumes.
 func Load(files fs.FS, root, name string) (*Profile, error) {
 	if err := ValidateName(name); err != nil {
 		return nil, err

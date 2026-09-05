@@ -21,7 +21,7 @@ var updateCorpus = flag.Bool("update-corpus", false, "rewrite corpus golden file
 
 const (
 	corpusRoot           = "corpus/v1"
-	corpusRuntimeProfile = "tailapp-otlp-1.8-json-v1-ddl-jsonata-v206-sqlite-3.53.4@5"
+	corpusRuntimeProfile = "tailapp-otlp-1.8-json-v1-ddl-jsonata-v206-sqlite-3.53.4-input-contract@6"
 )
 
 type corpusManifest struct {

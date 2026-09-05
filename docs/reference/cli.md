@@ -179,8 +179,10 @@ Options:
 - `--ack-reset`: required with `reset`
 
 The first activation requires `reset`. A `continue` preserves current rows and
-requires all existing writable tables to retain their exact stored shape; new
-tables are allowed. A `reset` discards only this Tailapp's materialized state.
+requires the same stored runtime identity and all existing writable tables to
+retain their exact stored shape; new tables are allowed. A runtime change
+requires an acknowledged reset even when table shapes match. A `reset` discards
+only this Tailapp's materialized state.
 
 ### `tailapp apps delete --idempotency-key KEY APP`
 
@@ -212,47 +214,30 @@ reports `ingestion_ready: false`. Existing projections remain queryable, and a
 Tailapp frontier can still say `complete: true`: completeness describes its
 stored delivery frontier, not whether intake has reopened.
 
-This release changes the JSONata evaluation and orchestration identity and
-therefore places every existing Tailapp in that state. The additive frontier
-timestamps do not change interpretation and do not introduce another identity
-transition.
-Before replacing the binary, keep a checkout of the matching release available
-for the changed built-in sources. The source lists below are derived
-mechanically with `git diff --name-only main..HEAD -- tailapps`: keep only
-changed executable sources (`application.sql` and `folds/*.jsonata`) and group
-them by bundle. Re-run that command for every release rather than inferring a
-partial list from its schema changes. After starting the new resident:
+The declared-input contract changes the core interface, Tailapp dialect and
+host orchestration identity. Recompiling the same source under the new runtime
+does not authorize retaining its old projection. Continuation checks the
+persisted runtime before any activation journal, queue detachment or projection
+write. A refusal preserves the old rows, frontier, identity and pending work.
 
-1. Run `tailapp apps get APP` and record its `draft_revision`.
-2. For `agent-guard`, put `application.sql`, `folds/normalize.jsonata`, and
-   `folds/guard.jsonata` from `tailapps/agent-guard/`. For `session-cost`, put
-   `application.sql`, `folds/normalize.jsonata`, and `folds/cost.jsonata` from
-   `tailapps/session-cost/`. For `daily-review`, put
-   `folds/normalize.jsonata` from `tailapps/daily-review/`. Use
-   `tailapp apps put --expected REV --idempotency-key KEY APP PATH FILE` for
-   each file, replacing `REV` with the new draft revision returned by the
-   preceding put.
-3. For `signal-counts`, put `application.sql`, `folds/normalize.jsonata`, and
-   `folds/count.jsonata` from `tailapps/signal-counts/`, chaining the returned
-   revisions in the same way.
-4. Validate each final draft with `tailapp apps validate --expected REV APP`.
-   Activate `daily-review` and `session-cost` with
-   `tailapp apps activate --mode continue --expected REV --idempotency-key KEY APP`;
-   their compatible history is preserved and new detail begins at the
-   activation boundary. The added timestamp columns change existing writable
-   table shapes in `agent-guard` and `signal-counts`, so those two require
-   `--mode reset --ack-reset` and discard their prior projections.
-5. The unchanged `activity-stats` source needs no puts. Read its current
-   `draft_revision` with `apps get`, then activate that exact draft with
-   `--mode continue`.
-6. Repeat until `tailapp health` reports `ingestion_ready: true`, then resume
-   exporters. If an application source intentionally changes an existing table
-   shape, use reset only after accepting its documented data loss and add
-   `--ack-reset`; do not substitute reset for the compatible steps above.
+1. Inspect each application's current data and record its `draft_revision`
+   with `tailapp apps get APP`. Export anything needed before discarding a
+   projection.
+2. Put any intentional source changes using the returned draft revisions,
+   then run `tailapp apps validate --expected REV APP`.
+3. For each old-runtime application, explicitly accept the loss of its
+   materialized state with
+   `tailapp apps activate --mode reset --ack-reset --expected REV --idempotency-key KEY APP`.
+   Reset starts a fresh projection at the current delivery boundary; it does
+   not replay historical records. Binary installation alone performs no reset.
+4. Repeat until `tailapp health` reports `ingestion_ready: true`, then resume
+   exporters.
 
-The MCP equivalents are `tailapp_get`, one or more `tailapp_put` calls chained
-through their returned revisions, `tailapp_validate`, `tailapp_activate`, and
-finally `tailapp_status`.
+Within one runtime, compatible source changes can still use `--mode continue`.
+A changed or removed existing writable table requires acknowledged reset.
+
+The MCP equivalents use `tailapp_get`, `tailapp_put`, `tailapp_validate`,
+`tailapp_activate` with the same reset acknowledgement, and `tailapp_status`.
 
 ## Query command
 

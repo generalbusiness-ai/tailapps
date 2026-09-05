@@ -9,7 +9,6 @@
   "source_position": 8
  },
  "meta": {
-  "emission_ordinal": 0,
   "event_id": "local:9",
   "event_type": "otel_event",
   "position": 9

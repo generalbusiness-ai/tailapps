@@ -25,6 +25,13 @@ Every normalizer receives these fields:
 | `event.content_digest` | string | SHA-256 digest of `event.record`. |
 | `event.record` | object | Canonical signal-specific content below. |
 
+Every listed key is required, including keys whose value is null. The event
+root and `record` must be non-null objects; extra envelope keys refuse. Both
+program stages receive exactly `meta.position` (INTEGER), `meta.event_id` (TEXT)
+and `meta.event_type` (TEXT). No metadata default is supplied. The shorter
+signal examples below show signal-specific content, not complete evaluator
+inputs.
+
 Nanosecond timestamps are decimal strings so the full unsigned 64-bit OTLP
 range survives JSON and JSONata without precision loss.
 
@@ -176,7 +183,11 @@ or metric attribute without that signal’s dictionary.
 
 ## Limits
 
-One canonical record is at most 256 KiB. The receiver accepts OTLP/HTTP JSON or
-protobuf at `/v1/logs`, `/v1/traces`, and `/v1/metrics`; it does not accept
+One canonical record is at most 256 KiB. The complete encoded evaluation input,
+including metadata, envelope and read results, must also fit 256 KiB and at
+most 1024 nested containers, counting its root as depth 1. These checks run
+before evaluation; the separate JSONata execution-depth limit remains 64.
+
+The receiver accepts OTLP/HTTP JSON or protobuf at `/v1/logs`, `/v1/traces`, and `/v1/metrics`; it does not accept
 OTLP/gRPC. Source records are retained only in the bounded inbox until every
 captured Tailapp consumes or detaches from them.

@@ -23,6 +23,10 @@ Do not use v0.1.0. Its published module bytes conflict with the immutable
 public checksum-database record for that version, so a normal Go consumer
 correctly rejects it.
 
+The declared-input contract in current source is a later integration; the
+v0.1.2 install command above does not include it. Its nested-module release is
+separate from source delivery.
+
 ## Contents
 
 - `dialect.go` — the complete host policy contract: identity, source
@@ -94,6 +98,33 @@ does not open host files or databases, own transactions or goroutines, expose
 ambient clock, randomness, network, or process state, or execute mutation
 plans. A host must install the authorizer on the connection used for reads and
 must apply validated mutation plans inside its own transaction boundary.
+
+### Complete input contracts
+
+Hosts must construct both `Dialect.Input.Meta` and `Dialect.Input.Event` with
+`NewObjectContract`, including explicit empty-object declarations. Zero values
+refuse compilation. `InputField` supports scalars, string arrays, closed scalar
+objects and opaque JSON objects; `Optional` and `Nullable` are independent.
+`HostEvent` remains the only declaration of scalar SQL read parameters.
+Constructors and accessors copy nested declarations.
+
+Call `Application.ValidateProgramInput` before binding read parameters, then
+`Evaluate` on the complete metadata/event/rows input. The core validates that
+same encoded representation without filling missing keys or coercing null to
+an empty array. Read results follow the plan's exact names, cardinality,
+selected columns and table logical types; view values remain bounded JSON.
+Row keys use the selected spelling. Table column type and nullability lookup
+is case-insensitive, so changing identifier case cannot bypass admission.
+`Limits.MaxInputDepth` bounds encoded containers separately from evaluator
+execution depth. The Tailapp constructor selects 1024 and retains the existing
+256 KiB input-byte and 64 execution-depth limits.
+
+`ContinueCompatible` refuses different runtime identities even with equal
+storage shapes. Hosts must additionally check their actual persisted runtime
+before changing state; recompiling old source does not supply that evidence.
+The core interface and dialect identities change; release and consumer
+activation remain separate operations. See `corpus/README.md` for the explicit
+fixture migration.
 
 ## Develop
 

@@ -163,3 +163,53 @@ func TestJSONStorageContinuationControls(t *testing.T) {
 		})
 	}
 }
+
+func TestContinueChecksStoredRuntimeDespiteCurrentCompiledProfile(t *testing.T) {
+	ctx := context.Background()
+	current := jsonUpgradeProfile(t)
+	old := *current
+	old.RuntimeProfile, old.Revision = "previous-input-runtime", "previous-revision"
+	path := filepath.Join(t.TempDir(), "state.sqlite")
+	p, err := Create(ctx, path, &old, 3, "reset")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := p.Database().Exec(`INSERT INTO documents VALUES ('kept','{"n":42}')`); err != nil {
+		t.Fatal(err)
+	}
+	if err := p.Close(); err != nil {
+		t.Fatal(err)
+	}
+	// Physical schema is exactly the new schema. Neither table compatibility
+	// nor the current in-memory profile can detect the runtime mismatch.
+	p, err = OpenForUpgrade(ctx, path, current, old.Revision)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer p.Close()
+	if err := profile.ContinueCompatible(p.Profile(), current); err != nil {
+		t.Fatalf("in-memory control differs: %v", err)
+	}
+	before, err := p.Frontier(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := p.Continue(ctx, current, 9); err == nil || !strings.Contains(err.Error(), "runtime") {
+		t.Fatalf("old runtime continued: %v", err)
+	}
+	after, err := p.Frontier(ctx)
+	if err != nil || !reflect.DeepEqual(before, after) {
+		t.Fatalf("refusal changed frontier: %#v, %v", after, err)
+	}
+	stored, err := p.StoredRuntime(ctx)
+	if err != nil || stored != old.RuntimeProfile {
+		t.Fatalf("refusal relabelled runtime: %s, %v", stored, err)
+	}
+	var document, revision string
+	if err := p.Database().QueryRow(`SELECT document FROM documents WHERE id='kept'`).Scan(&document); err != nil || document != `{"n":42}` {
+		t.Fatalf("refusal changed data: %s, %v", document, err)
+	}
+	if err := p.Database().QueryRow(`SELECT revision FROM tailapp_projection_identity`).Scan(&revision); err != nil || revision != old.Revision {
+		t.Fatalf("refusal changed revision: %s, %v", revision, err)
+	}
+}

@@ -20,15 +20,18 @@ reports `rolled_back`. A failed control plane restores the known-good link and
 restarts the prior service. Use `--rollback` to select that recorded prior
 binary explicitly.
 
-The JSON storage correction changes runtime identity. Existing applications
-remain queryable while upgrade-pending, but continuation now checks actual
-stored JSON column types. A projection using the old numeric-affinity JSON
-storage cannot be continued into the corrected text storage, even if its
-source recompiles successfully. Refusal preserves its rows, schema, identity
-and frontier. Review the existing data before choosing an explicit,
-acknowledged reset; upgrading the binary does not authorize or perform one.
-Compatible JSON text storage and unaffected non-JSON projections can still
-continue, including compatible additions to their table set.
+A runtime identity change leaves existing applications queryable but
+upgrade-pending. The input-contract transition requires acknowledged reset,
+even when the old and new table shapes match. The engine checks the physical
+stored runtime before journaling activation or detaching queued work; the
+projection repeats that check inside its transaction before any writes.
+Refusal preserves rows, schema, identity, frontier and pending obligations.
+Review or export existing data before explicitly resetting. Upgrading the
+binary does not authorize or perform a reset or historical replay.
+
+Within the same runtime, compatible table shapes and additive tables can
+continue. Actual stored JSON columns must also use the corrected `JSON_TEXT`
+physical type; a recompiled profile cannot stand in for that stored evidence.
 
 The source-checkout macOS command below remains supported for building the
 current checkout. It is not a release consumer.

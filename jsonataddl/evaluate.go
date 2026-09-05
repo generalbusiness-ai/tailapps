@@ -70,8 +70,8 @@ func (app *Application) Evaluate(programName string, input EvaluationInput) (Eva
 	if err != nil {
 		return EvaluationResult{}, fmt.Errorf("encode evaluation input: %w", err)
 	}
-	if len(encoded) > app.dialect.Limits.MaxInputBytes {
-		return EvaluationResult{}, fmt.Errorf("evaluation input exceeds %d bytes", app.dialect.Limits.MaxInputBytes)
+	if err := app.validateInput(program, encoded, true); err != nil {
+		return EvaluationResult{}, err
 	}
 	output, err := program.expression.evaluate(encoded)
 	if err != nil {

@@ -94,18 +94,13 @@ func validateDialectPolicy(dialect Dialect) error {
 	}
 	limits := dialect.Limits
 	for _, bound := range []int{limits.MaxElementBytes, limits.MaxSourceBytes, limits.MaxProgramBytes,
-		limits.MaxInputBytes, limits.MaxOutputBytes, limits.MaxDepth, limits.MaxRange,
+		limits.MaxInputBytes, limits.MaxInputDepth, limits.MaxOutputBytes, limits.MaxDepth, limits.MaxRange,
 		limits.MaxEvents, limits.MaxFacts, limits.MaxRowChanges, limits.MaxManyRows} {
 		if bound < 1 {
 			return errors.New("dialect limits must all be positive")
 		}
 	}
-	for _, field := range dialect.HostEvent.Fields() {
-		if !identifierRE.MatchString(field.Name) {
-			return fmt.Errorf("dialect host-event field %q is not an identifier", field.Name)
-		}
-	}
-	return nil
+	return validateInputContract(dialect)
 }
 
 func compileApplication(name string, sources map[string][]byte, dialect Dialect, runtimeProfile string) (*Application, error) {
