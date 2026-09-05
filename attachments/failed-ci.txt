@@ -1,2 +1,0 @@
-https://github.com/generalbusiness-ai/tailapps/actions/runs/33940729794/attempts/1
-TestReleaseAssetsAreVersionPinnedAndInstallable failed at release_test.go:318: upgrade.sh exit status1; new resident did not become healthy; restored the known-good prior binary. Same run attempt2 passed at the same a43f6c3f head. Planner inspected GitHub run_attempt metadata to find the failure hidden behind the later success. Source logs retained locally /tmp/tailapps-overnight-attempt1.log.
