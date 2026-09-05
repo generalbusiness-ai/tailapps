@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:4ee31954e811a138811e651f380d6d9f6b7acd28","text":"Merge retired a covered predecessor; the successor is at jsonataddl/corpus/v1/misbehavior/inputs/mode-unrepresentable-integer.json."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:50119bf4d8f7a2c2706a08d5493c5bf562d2637a","text":"Merge retired a covered predecessor; the successor is at jsonataddl/corpus_test.go."}
