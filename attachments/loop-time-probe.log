@@ -1,0 +1,7 @@
+=== RUN   TestPlannerLoopRunTimestampProbe
+    planner_loop_probe_test.go:28: success t1; failures t2,t3,t4: loop=map[string]interface {}{"consecutive_failures":"3", "evidence":map[string]interface {}{"action_fingerprint":"4", "action_fingerprint_coverage":"degraded", "action_fingerprint_reason":"tool target absent, gated, or redacted", "last_distinct_progress_unix_nano":"1787900000000000100", "progress_coverage":"unknown", "progress_fingerprint":"unknown"}, "finding_id":"loop|repeated-failure|codex|session-scrubbed", "finding_kind":"repeated-failure", "first_observed_unix_nano":"1787900000000000100", "harness":"codex", "last_observed_unix_nano":"1787900000000000400", "no_progress_count":"0", "repeat_count":"1", "session_id":"session-scrubbed", "source_position":"4"}
+    planner_loop_probe_test.go:31: first timestamp should be first failure t2, got 1787900000000000100 (session started at t1)
+--- FAIL: TestPlannerLoopRunTimestampProbe (0.02s)
+FAIL
+FAIL	github.com/generalbusiness-ai/tailapps/tailapps	0.324s
+FAIL
