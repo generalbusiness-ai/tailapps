@@ -1,0 +1,8 @@
+{
+  "root": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail3925-omission-_ppkptxt",
+  "exit": 1,
+  "log": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail3925-omission-_ppkptxt/omission.log",
+  "omission": "Restore ORDER BY e.position in actual production Pending query",
+  "expected_failure": true,
+  "owned_fixture_removed": true
+}

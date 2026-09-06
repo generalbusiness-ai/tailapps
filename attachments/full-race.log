@@ -1,0 +1,16 @@
+?   	github.com/generalbusiness-ai/tailapps/cmd/tailapp	[no test files]
+ok  	github.com/generalbusiness-ai/tailapps/internal/buildinfo	8.320s
+ok  	github.com/generalbusiness-ai/tailapps/internal/cli	2.994s
+ok  	github.com/generalbusiness-ai/tailapps/internal/control	170.258s
+ok  	github.com/generalbusiness-ai/tailapps/internal/definition	1.304s
+ok  	github.com/generalbusiness-ai/tailapps/internal/engine	7.386s
+ok  	github.com/generalbusiness-ai/tailapps/internal/inbox	58.173s
+ok  	github.com/generalbusiness-ai/tailapps/internal/ingest	1.959s
+ok  	github.com/generalbusiness-ai/tailapps/internal/mcp	4.684s
+ok  	github.com/generalbusiness-ai/tailapps/internal/metrics	3.627s
+ok  	github.com/generalbusiness-ai/tailapps/internal/profile	3.366s
+ok  	github.com/generalbusiness-ai/tailapps/internal/projection	2.628s
+ok  	github.com/generalbusiness-ai/tailapps/internal/query	9.185s
+ok  	github.com/generalbusiness-ai/tailapps/jsonataddl	5.542s
+ok  	github.com/generalbusiness-ai/tailapps/scripts	21.390s
+ok  	github.com/generalbusiness-ai/tailapps/tailapps	8.434s

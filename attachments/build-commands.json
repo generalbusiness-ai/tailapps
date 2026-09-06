@@ -1,0 +1,50 @@
+[
+  {
+    "argv": [
+      "go",
+      "build",
+      "-trimpath",
+      "-ldflags",
+      "-X github.com/generalbusiness-ai/tailapps/internal/buildinfo.stampedSourceURL=https://github.com/generalbusiness-ai/tailapps",
+      "-o",
+      "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail3925-build-ng007jrw/tailapp-1",
+      "./cmd/tailapp"
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp-worktrees/resident-5d84-pending",
+    "environment": {
+      "GOOS": "darwin",
+      "GOARCH": "arm64",
+      "GOARM64": "v8.0",
+      "CGO_ENABLED": "1",
+      "GOTOOLCHAIN": "local",
+      "GOWORK": "off",
+      "GOFLAGS": "",
+      "GOPROXY": "off",
+      "GOSUMDB": "off"
+    }
+  },
+  {
+    "argv": [
+      "go",
+      "build",
+      "-trimpath",
+      "-ldflags",
+      "-X github.com/generalbusiness-ai/tailapps/internal/buildinfo.stampedSourceURL=https://github.com/generalbusiness-ai/tailapps",
+      "-o",
+      "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail3925-build-ng007jrw/tailapp-2",
+      "./cmd/tailapp"
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp-worktrees/resident-5d84-pending",
+    "environment": {
+      "GOOS": "darwin",
+      "GOARCH": "arm64",
+      "GOARM64": "v8.0",
+      "CGO_ENABLED": "1",
+      "GOTOOLCHAIN": "local",
+      "GOWORK": "off",
+      "GOFLAGS": "",
+      "GOPROXY": "off",
+      "GOSUMDB": "off"
+    }
+  }
+]

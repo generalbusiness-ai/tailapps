@@ -1,0 +1,80 @@
+{
+  "build_identity": [
+    {
+      "module.version": "v0.0.0-20260831183505-5d84ac71d625",
+      "vcs.revision": "5d84ac71d625b29d9e7e9dbdf4c7c66c60429434",
+      "vcs.time": "2026-08-31T18:35:05Z",
+      "vcs.modified": "false"
+    },
+    {
+      "module.version": "v0.0.0-20260906124022-f36cb0eb2645",
+      "vcs.revision": "f36cb0eb2645cce40ebd30466406d0f293e6b455",
+      "vcs.time": "2026-09-06T12:40:22Z",
+      "vcs.modified": "false"
+    }
+  ],
+  "sections": [
+    {
+      "section": "__DATA,__go_buildinfo",
+      "differences_after_build_identity": 0
+    },
+    {
+      "section": "__TEXT,__rodata",
+      "differences_after_build_identity": 1,
+      "intentional_change": "ORDER BY e.position -> ORDER BY o.position",
+      "offset": 271122
+    }
+  ],
+  "module_descriptor_changed_words": [
+    {
+      "offset": 88,
+      "baseline": 3391512,
+      "candidate": 3391504,
+      "delta": -8,
+      "field": "pctab length"
+    },
+    {
+      "offset": 96,
+      "baseline": 3391512,
+      "candidate": 3391504,
+      "delta": -8,
+      "field": "pctab capacity"
+    },
+    {
+      "offset": 104,
+      "baseline": 4310649352,
+      "candidate": 4310649344,
+      "delta": -8,
+      "field": "pclntable pointer"
+    },
+    {
+      "offset": 128,
+      "baseline": 4310649352,
+      "candidate": 4310649344,
+      "delta": -8,
+      "field": "ftab pointer"
+    },
+    {
+      "offset": 152,
+      "baseline": 4314425728,
+      "candidate": 4314425720,
+      "delta": -8,
+      "field": "findfunctab pointer"
+    },
+    {
+      "offset": 344,
+      "baseline": 4312914616,
+      "candidate": 4312914608,
+      "delta": -8,
+      "field": "gofunc pointer"
+    },
+    {
+      "offset": 352,
+      "baseline": 4314474748,
+      "candidate": 4314474740,
+      "delta": -8,
+      "field": "epclntab pointer"
+    }
+  ],
+  "all_machine_instructions_equal_after_build_id": true
+}
