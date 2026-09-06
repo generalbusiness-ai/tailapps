@@ -1,0 +1,20 @@
+=== RUN   TestPendingBacklogUsesBoundedIndexWalk
+    pending_test.go:93: pinned Go SQLite version=3.53.4 backlog=72512
+    pending_test.go:108: legacy plan: SEARCH o USING INDEX inbox_obligations_outstanding (tailapp=? AND state=?)
+    pending_test.go:108: legacy plan: SEARCH e USING INTEGER PRIMARY KEY (rowid=?)
+    pending_test.go:108: legacy plan: USE TEMP B-TREE FOR ORDER BY
+    pending_test.go:116: legacy limit=1 rows=1 sort=1 VM_steps=725162 elapsed=26.778084ms
+    pending_test.go:116: legacy limit=1024 rows=1024 sort=1 VM_steps=752783 elapsed=28.186667ms
+    pending_test.go:108: production plan: SEARCH o USING INDEX inbox_obligations_outstanding (tailapp=? AND state=?)
+    pending_test.go:108: production plan: SEARCH e USING INTEGER PRIMARY KEY (rowid=?)
+    pending_test.go:108: production plan: USE TEMP B-TREE FOR ORDER BY
+    pending_test.go:116: production limit=1 rows=1 sort=1 VM_steps=725162 elapsed=23.501541ms
+    pending_test.go:122: next pending scans/sorts backlog: {Steps:725162 Sorts:1 Rows:1 Elapsed:23.501541ms} limit=1
+    pending_test.go:116: production limit=1024 rows=1024 sort=1 VM_steps=752783 elapsed=29.078667ms
+    pending_test.go:122: next pending scans/sorts backlog: {Steps:752783 Sorts:1 Rows:1024 Elapsed:29.078667ms} limit=1024
+--- FAIL: TestPendingBacklogUsesBoundedIndexWalk (1.31s)
+=== RUN   TestPendingSparseConsumersRevisionsAndCancellation
+--- PASS: TestPendingSparseConsumersRevisionsAndCancellation (0.01s)
+FAIL
+FAIL	github.com/generalbusiness-ai/tailapps/internal/inbox	1.605s
+FAIL

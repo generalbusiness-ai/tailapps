@@ -1,0 +1,16 @@
+=== RUN   TestPendingBacklogUsesBoundedIndexWalk
+    pending_test.go:93: pinned Go SQLite version=3.53.4 backlog=72512
+    pending_test.go:108: legacy plan: SEARCH o USING INDEX inbox_obligations_outstanding (tailapp=? AND state=?)
+    pending_test.go:108: legacy plan: SEARCH e USING INTEGER PRIMARY KEY (rowid=?)
+    pending_test.go:108: legacy plan: USE TEMP B-TREE FOR ORDER BY
+    pending_test.go:116: legacy limit=1 rows=1 sort=1 VM_steps=725162 elapsed=13.638333ms
+    pending_test.go:116: legacy limit=1024 rows=1024 sort=1 VM_steps=752783 elapsed=15.185833ms
+    pending_test.go:108: production plan: SEARCH o USING INDEX inbox_obligations_outstanding (tailapp=? AND state=?)
+    pending_test.go:108: production plan: SEARCH e USING INTEGER PRIMARY KEY (rowid=?)
+    pending_test.go:116: production limit=1 rows=1 sort=0 VM_steps=32 elapsed=48µs
+    pending_test.go:116: production limit=1024 rows=1024 sort=0 VM_steps=20492 elapsed=1.350959ms
+--- PASS: TestPendingBacklogUsesBoundedIndexWalk (0.55s)
+=== RUN   TestPendingSparseConsumersRevisionsAndCancellation
+--- PASS: TestPendingSparseConsumersRevisionsAndCancellation (0.00s)
+PASS
+ok  	github.com/generalbusiness-ai/tailapps/internal/inbox	0.832s

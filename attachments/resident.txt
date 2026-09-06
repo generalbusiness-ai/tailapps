@@ -1,0 +1,16 @@
+=== RUN   TestControlReadsWhileLargeBacklogDrains
+    backlog_test.go:114: round=0 status elapsed=93.243583ms
+    backlog_test.go:127: frontier=32 remaining=72480 bytes=151990560
+    backlog_test.go:114: round=0 schema elapsed=10.952542ms
+    backlog_test.go:114: round=0 metrics elapsed=101.087416ms
+    backlog_test.go:114: round=1 status elapsed=92.153625ms
+    backlog_test.go:127: frontier=128 remaining=72384 bytes=151789248
+    backlog_test.go:114: round=1 schema elapsed=10.149583ms
+    backlog_test.go:114: round=1 metrics elapsed=96.033292ms
+    backlog_test.go:114: round=2 status elapsed=90.060917ms
+    backlog_test.go:127: frontier=224 remaining=72288 bytes=151587936
+    backlog_test.go:114: round=2 schema elapsed=9.736459ms
+    backlog_test.go:114: round=2 metrics elapsed=95.043416ms
+--- PASS: TestControlReadsWhileLargeBacklogDrains (2.16s)
+PASS
+ok  	github.com/generalbusiness-ai/tailapps/internal/control	2.629s
