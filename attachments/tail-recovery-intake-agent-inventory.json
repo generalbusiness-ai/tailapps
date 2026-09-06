@@ -1,8 +1,0 @@
-[
-  {
-    "file": "/Users/hughpyle/Library/LaunchAgents/ai.generalbusiness.tailapp.plist",
-    "label": "ai.generalbusiness.tailapp",
-    "program": "/Users/hughpyle/.local/bin/tailapp",
-    "keepalive": true
-  }
-]
