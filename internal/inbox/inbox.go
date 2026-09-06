@@ -242,15 +242,19 @@ func (q *Queue) Enqueue(ctx context.Context, records []Record, consumers []Consu
 	return positions, nil
 }
 
+// The join equates both positions. Order by the obligation column so SQLite
+// can stop the existing (tailapp, state, position) index walk at the limit.
+const pendingSQL = `SELECT e.position,e.event_id,e.signal,e.name,e.source,e.time_unix_nano,
+	 e.observed_unix_nano,e.trace_id,e.span_id,e.content_digest,e.record_json,o.revision,e.received_at
+ FROM inbox_obligations o JOIN inbox_events e ON e.position=o.position
+ WHERE o.tailapp=? AND o.state='pending' ORDER BY o.position LIMIT ?`
+
 // Pending returns the oldest unsettled deliveries for one tailapp.
 func (q *Queue) Pending(ctx context.Context, tailapp string, limit int) ([]Delivery, error) {
 	if limit <= 0 || limit > 1024 {
 		return nil, errors.New("pending limit must be between 1 and 1024")
 	}
-	rows, err := q.db.QueryContext(ctx, `SELECT e.position,e.event_id,e.signal,e.name,e.source,e.time_unix_nano,
-	 e.observed_unix_nano,e.trace_id,e.span_id,e.content_digest,e.record_json,o.revision,e.received_at
- FROM inbox_obligations o JOIN inbox_events e ON e.position=o.position
- WHERE o.tailapp=? AND o.state='pending' ORDER BY e.position LIMIT ?`, tailapp, limit)
+	rows, err := q.db.QueryContext(ctx, pendingSQL, tailapp, limit)
 	if err != nil {
 		return nil, err
 	}

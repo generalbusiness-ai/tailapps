@@ -84,3 +84,50 @@ does not silently rewrite installed Tailapp sources. Updating an existing
 Tailapp remains the explicit draft/validate/activate lifecycle; a source shape
 change may require acknowledged reset activation. Check the resident after an
 upgrade with `tailapp health` and `tailapp apps list`.
+
+## Recover a resident slowed by a large inbox
+
+The next-pending query uses the existing
+`inbox_obligations(tailapp, state, position)` index. Ordering by the joined
+obligation position lets SQLite stop at the requested limit; ordering by the
+event position can sort the entire pending backlog first. The join requires
+the two positions to be equal, so this correction changes neither delivery
+order nor captured revisions. It adds no index, migration, runtime identity,
+or activation boundary. The queue's retention and transaction rules remain
+unchanged.
+
+A query fix on current source is not proof that an older running deployment
+can safely adopt the whole current binary. The September 6 diagnostic named a
+dirty `5d84ac71` build, not current source. That base has the same inbox schema
+and query, but current source has since changed the composed runtime and the
+input contract. A direct upgrade may therefore leave installed applications
+upgrade-pending; it cannot promise to resume their queued deliveries. Do not
+reset projections, detach obligations or re-activate definitions as a way to
+hide that distinction.
+
+For that deployment, the preferred recovery is a separately reviewed minimal
+query backport to the exact deployed source, preserving its dependencies,
+runtime profile and active definitions. First recover and account for the
+dirty source delta: a Git revision and `vcs.modified=true` do not identify the
+binary's complete source. If that source cannot be established, stop short of
+claiming binary compatibility. Resolve the operational choice with the owner;
+do not substitute a clean historical checkout and call it equivalent.
+
+Before an authorized switch, quiesce intake and stop the resident cleanly, then
+make a consistent backup of the whole application home, including SQLite WAL
+state, installed revisions and projection databases. Keep the original binary
+and executable link for rollback. On a disposable copy, verify the proposed
+binary preserves the active revision/runtime identities, table contents,
+delivery head, pending obligations and projection frontiers across restart;
+then verify status, schema and metrics during draining. Resume intake only
+after that compatibility check and a separately authorized live switch.
+Compare the remaining queue and consumed frontiers to the saved baseline, and
+keep the backup until the owner accepts recovery. A rollback after any new
+writes needs the same data compatibility assessment; replacing the executable
+alone does not undo those writes.
+
+`TestPendingBacklogUsesBoundedIndexWalk` records the pinned Go SQLite query
+plans and VM instruction/sort counts at 72,512 records, without a tight timing
+gate. `TestControlReadsWhileLargeBacklogDrains` checks the real Unix-socket
+control client against a disposable worker draining roughly 152 MB. These are
+synthetic source checks, not evidence of recovery of a live installation.
