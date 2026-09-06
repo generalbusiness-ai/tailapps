@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:830bd520d6161cce90fb29c923d371f193060ec8","text":"Merge retired a covered predecessor; the successor is at internal/control/testdata/recovery-definitions/signal-counts/application.sql."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:8e08fe61cca2710e92cfe9b1030f6d26a982e86b","text":"Merge retired a covered predecessor; the successor is at internal/inbox/pending_test.go."}
