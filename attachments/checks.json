@@ -1,0 +1,125 @@
+{
+  "head": "d816892bb305f10194a7403427838f1d643e66b3",
+  "ci": [
+    {
+      "check": "root-test",
+      "command": [
+        "go",
+        "test",
+        "./..."
+      ],
+      "exit_code": 0,
+      "seconds": 33.22
+    },
+    {
+      "check": "core-test",
+      "command": [
+        "go",
+        "test",
+        "./..."
+      ],
+      "exit_code": 0,
+      "seconds": 0.73
+    },
+    {
+      "check": "root-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "exit_code": 0,
+      "seconds": 33.38
+    },
+    {
+      "check": "core-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "exit_code": 0,
+      "seconds": 2.38
+    },
+    {
+      "check": "root-vet",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exit_code": 0,
+      "seconds": 0.33
+    },
+    {
+      "check": "core-vet",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exit_code": 0,
+      "seconds": 0.12
+    },
+    {
+      "check": "boundary",
+      "command": [
+        "./scripts/check-jsonataddl-boundary.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 0.39
+    },
+    {
+      "check": "root-module",
+      "command": [
+        "./scripts/check-root-module.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 28.66
+    },
+    {
+      "check": "root-vuln",
+      "command": [
+        "./scripts/vulncheck.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 2.49
+    },
+    {
+      "check": "core-vuln",
+      "command": [
+        "../scripts/vulncheck.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 1.71
+    },
+    {
+      "check": "demo",
+      "command": [
+        "./scripts/demo.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 1.99
+    }
+  ],
+  "links": {
+    "relative_links": [
+      {
+        "source": "tailapps/session-cost/README.md",
+        "target": "../../docs/reference/resident-upgrade.md",
+        "resolved": "docs/reference/resident-upgrade.md",
+        "exists": true
+      },
+      {
+        "source": "tailapps/agent-guard/README.md",
+        "target": "../../docs/reference/resident-upgrade.md",
+        "resolved": "docs/reference/resident-upgrade.md",
+        "exists": true
+      }
+    ],
+    "behavior_basis_bytes_equal": true
+  },
+  "clean_checkout": true
+}
