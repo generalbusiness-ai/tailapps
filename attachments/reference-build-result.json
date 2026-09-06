@@ -1,0 +1,33 @@
+{
+  "argv": [
+    "go",
+    "build",
+    "-x",
+    "-ldflags",
+    "-X github.com/generalbusiness-ai/tailapps/internal/buildinfo.stampedSourceURL=https://github.com/generalbusiness-ai/tailapps",
+    "-o",
+    "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-provenance-3919-bh2yivpi/tailapp",
+    "./cmd/tailapp"
+  ],
+  "cwd": "/private/tmp/tail3919-srcxxx",
+  "environment_overrides": {
+    "GOCACHE": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-provenance-3919-bh2yivpi/build-cache",
+    "GOMODCACHE": "/private/tmp/tail3919-modx",
+    "GOPROXY": "off",
+    "GOSUMDB": "off",
+    "GOTOOLCHAIN": "local",
+    "GOWORK": "off",
+    "GOFLAGS": "",
+    "GOOS": "darwin",
+    "GOARCH": "arm64",
+    "GOARM64": "v8.0",
+    "CGO_ENABLED": "1"
+  },
+  "exit_code": 0,
+  "elapsed_seconds": 6.63938320800662,
+  "binary": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-provenance-3919-bh2yivpi/tailapp",
+  "sha256": "52ada92e67d4088edc04327532acdce96429c01f523b255f889efb41cfdd564f",
+  "size": 35821058,
+  "build_info": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-provenance-3919-bh2yivpi/tailapp: go1.27.0\n\tpath\tgithub.com/generalbusiness-ai/tailapps/cmd/tailapp\n\tmod\tgithub.com/generalbusiness-ai/tailapps\tv0.0.0-20260831183505-5d84ac71d625+dirty\t\n\tdep\tgithub.com/google/jsonschema-go\tv0.4.3\th1:/DBOLZTfDow7pe2GmaJNhltueGTtDKICi8V8p+DQPd0=\n\tdep\tgithub.com/grpc-ecosystem/grpc-gateway/v2\tv2.29.0\th1:5VipnvEpbqr2gA2VbM+nYVbkIF28c5ZQfqCBQ5g2xfk=\n\tdep\tgithub.com/jsonata-go/jsonata\tv0.0.0-20250709164031-599f35f32e5f\th1:JnGon8QHtmjFPq0NcSu8OTEnQDDEgFME7gtj/NkjCUo=\n\tdep\tgithub.com/modelcontextprotocol/go-sdk\tv1.7.0\th1:yqjY2dsbKAC0LSuWZVBMrHgiG8ukXv6NRo0JiALay44=\n\tdep\tgithub.com/ncruces/go-sqlite3\tv0.35.3\th1:Ei07Zv1qfV/vyXzelhFsyS5Oh9TArBZHsmFk14Xv3GY=\n\tdep\tgithub.com/ncruces/go-sqlite3-wasm/v3\tv3.2.35304\th1:5NoQAewtgKNK3G4bjNPxVoGXu6F6NzLXWCTdD5FFAEY=\n\tdep\tgithub.com/ncruces/julianday\tv1.0.0\th1:fH0OKwa7NWvniGQtxdJRxAgkBMolni2BjDHaWTxqt7M=\n\tdep\tgithub.com/segmentio/asm\tv1.1.3\th1:WM03sfUOENvvKexOLp+pCqgb/WDjsi7EK8gIsICtzhc=\n\tdep\tgithub.com/segmentio/encoding\tv0.5.4\th1:OW1VRern8Nw6ITAtwSZ7Idrl3MXCFwXHPgqESYfvNt0=\n\tdep\tgithub.com/yosida95/uritemplate/v3\tv3.0.2\th1:Ed3Oyj9yrmi9087+NczuL5BwkIc4wvTb5zIM+UJPGz4=\n\tdep\tgo.opentelemetry.io/proto/otlp\tv1.11.0\th1:5rrYs0Ykyj50sdU/JU0x8etU+LubXWb+gED6TbEdMIk=\n\tdep\tgolang.org/x/net\tv0.58.0\th1:ynWG7rqYi4ccpTEuPZ2QGWHktVEM9DMCj9yzDE0Q7To=\n\tdep\tgolang.org/x/oauth2\tv0.36.0\th1:peZ/1z27fi9hUOFCAZaHyrpWG5lwe0RJEEEeH0ThlIs=\n\tdep\tgolang.org/x/sync\tv0.22.0\th1:SZjpbeLmrCk4xhRSZFNZW5gFUeCeFgjekvI/+gfScek=\n\tdep\tgolang.org/x/sys\tv0.47.0\th1:o7XGOvZQCADBQQ4Y7VNq2dRWQR7JmOUW8Kxx4ZsNgWs=\n\tdep\tgolang.org/x/text\tv0.41.0\th1:vz/seA0lnX87Othu2f/0L24RcgrXD9/YFTSuGjj3rH8=\n\tdep\tgolang.org/x/time\tv0.15.0\th1:bbrp8t3bGUeFOx08pvsMYRTCVSMk89u4tKbNOZbp88U=\n\tdep\tgoogle.golang.org/genproto/googleapis/api\tv0.0.0-20260720211330-0afa2a65878a\th1:97PfJ4tCxY5C7NzzgGqQEMZmXbISdvSArNNEOoUGKBg=\n\tdep\tgoogle.golang.org/genproto/googleapis/rpc\tv0.0.0-20260720211330-0afa2a65878a\th1:qI/YMH1ep2qQtqcp00gMQyoU7mjvbhg88GJKCvfoLj0=\n\tdep\tgoogle.golang.org/grpc\tv1.83.2\th1:EManeRomTObA0BU7I8vXgg/78uE5MJ9M8B39EX2WscU=\n\tdep\tgoogle.golang.org/protobuf\tv1.36.12\th1:pJOKDDOyeXErUroCihFAd5LQuwXBSpVnKGrj5o/fwxc=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-ldflags=\"-X github.com/generalbusiness-ai/tailapps/internal/buildinfo.stampedSourceURL=https://github.com/generalbusiness-ai/tailapps\"\n\tbuild\tDefaultGODEBUG=tracebacklabels=0,x509sslcertoverrideplatform=0\n\tbuild\tCGO_ENABLED=1\n\tbuild\tCGO_CFLAGS=\n\tbuild\tCGO_CPPFLAGS=\n\tbuild\tCGO_CXXFLAGS=\n\tbuild\tCGO_LDFLAGS=\n\tbuild\tGOARCH=arm64\n\tbuild\tGOOS=darwin\n\tbuild\tGOARM64=v8.0\n\tbuild\tvcs=git\n\tbuild\tvcs.revision=5d84ac71d625b29d9e7e9dbdf4c7c66c60429434\n\tbuild\tvcs.time=2026-08-31T18:35:05Z\n\tbuild\tvcs.modified=true\n",
+  "build_id": "jWAE07YAKxEDfQo3qGt9/WBbDNjPf3KuaplNhYaBn/92OzGyerqDNWhPBctR2Y/8hGgcN1MjDwKAPqgOsLt"
+}

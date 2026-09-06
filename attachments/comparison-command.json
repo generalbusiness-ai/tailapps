@@ -1,0 +1,14 @@
+[
+  "python3",
+  "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-provenance-3919-bh2yivpi/compare-binaries.py",
+  "/Users/hughpyle/.local/lib/tailapp/tailapp-20260831T183703Z-5d84ac71d625",
+  "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-provenance-3919-bh2yivpi/tailapp",
+  "--map",
+  "/private/tmp/tail3919-srcxxx",
+  "/Users/hughpyle/play/tailapp",
+  "--map",
+  "/private/tmp/tail3919-modx",
+  "/Users/hughpyle/go/pkg/mod",
+  "--output",
+  "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-provenance-3919-bh2yivpi/complete-binary-comparison.json"
+]

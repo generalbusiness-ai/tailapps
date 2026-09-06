@@ -1,0 +1,76 @@
+[
+  {
+    "argv": [
+      "git",
+      "for-each-ref",
+      "--format=%(refname) %(objectname)",
+      "refs/heads",
+      "refs/remotes",
+      "refs/stash"
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp",
+    "stdout": "refs/heads/main 7ecffd53013fd6ca45693a1a8e28b7c8d52432e8\nrefs/remotes/origin/HEAD 7ecffd53013fd6ca45693a1a8e28b7c8d52432e8\nrefs/remotes/origin/fix/release-portable-service-test ac011a5173fc127878564fbd4e522f7d8a23723c\nrefs/remotes/origin/main 7ecffd53013fd6ca45693a1a8e28b7c8d52432e8\nrefs/remotes/origin/request/codec-swap-evaluate 5ef2d062a7c5bb7ef546bb89f8f757c5f7373fd7\nrefs/remotes/origin/request/codec-swap-ingest b396f442db44207c925c6a947205fc2df5b74368\nrefs/remotes/origin/request/codec-swap-projection 77c83144be60daec03cea41a0fd357a7373f6067\nrefs/remotes/origin/request/codec-swap-query 45d1aef6ae117fdda76993a5ef90cda1e3fea5e6\nrefs/remotes/origin/request/daily-review-docs 8e57f341ac997376025acf27609f0e20825b04ae\nrefs/remotes/origin/request/ddl-stage4-core f934363d4c5b3f740c9d8be6266fdb399e370606\nrefs/remotes/origin/request/ddl-stage5-identity e156a399ef02c78de0ab84180b680063a03cafa6\nrefs/remotes/origin/request/ddl-stage6-cleanup b68253cca3cad6e963794d778e2fd2623adb3a0b\nrefs/remotes/origin/request/jsonataddl-corpus-freeze 5f6b9d4917862c3650c30a5357022de7d2190a27\nrefs/remotes/origin/request/jsonataddl-dialect-types 24d07ce82263935ffa5d315e9888929f2ac5a48d\nrefs/remotes/origin/request/jsonataddl-value-codec 6b73ded29d58150bdb39bf94004b42b560ea2add\nrefs/remotes/origin/request/mcp-first-encounter 276ebafdbfee44bbe105e032576af428e5f2e230\nrefs/remotes/origin/request/mcp-stage1-identity a14caae3ce12c6c854b3f9f7daa362126db8de8f\nrefs/remotes/origin/request/mcp-stage2-orientation e5c774fc3cac1271e21b135659f7afb0773ba7d8\nrefs/remotes/origin/request/mcp-stage3-resources 90d952f05741809911763b5489b1b657357f88ef\nrefs/remotes/origin/request/mcp-stage4-sdk 73710bebb91a7af8bbf7a044a099b400b0837f34\nrefs/remotes/origin/request/mcp-stage5-skill bc2e7c4a33b0425c5349ad465b10351b254b9bee\nrefs/remotes/origin/request/project-terminology 70952f24f5901084f4eaefe9d2aa734e3cd3bf89\nrefs/remotes/origin/request/promote-examples 3aba33fbaad0bb95870f09a3150d9db83436c482\nrefs/remotes/origin/request/web-domain-reputation-note d0e92da54ee03a4658c00cc4d5ace855c72573af\nrefs/remotes/origin/request/web-reputation-note-revision 651dc83e263ac61870a5f4a8acde2d4b3b3bc40b\nrefs/stash 9c178236b1fa194f42a23c7541ba0f4fcf961afc\n"
+  },
+  {
+    "argv": [
+      "git",
+      "reflog",
+      "show",
+      "refs/stash",
+      "--date=iso",
+      "--format=%H %gd %gs"
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp",
+    "stdout": "9c178236b1fa194f42a23c7541ba0f4fcf961afc stash@{2026-08-30 23:28:03 +0100} On main: move all uncommitted work to request/readme-value-first\n"
+  },
+  {
+    "argv": [
+      "git",
+      "reflog",
+      "show",
+      "HEAD",
+      "--since=2026-08-31T18:00:00Z",
+      "--until=2026-08-31T19:00:00Z",
+      "--date=iso",
+      "--format=%H %gd %gs"
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp",
+    "stdout": "5d84ac71d625b29d9e7e9dbdf4c7c66c60429434 HEAD@{2026-08-31 19:35:05 +0100} commit (merge): Merge the independently approved URL reputation Stage 2 Tailapp. This adds the single-fold telemetry pipeline, durable observation, exclusion, verdict, and count tables, bounded pre-exclusion due queries, Stage 3 egress policy contract, fixtures, documentation, and unit and runtime coverage.\n"
+  },
+  {
+    "argv": [
+      "git",
+      "diff",
+      "--stat",
+      "refs/stash^1",
+      "refs/stash"
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp",
+    "stdout": " README.md                        | 172 +++++++++++++++++----------------------\n docs/README.md                   |   5 +-\n docs/harnesses/README.md         |   8 +-\n docs/harnesses/claude-code.md    |   6 +-\n docs/harnesses/codex.md          |   6 +-\n docs/harnesses/pi.md             |   6 +-\n docs/reference/cli.md            |   2 +-\n docs/reference/mcp.md            |   6 +-\n scripts/demo.sh                  |   2 +-\n tailapps/daily-review/README.md  |   8 +-\n tailapps/embed.go                |   6 +-\n tailapps/embed_test.go           |  13 +--\n tailapps/signal-counts/README.md |   9 +-\n 13 files changed, 109 insertions(+), 140 deletions(-)\n"
+  },
+  {
+    "argv": [
+      "git",
+      "status",
+      "--short",
+      "--branch"
+    ],
+    "cwd": "/Users/hughpyle/play/tailapp",
+    "stdout": "## main...origin/main\n?? reports/\n"
+  },
+  {
+    "argv": [
+      "rg",
+      "-a",
+      "-l",
+      "--fixed-strings",
+      "0nfBWjyq64icGrQHjnUZ/LkloQx7LzWtXv4KA30YD",
+      "--glob",
+      "*-d",
+      "/Users/hughpyle/Library/Caches/go-build"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "scope": "One exact original main archive build-ID scan; no cache changes."
+  }
+]

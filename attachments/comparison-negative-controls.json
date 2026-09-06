@@ -1,0 +1,14 @@
+[
+  {
+    "mutated_section": "__TEXT,__text",
+    "offset": 5023674,
+    "exit_code": 1,
+    "stderr": "Traceback (most recent call last):\n  File \"/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-provenance-3919-bh2yivpi/compare-binaries.py\", line 35, in <module>\n    assert u==norm(v),name\n           ^^^^^^^^^^\nAssertionError: __TEXT,__text\n"
+  },
+  {
+    "mutated_section": "__DATA_CONST,__rodata",
+    "offset": 19624864,
+    "exit_code": 1,
+    "stderr": "Traceback (most recent call last):\n  File \"/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-provenance-3919-bh2yivpi/compare-binaries.py\", line 35, in <module>\n    assert u==norm(v),name\n           ^^^^^^^^^^\nAssertionError: __DATA_CONST,__rodata\n"
+  }
+]

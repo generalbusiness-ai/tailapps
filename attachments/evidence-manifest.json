@@ -1,0 +1,56 @@
+{
+  "source_head": "5d84ac71d625b29d9e7e9dbdf4c7c66c60429434",
+  "source_tree": "d13981ac2c936bfb43aeddc363de8b4daa006657",
+  "reference_source_status": "?? provenance-dirty-marker.txt\n",
+  "source_archive": "/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-provenance-3919-bh2yivpi/source-5d84ac71.tar.gz",
+  "source_archive_sha256": "1650cd217da753dd317256529034444f347fa6b4e4d82b6f76f6d104647b8ccb",
+  "input_manifest_sha256": "94140ed3c37f8d95976374b7c34922ab0b8fecd6590f65ed32da22a128b2a793",
+  "packages": 405,
+  "input_files": 1974,
+  "build_log_sha256": "691f252bbf44bc54d3d0263d935dac1f49d382dda799f83d795c434081c6e19f",
+  "build_log_bytes": 801945,
+  "comparator_sha256": "43750e315ca4dde2b85437918fce66cec45701d2a0a54021a14c8e71acb19d29",
+  "comparison_sha256": "ab261d553da0ed189ff118912813986b9f22fdc82a756f7529b4ac3d25716e58",
+  "normalization_occurrences": [
+    {
+      "section": "__DWARF,__zdebug_line",
+      "replacements": [
+        {
+          "from": "/private/tmp/tail3919-srcxxx",
+          "to": "/Users/hughpyle/play/tailapp",
+          "count": 60
+        },
+        {
+          "from": "/private/tmp/tail3919-modx",
+          "to": "/Users/hughpyle/go/pkg/mod",
+          "count": 1224
+        }
+      ]
+    },
+    {
+      "section": "__TEXT,__gopclntab",
+      "replacements": [
+        {
+          "from": "/private/tmp/tail3919-srcxxx",
+          "to": "/Users/hughpyle/play/tailapp",
+          "count": 32
+        },
+        {
+          "from": "/private/tmp/tail3919-modx",
+          "to": "/Users/hughpyle/go/pkg/mod",
+          "count": 390
+        }
+      ]
+    },
+    {
+      "section": "__TEXT,__text",
+      "replacements": [
+        {
+          "from": "jWAE07YAKxEDfQo3qGt9/WBbDNjPf3KuaplNhYaBn/92OzGyerqDNWhPBctR2Y/8hGgcN1MjDwKAPqgOsLt",
+          "to": "VYf8-tdeFsnHVjoKNEwU/0nfBWjyq64icGrQHjnUZ/LkloQx7LzWtXv4KA30YD/WNNUHYAG2cc8rV3kFarX",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}
