@@ -1,0 +1,15 @@
+{
+  "head": "94baf5a979e11f35333e1340c4d42947e65abddd",
+  "positive_exit": 0,
+  "negative_exit": 1,
+  "negative_change": "Only production ORDER BY o.position replaced by ORDER BY e.position using Go overlay; originalcandidateunchanged",
+  "full_race_exit": 0,
+  "vet_exit": 0,
+  "ci": {
+    "verify": 34018180078,
+    "release_dry_run": 34018180066,
+    "release": "skipped as expected"
+  },
+  "source_files_read": "all4 changed paths plus inboxschema andgoverningrequest3890",
+  "limits": "Synthetic disposabledataonly; no live daemon/data/runtime switch."
+}
