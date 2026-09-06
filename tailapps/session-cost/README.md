@@ -151,16 +151,15 @@ Treat the result as cumulative since the last reset activation. It is not a
 billing ledger: exporters can omit data, events can be missed while a
 projection is detached, and the current `tailapp` engine does not retain an
 event log for replay.
-Updating a normalizer with continue activation affects only newly consumed
-records: already-materialized rows keep their previous harness label. Reset
-activation would apply the new label to subsequently received records, but it
-also discards the existing projection history; the `tailapp` engine cannot
-replay that history, so a normalizer update does not force a reset.
-The detailed table is additive, so a continue activation preserves the compact
-history and begins detailed coverage at the activation boundary.
+Within the same stored runtime, compatible source changes can continue when
+existing writable tables retain their stored shapes and meet the storage
+conditions in the [resident upgrade guide](../../docs/reference/resident-upgrade.md).
+Continuing a normalizer update affects only newly consumed records;
+already-materialized rows keep their previous harness label. The additive
+detailed table can then begin coverage at the activation boundary while
+preserving the compact history.
 
-This release also changes the runtime identity, so an existing resident holds
-ingestion closed until every active Tailapp is explicitly continued or reset.
-Follow [Upgrading an existing resident](../../docs/reference/cli.md#upgrading-an-existing-resident);
-continuing `session-cost` preserves its compact history and starts this new
-model-grained detail at the activation boundary.
+A changed stored runtime requires explicitly acknowledged reset even when
+table shapes match. Reset discards the materialized history, which the current
+engine cannot replay; new records use the updated normalizer. Follow the
+resident upgrade guide for the full procedure.
