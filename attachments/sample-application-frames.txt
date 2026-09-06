@@ -1,0 +1,4 @@
+    + ! 31 github.com/generalbusiness-ai/tailapps/internal/engine.Open.gowrap1  (in tailapp-20260831T183703Z-5d84ac71d625) + 32  [0x100d1e000]
+    + !   31 github.com/generalbusiness-ai/tailapps/internal/engine.(*Engine).worker  (in tailapp-20260831T183703Z-5d84ac71d625) + 264  [0x100d16cd8]
+    + !     31 github.com/generalbusiness-ai/tailapps/internal/engine.(*Engine).drainPassLocked  (in tailapp-20260831T183703Z-5d84ac71d625) + 668  [0x100d1714c]
+    + !       31 github.com/generalbusiness-ai/tailapps/internal/inbox.(*Queue).Pending  (in tailapp-20260831T183703Z-5d84ac71d625) + 472  [0x100b0f368]
