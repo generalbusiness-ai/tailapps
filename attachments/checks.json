@@ -1,0 +1,109 @@
+{
+  "head": "c9133b2f448115c7434414aa18a44dda94bc5f87",
+  "go": "go1.26.7",
+  "ci": [
+    {
+      "check": "root-test",
+      "command": [
+        "go",
+        "test",
+        "./..."
+      ],
+      "exit_code": 0,
+      "seconds": 4.57
+    },
+    {
+      "check": "core-test",
+      "command": [
+        "go",
+        "test",
+        "./..."
+      ],
+      "exit_code": 0,
+      "seconds": 0.15
+    },
+    {
+      "check": "root-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "exit_code": 0,
+      "seconds": 35.04
+    },
+    {
+      "check": "core-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "exit_code": 0,
+      "seconds": 0.15
+    },
+    {
+      "check": "root-vet",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exit_code": 0,
+      "seconds": 0.57
+    },
+    {
+      "check": "core-vet",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exit_code": 0,
+      "seconds": 0.2
+    },
+    {
+      "check": "boundary",
+      "command": [
+        "./scripts/check-jsonataddl-boundary.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 0.15
+    },
+    {
+      "check": "root-module",
+      "command": [
+        "./scripts/check-root-module.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 8.92
+    },
+    {
+      "check": "root-vuln",
+      "command": [
+        "./scripts/vulncheck.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 2.56
+    },
+    {
+      "check": "core-vuln",
+      "command": [
+        "../scripts/vulncheck.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 1.91
+    },
+    {
+      "check": "demo",
+      "command": [
+        "./scripts/demo.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 5.25
+    }
+  ],
+  "clean_checkout": true
+}
