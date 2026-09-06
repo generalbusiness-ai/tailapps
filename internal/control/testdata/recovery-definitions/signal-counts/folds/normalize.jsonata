@@ -1,0 +1,11 @@
+{
+  "decision": "effective",
+  "facts": [],
+  "events": {"otel_event": [{
+    "source": event.source,
+    "signal": event.signal,
+    "event_name": event.name,
+    "source_position": meta.position
+  }]},
+  "tables": {}
+}
