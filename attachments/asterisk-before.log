@@ -1,0 +1,6 @@
+--- FAIL: TestURLReputationNormalizerActualAuthorityHost (0.02s)
+    --- FAIL: TestURLReputationNormalizerActualAuthorityHost/userinfo-literal-asterisk (0.00s)
+        url_reputation_test.go:245: valid authority rejected: profile.EvaluationResult{Decision:"ineffective", Facts:[]map[string]interface {}{map[string]interface {}{"reason":"recognized URL reputation record failed required field validation"}}, Events:map[string][]map[string]interface {}{}, Tables:map[string]profile.TableChanges{}}
+FAIL
+FAIL	github.com/generalbusiness-ai/tailapps/tailapps	0.326s
+FAIL
