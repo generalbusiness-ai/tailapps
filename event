@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:e0118caecb8767cb3fcaeed4a4455b2d6bd3e5f0","text":"Merge retired a covered predecessor; the successor is at notes/2026-08-31-url-reputation-stage-1-decisions.md."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:fd9a80d440defc74e0733da3976af5bec196f52b","text":"Merge retired a covered predecessor; the successor is at tailapps/url_reputation_test.go."}
