@@ -16,16 +16,47 @@
   $lower_observed := $lowercase($observed_full);
   $scheme_prefix := $substring($lower_observed, 0, 7) = "http://" ? "http://" :
     ($substring($lower_observed, 0, 8) = "https://" ? "https://" : "");
-  $authority_prefix := $scheme_prefix & $host;
-  $host_boundary := $substring($lower_observed, $length($authority_prefix), 1);
+  $after_scheme := $scheme_prefix != "" ? $substring($lower_observed, $length($scheme_prefix)) : "";
+  $has_userinfo := $contains($after_scheme, /^[^\/?#]{0,}@/);
+  $userinfo_end := $has_userinfo ? (
+    $scan := {"text": $after_scheme, "offset": 0};
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan := $scan.($mid := $floor($length(text) / 2); $left := $substring(text, 0, $mid); $contains($left, "@") ? {"text": $left, "offset": offset} : {"text": $substring(text, $mid), "offset": offset + $mid});
+    $scan.text = "@" ? $scan.offset + 1 : -1
+  ) : 0;
+  $userinfo_valid := $userinfo_end >= 0 and ($userinfo_end = 0 or
+    $contains($substring($after_scheme, 0, $userinfo_end), /^(?:[a-z0-9._~!$&'()+,;=:-]|%[0-9a-f]{2}){0,}@$/));
+  $host_and_rest := $userinfo_end >= 0 ? $substring($after_scheme, $userinfo_end) : "";
   $host_shape_valid := $host != "" and
     $not($contains($host, "/")) and $not($contains($host, "?")) and
-    $not($contains($host, "#")) and $not($contains($host, "@"));
+    $not($contains($host, "#")) and $not($contains($host, "@")) and
+    ($substring($host, 0, 1) = "[" ?
+      $contains($host, /^\[(?:(?:[0-9a-f]{1,4}:){6}(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9]))|::(?:[0-9a-f]{1,4}:){5}(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9]))|(?:(?:[0-9a-f]{1,4}:){0,0}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9]))|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9]))|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9]))|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){1}(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9]))|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9]))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)(?:%25(?:[a-z0-9._~-]|%[0-9a-f]{2})+)?\]$/) :
+      $contains($host, /^[\p{L}\p{M}\p{N}._-]+$/));
+  $host_matches := $host_shape_valid and $length($host_and_rest) >= $length($host) and
+    $substring($host_and_rest, 0, $length($host)) = $host;
+  $host_suffix := $host_matches ? $substring($host_and_rest, $length($host)) : "";
+  $authority_valid := $userinfo_valid and $host_matches and
+    $not($contains($after_scheme, /^[^\/?#]{0,}[\x00-\x20\x7f\x5c]/)) and
+    ($host_suffix = "" or $contains($host_suffix, /^(:[0-9]+)?([\/?#]|$)/));
   $observation_valid := event.signal = "log" and $event_name = "tailapp.url.observed" and $envelope_time and
-    $observed_full != "" and $scheme_prefix != "" and $host_shape_valid and
-    $substring($lower_observed, 0, $length($authority_prefix)) = $authority_prefix and
-    ($host_boundary = "" or $host_boundary = "/" or $host_boundary = ":" or
-      $host_boundary = "?" or $host_boundary = "#");
+    $observed_full != "" and $scheme_prefix != "" and $authority_valid;
 
   $exclusion_id_raw := $lookup($attrs, "tailapp.url.exclusion.id");
   $exclusion_kind_raw := $lookup($attrs, "tailapp.url.exclusion.kind");

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/generalbusiness-ai/tailapps/internal/profile"
@@ -162,6 +163,114 @@ func TestURLReputationNormalizerAuthorityBoundaries(t *testing.T) {
 			setURLAttributes(input, map[string]any{"tailapp.url.host": host})
 			assertURLNormalizationRejected(t, compiled, input)
 		})
+	}
+}
+
+func TestURLReputationNormalizerActualAuthorityHost(t *testing.T) {
+	compiled := loadURLReputation(t)
+	base := urlReputationFixtures(t)["observed"]
+	tests := []struct {
+		name, url, host string
+		accepted        bool
+	}{
+		{"userinfo-correct", "https://user:pw@example.com/path", "example.com", true},
+		{"userinfo-password-spoof", "https://example.com:pw@evil.test/path", "example.com", false},
+		{"userinfo-actual-host", "https://example.com:pw@evil.test/path", "evil.test", true},
+		{"userinfo-numeric-password-spoof", "https://example.com:8443@evil.test/path", "example.com", false},
+		{"plain-host", "https://example.com/path", "example.com", true},
+		{"numeric-userinfo-actual-host", "https://example.com:8443@evil.test/path", "evil.test", true},
+		{"case-userinfo-port", "HTTP://User:pW@EXAMPLE.COM:443/Case?Secret=X#Fragment", "Example.COM", true},
+		{"empty-userinfo", "https://@example.com", "example.com", true},
+		{"escaped-userinfo", "https://u%40x:p%2F%3F%23@example.com", "example.com", true},
+		{"userinfo-delimiters", "https://u!$&'()+,;=~:p@example.com", "example.com", true},
+		{"at-in-path", "https://example.com/path@evil.test", "example.com", true},
+		{"at-in-query", "https://example.com?email=u@evil.test", "example.com", true},
+		{"at-in-fragment", "https://example.com#u@evil.test", "example.com", true},
+		{"unicode-host", "https://BÜCHER.example/path", "bücher.EXAMPLE", true},
+		{"punycode-host", "https://xn--bcher-kva.example", "xn--bcher-kva.example", true},
+		{"ipv4", "http://192.0.2.1:8080/path", "192.0.2.1", true},
+		{"ipv6", "http://[2001:db8::1]/path", "[2001:DB8::1]", true},
+		{"ipv6-port", "https://u:p@[2001:db8::1]:8443/path", "[2001:db8::1]", true},
+		{"ipv6-final-number", "http://[2001:db8::8443]", "[2001:db8::8443]", true},
+		{"ipv6-full", "https://[1:2:3:4:5:6:7:8]", "[1:2:3:4:5:6:7:8]", true},
+		{"ipv6-leading-compression", "https://[::2:3:4:5:6:7:8]", "[::2:3:4:5:6:7:8]", true},
+		{"ipv6-middle-compression", "https://[1:2:3::5:6:7:8]", "[1:2:3::5:6:7:8]", true},
+		{"ipv6-trailing-compression", "https://[1:2:3:4:5:6:7::]", "[1:2:3:4:5:6:7::]", true},
+		{"ipv6-uncompressed-mapped", "https://[1:2:3:4:5:6:192.0.2.1]", "[1:2:3:4:5:6:192.0.2.1]", true},
+		{"ipv6-unspecified", "https://[::]", "[::]", true},
+		{"ipv6-loopback", "https://[::1]", "[::1]", true},
+		{"ipv6-mapped", "https://[::ffff:192.0.2.1]:443", "[::ffff:192.0.2.1]", true},
+		{"ipv6-zone", "http://[fe80::1%25en0]", "[fe80::1%25en0]", true},
+		{"empty-url", "", "example.com", false},
+		{"empty-authority", "https://", "example.com", false},
+		{"empty-authority-path", "https:///example.com", "example.com", false},
+		{"empty-host", "https://user:pw@/path", "", false},
+		{"empty-host-after-userinfo", "https://user:pw@", "example.com", false},
+		{"short-url", "https://x", "long.example.com", false},
+		{"multiple-userinfo", "https://u@x@example.com", "example.com", false},
+		{"bad-userinfo-escape", "https://u%xx@example.com", "example.com", false},
+		{"empty-port", "https://example.com:/path", "example.com", false},
+		{"nonnumeric-port", "https://example.com:abc/path", "example.com", false},
+		{"extra-port", "https://example.com:443:80/path", "example.com", false},
+		{"host-includes-port", "https://example.com:443", "example.com:443", false},
+		{"ipv6-no-brackets", "https://2001:db8::1", "2001:db8::1", false},
+		{"ipv6-bad-group", "https://[2001:db8::gggg]", "[2001:db8::gggg]", false},
+		{"ipv6-too-many-groups", "https://[1:2:3:4:5:6:7:8:9]", "[1:2:3:4:5:6:7:8:9]", false},
+		{"ipv6-double-compression", "https://[1::2::3]", "[1::2::3]", false},
+		{"ipv6-unclosed", "https://[::1", "[::1", false},
+		{"ipv6-tail-port-spoof", "https://[2001:db8::8443]", "[2001:db8:]", false},
+		{"ipv6-suffix", "https://[::1]evil.test", "[::1]", false},
+		{"bracketed-dns", "https://[example.com]", "[example.com]", false},
+		{"space-host", "https://exam ple.com", "exam ple.com", false},
+		{"space-userinfo", "https://user name@example.com", "example.com", false},
+		{"backslash-userinfo", "https://evil.test\\@example.com", "example.com", false},
+		{"tab-authority", "https://exam\tple.com", "exam\tple.com", false},
+		{"newline-authority", "https://example.com\n", "example.com", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			input := cloneURLInput(t, base)
+			setURLAttributes(input, map[string]any{
+				"tailapp.url.observed_full": tt.url,
+				"tailapp.url.host":          tt.host,
+			})
+			if !tt.accepted {
+				assertURLNormalizationRejected(t, compiled, input)
+				return
+			}
+			result := normalizeURLFixture(t, compiled, input)
+			if result.Decision != "effective" || len(result.Events["otel_event"]) != 1 {
+				t.Fatalf("valid authority rejected: %#v", result)
+			}
+			event := result.Events["otel_event"][0]
+			if event["observed_full"] != tt.url || event["host"] != strings.ToLower(tt.host) {
+				t.Fatalf("stored URL/host changed: %#v", event)
+			}
+		})
+	}
+}
+
+func TestURLReputationNormalizerLongUserinfo(t *testing.T) {
+	compiled := loadURLReputation(t)
+	base := urlReputationFixtures(t)["observed"]
+	// Exercise the entire search depth within the profile's input ceiling.
+	for _, userinfo := range []string{strings.Repeat("u", 200000), "u"} {
+		input := cloneURLInput(t, base)
+		rawURL := "https://" + userinfo + "@example.com/" + strings.Repeat("p", 200000-len(userinfo))
+		setURLAttributes(input, map[string]any{
+			"tailapp.url.observed_full": rawURL,
+			"tailapp.url.host":          "example.com",
+		})
+		encoded, err := json.Marshal(input)
+		if err != nil || len(encoded) >= profile.MaxInputBytes {
+			t.Fatalf("fixture exceeds input ceiling: %d bytes, %v", len(encoded), err)
+		}
+		result := normalizeURLFixture(t, compiled, input)
+		if result.Decision != "effective" || len(result.Events["otel_event"]) != 1 || result.Events["otel_event"][0]["observed_full"] != rawURL {
+			t.Fatal("long valid userinfo or path was refused or changed")
+		}
+		setURLAttributes(input, map[string]any{"tailapp.url.host": "evil.test"})
+		assertURLNormalizationRejected(t, compiled, input)
 	}
 }
 

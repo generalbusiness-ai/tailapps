@@ -137,11 +137,13 @@ The record schemas intentionally echo the original local URL in a reputation
 record. That lets a scrubbed outbound URL attach its verdict to the exact local
 observation without a new hash primitive or a side cache.
 
-For every observation, the normalizer lowercases the URL's authority prefix
-and supplied host, then requires the host to follow the scheme and `://`
-exactly with an end, `/`, `:`, `?`, or `#` boundary. The adapter therefore
-cannot desynchronize host-based exclusions with a prefix lookalike such as
-`example.com.evil`, and this validation needs no parser or runtime extension.
+For every observation, the normalizer checks the actual HTTP(S) authority host
+against the lowercase supplied host. It accounts for optional userinfo and a
+numeric port, keeping IPv6 brackets separate from the port. Thus
+`https://example.com:pw@evil.test/path` belongs to `evil.test`, and a supplied
+`example.com` is ineffective. Prefix lookalikes and malformed authorities are
+also ineffective. The original URL is retained exactly. This validation uses
+the existing bundle evaluator capabilities and needs no runtime extension.
 
 ### Tables and keys
 
