@@ -1,0 +1,159 @@
+(
+  $observation_prior := rows.observation_prior;
+  $count_prior := rows.count_prior;
+  $is_observation := event.event_family = "observation";
+  $is_exclusion := event.event_family = "exclusion";
+  $is_reputation := event.event_family = "reputation";
+
+  $observation_rows := $is_observation ? [{
+    "observed_full": event.observed_full,
+    "host": event.host,
+    "first_observed_unix_nano": $observation_prior ?
+      $observation_prior.first_observed_unix_nano : event.event_time_unix_nano,
+    "last_observed_unix_nano": event.event_time_unix_nano,
+    "observation_count": ($observation_prior ? $observation_prior.observation_count : 0) + 1,
+    "latest_harness": $exists(event.harness) and event.harness != "" ? event.harness :
+      ($observation_prior ? $observation_prior.latest_harness : null),
+    "latest_session_id": $exists(event.session_id) and event.session_id != "" ? event.session_id :
+      ($observation_prior ? $observation_prior.latest_session_id : null),
+    "latest_session_id_prefix": $exists(event.session_id_prefix) and event.session_id_prefix != "" ?
+      event.session_id_prefix : ($observation_prior ? $observation_prior.latest_session_id_prefix : null),
+    "latest_tool_name": $exists(event.tool_name) and event.tool_name != "" ? event.tool_name :
+      ($observation_prior ? $observation_prior.latest_tool_name : null),
+    "latest_project": $exists(event.project) and event.project != "" ? event.project :
+      ($observation_prior ? $observation_prior.latest_project : null),
+    "last_source_position": event.source_position
+  }] : [];
+
+  $exclusion_candidates := [
+    {
+      "include": $not(rows.builtin_ip_literal_prior) and
+        $not($is_exclusion and event.exclusion_id = event.builtin_ip_literal_id),
+      "row": {
+        "exclusion_id": event.builtin_ip_literal_id,
+        "kind": "host-exact",
+        "pattern": "loopback-or-private-ip-literal",
+        "enabled": 1,
+        "updated_unix_nano": event.event_time_unix_nano,
+        "last_source_position": event.source_position
+      }
+    },
+    {
+      "include": $not(rows.builtin_localhost_prior) and
+        $not($is_exclusion and event.exclusion_id = event.builtin_localhost_id),
+      "row": {
+        "exclusion_id": event.builtin_localhost_id,
+        "kind": "host-exact",
+        "pattern": "localhost",
+        "enabled": 1,
+        "updated_unix_nano": event.event_time_unix_nano,
+        "last_source_position": event.source_position
+      }
+    },
+    {
+      "include": $not(rows.builtin_single_label_prior) and
+        $not($is_exclusion and event.exclusion_id = event.builtin_single_label_id),
+      "row": {
+        "exclusion_id": event.builtin_single_label_id,
+        "kind": "host-exact",
+        "pattern": "single-label-host",
+        "enabled": 1,
+        "updated_unix_nano": event.event_time_unix_nano,
+        "last_source_position": event.source_position
+      }
+    },
+    {
+      "include": $not(rows.builtin_local_prior) and
+        $not($is_exclusion and event.exclusion_id = event.builtin_local_id),
+      "row": {
+        "exclusion_id": event.builtin_local_id,
+        "kind": "host-suffix",
+        "pattern": ".local",
+        "enabled": 1,
+        "updated_unix_nano": event.event_time_unix_nano,
+        "last_source_position": event.source_position
+      }
+    },
+    {
+      "include": $not(rows.builtin_internal_prior) and
+        $not($is_exclusion and event.exclusion_id = event.builtin_internal_id),
+      "row": {
+        "exclusion_id": event.builtin_internal_id,
+        "kind": "host-suffix",
+        "pattern": ".internal",
+        "enabled": 1,
+        "updated_unix_nano": event.event_time_unix_nano,
+        "last_source_position": event.source_position
+      }
+    },
+    {
+      "include": $not(rows.builtin_home_arpa_prior) and
+        $not($is_exclusion and event.exclusion_id = event.builtin_home_arpa_id),
+      "row": {
+        "exclusion_id": event.builtin_home_arpa_id,
+        "kind": "host-suffix",
+        "pattern": ".home.arpa",
+        "enabled": 1,
+        "updated_unix_nano": event.event_time_unix_nano,
+        "last_source_position": event.source_position
+      }
+    },
+    {
+      "include": $not(rows.builtin_test_prior) and
+        $not($is_exclusion and event.exclusion_id = event.builtin_test_id),
+      "row": {
+        "exclusion_id": event.builtin_test_id,
+        "kind": "host-suffix",
+        "pattern": ".test",
+        "enabled": 1,
+        "updated_unix_nano": event.event_time_unix_nano,
+        "last_source_position": event.source_position
+      }
+    },
+    {
+      "include": $is_exclusion,
+      "row": {
+        "exclusion_id": event.exclusion_id,
+        "kind": event.exclusion_kind,
+        "pattern": event.exclusion_pattern,
+        "enabled": event.exclusion_enabled,
+        "updated_unix_nano": event.event_time_unix_nano,
+        "last_source_position": event.source_position
+      }
+    }
+  ];
+
+  $verdict_rows := $is_reputation ? [{
+    "observed_full": event.observed_full,
+    "provider": event.provider,
+    "checked_full": event.checked_full,
+    "verdict": event.verdict,
+    "threat_types": event.threat_types,
+    "provider_reference": event.provider_reference,
+    "error": event.error,
+    "checked_unix_nano": event.checked_unix_nano,
+    "valid_until_unix_nano": event.valid_until_unix_nano,
+    "last_source_position": event.source_position
+  }] : [];
+
+  {
+    "decision": "effective",
+    "facts": [],
+    "tables": {
+      "url_observations": {"upsert": $observation_rows},
+      "url_exclusions": {"upsert": [$exclusion_candidates[include = true].row]},
+      "url_verdicts": {"upsert": $verdict_rows},
+      "url_pipeline_counts": {"upsert": [{
+        "day_utc": event.day_utc,
+        "event_family": event.event_family,
+        "record_count": ($count_prior ? $count_prior.record_count : 0) + 1,
+        "error_count": ($count_prior ? $count_prior.error_count : 0) +
+          ($is_reputation and event.verdict = "error" ? 1 : 0),
+        "first_event_time_unix_nano": $count_prior ?
+          $count_prior.first_event_time_unix_nano : event.event_time_unix_nano,
+        "last_event_time_unix_nano": event.event_time_unix_nano,
+        "last_source_position": event.source_position
+      }]}
+    }
+  }
+)

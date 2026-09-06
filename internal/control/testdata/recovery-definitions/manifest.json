@@ -1,0 +1,70 @@
+[
+  {
+    "name": "activity-stats",
+    "commit": "059bd95b4d03ee995c0ae51cf3eab5261a29ca5c",
+    "revision": "sha256:bb951653d838881824a13e41396d957f4f53ea1507d673371d8e0b9e842b6c27",
+    "runtime": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+    "files": {
+      "application.sql": "81439b402e5bacb66f16563fd8b46774dd8f824af334fe2d5f373c096c33d868",
+      "folds/inventory.jsonata": "13ebde2f69acb948b9b1cfc358eb1e0b09ef54056f9cf0e8eefd6cefffc8e8e7",
+      "folds/normalize.jsonata": "b3eab52fd9d75b6d399ecb4b14bd87424ed9dbc05efaedc123330cc30e34b3e9",
+      "folds/performance.jsonata": "eb89e776ccb20c31a575ede8ce77db863b3fc034e2a249de0e7dfcf5e1473f05",
+      "folds/session.jsonata": "f605f0a40a5d3d6795c5bb1639ad7505636799c780ef04ddd1502158e39d8da6"
+    }
+  },
+  {
+    "name": "agent-guard",
+    "commit": "c0d7952781a5c64e0ae579f1e2797db895a67eab",
+    "revision": "sha256:efe35e90119d8410a97f6b109833a019fc908bf3691f4128e9ad12e45d8e6d5b",
+    "runtime": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+    "files": {
+      "application.sql": "563d7563e2b23a6faa480e2b17dbb3a0b853fb1b7451408dcc672ff3e4f7058b",
+      "folds/guard.jsonata": "81d2b1208ba0f0aa3c759a973894ce176ae5246f2156d37868c369dd420ce719",
+      "folds/normalize.jsonata": "00b5d4ee46a77c29e05cbec8dbd9478258564a75a9b686c4b79c1cb451c61a60"
+    }
+  },
+  {
+    "name": "daily-review",
+    "commit": "059bd95b4d03ee995c0ae51cf3eab5261a29ca5c",
+    "revision": "sha256:72a8fcbd82c918466a297ee6febd169cb4ecdde398e9220ca706375ced48a37a",
+    "runtime": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+    "files": {
+      "application.sql": "7be62a772622f70013b94c7fc76c6ffaa9f4fe68f3266d6ef8aec2a80be68f13",
+      "folds/daily.jsonata": "a8a3c279626e04b33279599d88841840875ab195255664095a273ca67be83934",
+      "folds/normalize.jsonata": "abec12a1be3ce5a973e4842bfe10e219b9b25735542b816ea110eee21c0fc23e"
+    }
+  },
+  {
+    "name": "session-cost",
+    "commit": "73564f648228a72919b10701b65e099d8248805f",
+    "revision": "sha256:b2849559fbdefaef388e7917e9ef09e4c639c11508fbbb7a40473e6f14adbf28",
+    "runtime": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+    "files": {
+      "application.sql": "362497be5f48e84a6a6fabce2b11e545a79b168fdf4e61691ee684c39489650b",
+      "folds/cost.jsonata": "ac442358b566acd283e879e64e5f6d18e2caa359a3a8afd66fc6a5cc34723067",
+      "folds/normalize.jsonata": "b01457598058025bf16f786bbec02c63f1c1561e4a06350ecfb912dff93df12c"
+    }
+  },
+  {
+    "name": "signal-counts",
+    "commit": "63a9232f00e0696d1868c9a1bf93c8efd69e0b23",
+    "revision": "sha256:1e5c4a7c110e98b6aa9f0e4a149452338301847de75325d6279e379fc413e311",
+    "runtime": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+    "files": {
+      "application.sql": "b24530bf65bdc0498c5c6f37d4a1370ad0a864cba9d8205d4cfc040b1fe7f309",
+      "folds/count.jsonata": "1c7eb7a12d6624a9383ac339971d45c4d3cb5b04de5c5cc5d602f92b23833c77",
+      "folds/normalize.jsonata": "92cc5ad2dca1f464db49e86d176a96700873fb7f2bc4e0b46b79f941a568267d"
+    }
+  },
+  {
+    "name": "url-reputation",
+    "commit": "e3f71d42cf8817f8e67e54c57b489b6f0faceb0f",
+    "revision": "sha256:8e2d73e6dfc44db5d412066e2ff9da66685f185b064153b08139bbdffef7cae3",
+    "runtime": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+    "files": {
+      "application.sql": "5c4883745080e75c0e764ba54d50d35beba36174b424689e138138383ca3158e",
+      "folds/normalize.jsonata": "61769d164a85de5d80f6a8c82abbb49e5a22c3266e086d5ead629f2427d3eb0f",
+      "folds/pipeline.jsonata": "a93f32a553d490d762977154616f067b958306436a75d1583a3d19241a1f6101"
+    }
+  }
+]
