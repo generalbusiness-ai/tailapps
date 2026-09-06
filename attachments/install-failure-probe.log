@@ -1,0 +1,8 @@
+=== RUN   TestPlannerInstallActivationFailureRetainsDraft
+    planner_install_failure_test.go:7: install error: activate installed tailapp (validated draft remains): mkdir /var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/TestPlannerInstallActivationFailureRetainsDraft262752732/001/home/projections/session-cost: not a directory
+    planner_install_failure_test.go:8: retained draft=sha256:003e55e575cf5ea5db8c37ec34afc50e592e03169598636bb2b422b40bb99f5b active=nil sources=3
+    planner_install_failure_test.go:10: repeat install after obstacle removal: tailapp "session-cost" already exists
+    planner_install_failure_test.go:11: existing draft explicit activation recovered: {Revision:sha256:c8fd7806c7f7bc0803b7800f77256039e5c21a2e95d353d4792a725da51991c7 ActivationBoundary:0 InterpretedPosition:0 LastEventID: Complete:true GapPosition:<nil> GapReason:<nil> GapObservedUnixNano:<nil> LastRecordUnixNano:<nil>}
+--- PASS: TestPlannerInstallActivationFailureRetainsDraft (0.04s)
+PASS
+ok  	github.com/generalbusiness-ai/tailapps/internal/engine	0.488s
