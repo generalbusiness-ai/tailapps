@@ -1,0 +1,37 @@
+[
+  {
+    "input": {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5e2f54558c10b87b27ba84977c3ba038c4737f82",
+      "path": "jsonataddl/input.go",
+      "commit": "7ecffd53013fd6ca45693a1a8e28b7c8d52432e8"
+    },
+    "response": {
+      "repo": "/Users/hughpyle/play/tailapp",
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5e2f54558c10b87b27ba84977c3ba038c4737f82",
+      "path": "jsonataddl/input.go",
+      "status": "invalid",
+      "message": "That exact revision is not cited by this record.",
+      "heads": [
+        "e5768463a5aef6663501c05b4de5471a79856a2f"
+      ],
+      "limit": 524288
+    }
+  },
+  {
+    "input": {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5e2f54558c10b87b27ba84977c3ba038c4737f82",
+      "path": "jsonataddl/input.go"
+    },
+    "response": {
+      "repo": "/Users/hughpyle/play/tailapp",
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5e2f54558c10b87b27ba84977c3ba038c4737f82",
+      "commit": "e5768463a5aef6663501c05b4de5471a79856a2f",
+      "path": "jsonataddl/input.go",
+      "status": "ready",
+      "heads": [
+        "e5768463a5aef6663501c05b4de5471a79856a2f"
+      ],
+      "limit": 524288
+    }
+  }
+]
