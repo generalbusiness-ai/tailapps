@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at internal/inbox/pending_test.go","body":{"commit":"08bdd8d8e941def39ed57dc16ab4e0377caed2e2","path":"internal/inbox/pending_test.go"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:0a8f3090cee8123541e3c79b2edd7b16fac4437b","text":"Merge retired a covered predecessor; the successor is at internal/control/testdata/recovery-definitions/session-cost/folds/cost.jsonata."}
