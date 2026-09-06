@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:53067fafa744e36e7bb68650cfc27db902d68493","text":"Merge retired a covered predecessor; the successor is at internal/control/testdata/recovery-definitions/daily-review/folds/daily.jsonata."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:563870d63a02a645aeaf9b482e870498a90e2b5c","text":"Merge retired a covered predecessor; the successor is at internal/control/testdata/recovery-definitions/activity-stats/application.sql."}
