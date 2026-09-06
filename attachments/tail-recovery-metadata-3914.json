@@ -1,0 +1,374 @@
+{
+  "observed_utc": "2026-09-06T10:55:54.575800+00:00",
+  "sqlite": "3.51.0",
+  "scope": "Read-only metadata; each database independently consistent, not a whole-home preservation snapshot.",
+  "queue": [
+    {
+      "delivery_head": 1511679,
+      "queued_records": 87531,
+      "queued_bytes": 183888723
+    }
+  ],
+  "apps": [
+    {
+      "name": "activity-stats",
+      "draft_revision": "sha256:d930f0c03bdcddfff6f1f0141c8a73d31476f1fde7b6371ac38a94a442c4336d",
+      "active_revision": "sha256:bb951653d838881824a13e41396d957f4f53ea1507d673371d8e0b9e842b6c27",
+      "runtime_profile": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+      "activation_mode": "continue",
+      "boundary_position": 80295
+    },
+    {
+      "name": "agent-guard",
+      "draft_revision": "sha256:fb48515559efd9dc6c46f41c24470c3dc313f2b52dc703e0b8a0106d2aca12c5",
+      "active_revision": "sha256:efe35e90119d8410a97f6b109833a019fc908bf3691f4128e9ad12e45d8e6d5b",
+      "runtime_profile": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+      "activation_mode": "continue",
+      "boundary_position": 80295
+    },
+    {
+      "name": "daily-review",
+      "draft_revision": "sha256:fc55854890f1377f5ab3b0393b621488f4a25dff1aafd97db0b2ed5602bcc1a1",
+      "active_revision": "sha256:72a8fcbd82c918466a297ee6febd169cb4ecdde398e9220ca706375ced48a37a",
+      "runtime_profile": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+      "activation_mode": "continue",
+      "boundary_position": 80295
+    },
+    {
+      "name": "session-cost",
+      "draft_revision": "sha256:003e55e575cf5ea5db8c37ec34afc50e592e03169598636bb2b422b40bb99f5b",
+      "active_revision": "sha256:b2849559fbdefaef388e7917e9ef09e4c639c11508fbbb7a40473e6f14adbf28",
+      "runtime_profile": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+      "activation_mode": "continue",
+      "boundary_position": 80295
+    },
+    {
+      "name": "signal-counts",
+      "draft_revision": "sha256:6b52b3ea601a162afc9a4793f2958b589afb98772cdf18edc5a80d63d8bbf9cc",
+      "active_revision": "sha256:1e5c4a7c110e98b6aa9f0e4a149452338301847de75325d6279e379fc413e311",
+      "runtime_profile": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+      "activation_mode": "continue",
+      "boundary_position": 80295
+    },
+    {
+      "name": "url-reputation",
+      "draft_revision": "sha256:cd602bab8984c72df357144e53ad878b9d226281b7c3c93f516d9bc56e0c03d5",
+      "active_revision": "sha256:8e2d73e6dfc44db5d412066e2ff9da66685f185b064153b08139bbdffef7cae3",
+      "runtime_profile": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+      "activation_mode": "reset",
+      "boundary_position": 118683
+    }
+  ],
+  "obligations": [
+    {
+      "tailapp": "activity-stats",
+      "revision": "sha256:bb951653d838881824a13e41396d957f4f53ea1507d673371d8e0b9e842b6c27",
+      "state": "pending",
+      "count": 87531,
+      "first_position": 1424149,
+      "last_position": 1511679
+    },
+    {
+      "tailapp": "agent-guard",
+      "revision": "sha256:efe35e90119d8410a97f6b109833a019fc908bf3691f4128e9ad12e45d8e6d5b",
+      "state": "pending",
+      "count": 87531,
+      "first_position": 1424149,
+      "last_position": 1511679
+    },
+    {
+      "tailapp": "daily-review",
+      "revision": "sha256:72a8fcbd82c918466a297ee6febd169cb4ecdde398e9220ca706375ced48a37a",
+      "state": "pending",
+      "count": 87531,
+      "first_position": 1424149,
+      "last_position": 1511679
+    },
+    {
+      "tailapp": "session-cost",
+      "revision": "sha256:b2849559fbdefaef388e7917e9ef09e4c639c11508fbbb7a40473e6f14adbf28",
+      "state": "pending",
+      "count": 87531,
+      "first_position": 1424149,
+      "last_position": 1511679
+    },
+    {
+      "tailapp": "signal-counts",
+      "revision": "sha256:1e5c4a7c110e98b6aa9f0e4a149452338301847de75325d6279e379fc413e311",
+      "state": "pending",
+      "count": 87531,
+      "first_position": 1424149,
+      "last_position": 1511679
+    },
+    {
+      "tailapp": "url-reputation",
+      "revision": "sha256:8e2d73e6dfc44db5d412066e2ff9da66685f185b064153b08139bbdffef7cae3",
+      "state": "pending",
+      "count": 87531,
+      "first_position": 1424149,
+      "last_position": 1511679
+    }
+  ],
+  "activation_journal": [],
+  "pending_mutations": [],
+  "projections": {
+    "activity-stats": {
+      "identity": [
+        {
+          "singleton": 1,
+          "tailapp": "activity-stats",
+          "revision": "sha256:bb951653d838881824a13e41396d957f4f53ea1507d673371d8e0b9e842b6c27",
+          "runtime_profile": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+          "activation_mode": "continue"
+        }
+      ],
+      "frontier": [
+        {
+          "activation_boundary": 80295,
+          "interpreted_position": 1424148,
+          "complete": 1,
+          "gap_position": null
+        }
+      ],
+      "table_schema": [
+        {
+          "name": "event_inventory",
+          "sql": "CREATE TABLE event_inventory (\n  harness TEXT NOT NULL,\n  event_family TEXT NOT NULL,\n  tool_bucket TEXT NOT NULL,\n  endpoint_bucket TEXT NOT NULL,\n  event_count INTEGER NOT NULL CHECK (event_count >= 1),\n  first_seen_unix_nano TEXT NOT NULL,\n  last_seen_unix_nano TEXT NOT NULL,\n  reported_length_total INTEGER NOT NULL CHECK (reported_length_total >= 0),\n  length_observed_count INTEGER NOT NULL CHECK (length_observed_count >= 0),\n  length_unknown_count INTEGER NOT NULL CHECK (length_unknown_count >= 0),\n  duration_milliseconds_total INTEGER NOT NULL CHECK (duration_milliseconds_total >= 0),\n  duration_observed_count INTEGER NOT NULL CHECK (duration_observed_count >= 0),\n  duration_unknown_count INTEGER NOT NULL CHECK (duration_unknown_count >= 0),\n  success_count INTEGER NOT NULL CHECK (success_count >= 0),\n  failure_count INTEGER NOT NULL CHECK (failure_count >= 0),\n  outcome_unknown_count INTEGER NOT NULL CHECK (outcome_unknown_count >= 0),\n  session_unknown_count INTEGER NOT NULL CHECK (session_unknown_count >= 0),\n  token_observed_count INTEGER NOT NULL CHECK (token_observed_count >= 0),\n  token_unknown_count INTEGER NOT NULL CHECK (token_unknown_count >= 0),\n  last_source_position INTEGER NOT NULL,\n  PRIMARY KEY (harness, event_family, tool_bucket, endpoint_bucket)\n)"
+        },
+        {
+          "name": "request_performance",
+          "sql": "CREATE TABLE request_performance (\n  harness TEXT NOT NULL,\n  session_id TEXT NOT NULL,\n  event_family TEXT NOT NULL,\n  endpoint_bucket TEXT NOT NULL,\n  request_count INTEGER NOT NULL CHECK (request_count >= 1),\n  first_seen_unix_nano TEXT NOT NULL,\n  last_seen_unix_nano TEXT NOT NULL,\n  success_count INTEGER NOT NULL CHECK (success_count >= 0),\n  failure_count INTEGER NOT NULL CHECK (failure_count >= 0),\n  outcome_unknown_count INTEGER NOT NULL CHECK (outcome_unknown_count >= 0),\n  duration_observed_count INTEGER NOT NULL CHECK (duration_observed_count >= 0),\n  duration_unknown_count INTEGER NOT NULL CHECK (duration_unknown_count >= 0),\n  duration_milliseconds_total INTEGER NOT NULL CHECK (duration_milliseconds_total >= 0),\n  duration_le_100ms INTEGER NOT NULL CHECK (duration_le_100ms >= 0),\n  duration_le_500ms INTEGER NOT NULL CHECK (duration_le_500ms >= 0),\n  duration_le_1000ms INTEGER NOT NULL CHECK (duration_le_1000ms >= 0),\n  duration_le_5000ms INTEGER NOT NULL CHECK (duration_le_5000ms >= 0),\n  duration_gt_5000ms INTEGER NOT NULL CHECK (duration_gt_5000ms >= 0),\n  last_source_position INTEGER NOT NULL,\n  PRIMARY KEY (harness, session_id, event_family, endpoint_bucket)\n)"
+        },
+        {
+          "name": "session_activity",
+          "sql": "CREATE TABLE session_activity (\n  harness TEXT NOT NULL,\n  session_id TEXT NOT NULL,\n  event_count INTEGER NOT NULL CHECK (event_count >= 1),\n  first_seen_unix_nano TEXT NOT NULL,\n  last_seen_unix_nano TEXT NOT NULL,\n  tool_event_count INTEGER NOT NULL CHECK (tool_event_count >= 0),\n  shell_command_count INTEGER NOT NULL CHECK (shell_command_count >= 0),\n  prompt_count INTEGER NOT NULL CHECK (prompt_count >= 0),\n  response_count INTEGER NOT NULL CHECK (response_count >= 0),\n  request_count INTEGER NOT NULL CHECK (request_count >= 0),\n  success_count INTEGER NOT NULL CHECK (success_count >= 0),\n  failure_count INTEGER NOT NULL CHECK (failure_count >= 0),\n  outcome_unknown_count INTEGER NOT NULL CHECK (outcome_unknown_count >= 0),\n  reported_length_total INTEGER NOT NULL CHECK (reported_length_total >= 0),\n  input_tokens INTEGER NOT NULL CHECK (input_tokens >= 0),\n  output_tokens INTEGER NOT NULL CHECK (output_tokens >= 0),\n  cached_input_tokens INTEGER NOT NULL CHECK (cached_input_tokens >= 0),\n  reasoning_output_tokens INTEGER NOT NULL CHECK (reasoning_output_tokens >= 0),\n  cost_microusd INTEGER NOT NULL CHECK (cost_microusd >= 0),\n  unknown_field_observations INTEGER NOT NULL CHECK (unknown_field_observations >= 0),\n  last_source_position INTEGER NOT NULL,\n  PRIMARY KEY (harness, session_id)\n)"
+        },
+        {
+          "name": "tailapp_frontier",
+          "sql": "CREATE TABLE tailapp_frontier (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), activation_boundary INTEGER NOT NULL,\n interpreted_position INTEGER NOT NULL, last_event_id TEXT NOT NULL,\n complete INTEGER NOT NULL, gap_position INTEGER, gap_reason TEXT\n, \"gap_observed_unix_nano\" TEXT, \"last_record_time_unix_nano\" TEXT)"
+        },
+        {
+          "name": "tailapp_projection_identity",
+          "sql": "CREATE TABLE tailapp_projection_identity (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), tailapp TEXT NOT NULL,\n revision TEXT NOT NULL, runtime_profile TEXT NOT NULL, activation_mode TEXT NOT NULL\n)"
+        },
+        {
+          "name": "tailapp_stats",
+          "sql": "CREATE TABLE tailapp_stats (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), consumed_records INTEGER NOT NULL,\n ineffective_records INTEGER NOT NULL, emitted_events INTEGER NOT NULL\n)"
+        }
+      ]
+    },
+    "agent-guard": {
+      "identity": [
+        {
+          "singleton": 1,
+          "tailapp": "agent-guard",
+          "revision": "sha256:efe35e90119d8410a97f6b109833a019fc908bf3691f4128e9ad12e45d8e6d5b",
+          "runtime_profile": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+          "activation_mode": "continue"
+        }
+      ],
+      "frontier": [
+        {
+          "activation_boundary": 80295,
+          "interpreted_position": 1424148,
+          "complete": 1,
+          "gap_position": null
+        }
+      ],
+      "table_schema": [
+        {
+          "name": "loop_findings",
+          "sql": "CREATE TABLE loop_findings (\n  finding_id TEXT PRIMARY KEY,\n  finding_kind TEXT NOT NULL,\n  harness TEXT NOT NULL,\n  session_id TEXT NOT NULL,\n  source_position INTEGER NOT NULL,\n  repeat_count INTEGER NOT NULL,\n  consecutive_failures INTEGER NOT NULL,\n  no_progress_count INTEGER NOT NULL,\n  evidence JSON NOT NULL\n)"
+        },
+        {
+          "name": "policy_findings",
+          "sql": "CREATE TABLE policy_findings (\n  finding_id TEXT PRIMARY KEY,\n  rule_id TEXT NOT NULL,\n  severity TEXT NOT NULL,\n  harness TEXT NOT NULL,\n  session_id TEXT NOT NULL,\n  source_position INTEGER NOT NULL,\n  summary TEXT NOT NULL,\n  evidence JSON NOT NULL,\n  coverage_state TEXT NOT NULL\n)"
+        },
+        {
+          "name": "session_progress",
+          "sql": "CREATE TABLE session_progress (\n  harness TEXT NOT NULL,\n  session_id TEXT NOT NULL,\n  first_activity_unix_nano TEXT NOT NULL,\n  last_activity_unix_nano TEXT NOT NULL,\n  last_distinct_progress_unix_nano TEXT NOT NULL,\n  action_fingerprint TEXT NOT NULL,\n  progress_fingerprint TEXT NOT NULL,\n  repeat_count INTEGER NOT NULL CHECK (repeat_count >= 1),\n  no_progress_count INTEGER NOT NULL CHECK (no_progress_count >= 0),\n  consecutive_failures INTEGER NOT NULL CHECK (consecutive_failures >= 0),\n  total_actions INTEGER NOT NULL CHECK (total_actions >= 1),\n  last_source_position INTEGER NOT NULL,\n  PRIMARY KEY (harness, session_id)\n)"
+        },
+        {
+          "name": "tailapp_frontier",
+          "sql": "CREATE TABLE tailapp_frontier (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), activation_boundary INTEGER NOT NULL,\n interpreted_position INTEGER NOT NULL, last_event_id TEXT NOT NULL,\n complete INTEGER NOT NULL, gap_position INTEGER, gap_reason TEXT\n, \"gap_observed_unix_nano\" TEXT, \"last_record_time_unix_nano\" TEXT)"
+        },
+        {
+          "name": "tailapp_projection_identity",
+          "sql": "CREATE TABLE tailapp_projection_identity (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), tailapp TEXT NOT NULL,\n revision TEXT NOT NULL, runtime_profile TEXT NOT NULL, activation_mode TEXT NOT NULL\n)"
+        },
+        {
+          "name": "tailapp_stats",
+          "sql": "CREATE TABLE tailapp_stats (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), consumed_records INTEGER NOT NULL,\n ineffective_records INTEGER NOT NULL, emitted_events INTEGER NOT NULL\n)"
+        },
+        {
+          "name": "telemetry_coverage",
+          "sql": "CREATE TABLE telemetry_coverage (\n  harness TEXT NOT NULL,\n  capability TEXT NOT NULL,\n  state TEXT NOT NULL CHECK (state IN ('observed', 'unknown')),\n  reason TEXT NOT NULL,\n  last_source_position INTEGER NOT NULL,\n  PRIMARY KEY (harness, capability)\n)"
+        }
+      ]
+    },
+    "daily-review": {
+      "identity": [
+        {
+          "singleton": 1,
+          "tailapp": "daily-review",
+          "revision": "sha256:72a8fcbd82c918466a297ee6febd169cb4ecdde398e9220ca706375ced48a37a",
+          "runtime_profile": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+          "activation_mode": "continue"
+        }
+      ],
+      "frontier": [
+        {
+          "activation_boundary": 80295,
+          "interpreted_position": 1424148,
+          "complete": 1,
+          "gap_position": null
+        }
+      ],
+      "table_schema": [
+        {
+          "name": "daily_review",
+          "sql": "CREATE TABLE daily_review (\n  day_utc INTEGER NOT NULL,\n  harness TEXT NOT NULL,\n  record_count INTEGER NOT NULL,\n  log_count INTEGER NOT NULL,\n  span_count INTEGER NOT NULL,\n  metric_count INTEGER NOT NULL,\n  tool_event_count INTEGER NOT NULL,\n  api_event_count INTEGER NOT NULL,\n  success_count INTEGER NOT NULL,\n  failure_count INTEGER NOT NULL,\n  outcome_unknown_count INTEGER NOT NULL,\n  duration_observed_count INTEGER NOT NULL,\n  duration_milliseconds_total INTEGER NOT NULL,\n  duration_gt_5000ms_count INTEGER NOT NULL,\n  input_tokens INTEGER NOT NULL,\n  cached_input_tokens INTEGER NOT NULL,\n  output_tokens INTEGER NOT NULL,\n  reasoning_output_tokens INTEGER NOT NULL,\n  cost_microusd INTEGER NOT NULL,\n  session_unknown_count INTEGER NOT NULL,\n  identity_metadata_count INTEGER NOT NULL,\n  auth_metadata_count INTEGER NOT NULL,\n  raw_prompt_content_count INTEGER NOT NULL,\n  raw_tool_content_count INTEGER NOT NULL,\n  risky_action_count INTEGER NOT NULL,\n  first_event_time_unix_nano TEXT NOT NULL,\n  last_event_time_unix_nano TEXT NOT NULL,\n  last_source_position INTEGER NOT NULL,\n  PRIMARY KEY (day_utc, harness)\n)"
+        },
+        {
+          "name": "tailapp_frontier",
+          "sql": "CREATE TABLE tailapp_frontier (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), activation_boundary INTEGER NOT NULL,\n interpreted_position INTEGER NOT NULL, last_event_id TEXT NOT NULL,\n complete INTEGER NOT NULL, gap_position INTEGER, gap_reason TEXT\n, \"gap_observed_unix_nano\" TEXT, \"last_record_time_unix_nano\" TEXT)"
+        },
+        {
+          "name": "tailapp_projection_identity",
+          "sql": "CREATE TABLE tailapp_projection_identity (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), tailapp TEXT NOT NULL,\n revision TEXT NOT NULL, runtime_profile TEXT NOT NULL, activation_mode TEXT NOT NULL\n)"
+        },
+        {
+          "name": "tailapp_stats",
+          "sql": "CREATE TABLE tailapp_stats (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), consumed_records INTEGER NOT NULL,\n ineffective_records INTEGER NOT NULL, emitted_events INTEGER NOT NULL\n)"
+        }
+      ]
+    },
+    "session-cost": {
+      "identity": [
+        {
+          "singleton": 1,
+          "tailapp": "session-cost",
+          "revision": "sha256:b2849559fbdefaef388e7917e9ef09e4c639c11508fbbb7a40473e6f14adbf28",
+          "runtime_profile": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+          "activation_mode": "continue"
+        }
+      ],
+      "frontier": [
+        {
+          "activation_boundary": 80295,
+          "interpreted_position": 1424148,
+          "complete": 1,
+          "gap_position": null
+        }
+      ],
+      "table_schema": [
+        {
+          "name": "session_cost",
+          "sql": "CREATE TABLE session_cost (\n  harness TEXT NOT NULL,\n  session_id TEXT NOT NULL,\n  input_tokens INTEGER NOT NULL,\n  output_tokens INTEGER NOT NULL,\n  cached_input_tokens INTEGER NOT NULL,\n  reasoning_output_tokens INTEGER NOT NULL,\n  cost_microusd INTEGER NOT NULL,\n  last_event_time_unix_nano TEXT NOT NULL,\n  last_source_position INTEGER NOT NULL,\n  PRIMARY KEY (harness, session_id)\n)"
+        },
+        {
+          "name": "session_cost_detail",
+          "sql": "CREATE TABLE session_cost_detail (\n  harness TEXT NOT NULL,\n  session_id TEXT NOT NULL,\n  session_id_prefix TEXT NOT NULL,\n  model TEXT NOT NULL,\n  project TEXT NOT NULL,\n  model_coverage TEXT NOT NULL CHECK (model_coverage IN ('observed', 'unknown')),\n  project_coverage TEXT NOT NULL CHECK (project_coverage IN ('observed', 'unknown')),\n  input_tokens INTEGER NOT NULL,\n  output_tokens INTEGER NOT NULL,\n  cached_input_tokens INTEGER NOT NULL,\n  reasoning_output_tokens INTEGER NOT NULL,\n  cost_microusd INTEGER NOT NULL,\n  first_event_time_unix_nano TEXT NOT NULL,\n  last_event_time_unix_nano TEXT NOT NULL,\n  last_source_position INTEGER NOT NULL,\n  PRIMARY KEY (harness, session_id, model)\n)"
+        },
+        {
+          "name": "tailapp_frontier",
+          "sql": "CREATE TABLE tailapp_frontier (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), activation_boundary INTEGER NOT NULL,\n interpreted_position INTEGER NOT NULL, last_event_id TEXT NOT NULL,\n complete INTEGER NOT NULL, gap_position INTEGER, gap_reason TEXT\n, \"gap_observed_unix_nano\" TEXT, \"last_record_time_unix_nano\" TEXT)"
+        },
+        {
+          "name": "tailapp_projection_identity",
+          "sql": "CREATE TABLE tailapp_projection_identity (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), tailapp TEXT NOT NULL,\n revision TEXT NOT NULL, runtime_profile TEXT NOT NULL, activation_mode TEXT NOT NULL\n)"
+        },
+        {
+          "name": "tailapp_stats",
+          "sql": "CREATE TABLE tailapp_stats (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), consumed_records INTEGER NOT NULL,\n ineffective_records INTEGER NOT NULL, emitted_events INTEGER NOT NULL\n)"
+        }
+      ]
+    },
+    "signal-counts": {
+      "identity": [
+        {
+          "singleton": 1,
+          "tailapp": "signal-counts",
+          "revision": "sha256:1e5c4a7c110e98b6aa9f0e4a149452338301847de75325d6279e379fc413e311",
+          "runtime_profile": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+          "activation_mode": "continue"
+        }
+      ],
+      "frontier": [
+        {
+          "activation_boundary": 80295,
+          "interpreted_position": 1424148,
+          "complete": 1,
+          "gap_position": null
+        }
+      ],
+      "table_schema": [
+        {
+          "name": "signal_counts",
+          "sql": "CREATE TABLE signal_counts (\n  source TEXT NOT NULL,\n  signal TEXT NOT NULL,\n  event_name TEXT NOT NULL,\n  event_count INTEGER NOT NULL,\n  last_source_position INTEGER NOT NULL,\n  PRIMARY KEY (source, signal, event_name)\n)"
+        },
+        {
+          "name": "tailapp_frontier",
+          "sql": "CREATE TABLE tailapp_frontier (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), activation_boundary INTEGER NOT NULL,\n interpreted_position INTEGER NOT NULL, last_event_id TEXT NOT NULL,\n complete INTEGER NOT NULL, gap_position INTEGER, gap_reason TEXT\n, \"gap_observed_unix_nano\" TEXT, \"last_record_time_unix_nano\" TEXT)"
+        },
+        {
+          "name": "tailapp_projection_identity",
+          "sql": "CREATE TABLE tailapp_projection_identity (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), tailapp TEXT NOT NULL,\n revision TEXT NOT NULL, runtime_profile TEXT NOT NULL, activation_mode TEXT NOT NULL\n)"
+        },
+        {
+          "name": "tailapp_stats",
+          "sql": "CREATE TABLE tailapp_stats (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), consumed_records INTEGER NOT NULL,\n ineffective_records INTEGER NOT NULL, emitted_events INTEGER NOT NULL\n)"
+        }
+      ]
+    },
+    "url-reputation": {
+      "identity": [
+        {
+          "singleton": 1,
+          "tailapp": "url-reputation",
+          "revision": "sha256:8e2d73e6dfc44db5d412066e2ff9da66685f185b064153b08139bbdffef7cae3",
+          "runtime_profile": "jsonata-ddl-runtime:sha256:5032bcfe6634db4462fcfe39775e55d1c7e11fcb7663c961f6ebe8860192b8b1",
+          "activation_mode": "reset"
+        }
+      ],
+      "frontier": [
+        {
+          "activation_boundary": 118683,
+          "interpreted_position": 1424148,
+          "complete": 1,
+          "gap_position": null
+        }
+      ],
+      "table_schema": [
+        {
+          "name": "tailapp_frontier",
+          "sql": "CREATE TABLE tailapp_frontier (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), activation_boundary INTEGER NOT NULL,\n interpreted_position INTEGER NOT NULL, last_event_id TEXT NOT NULL,\n complete INTEGER NOT NULL, gap_position INTEGER, gap_reason TEXT,\n gap_observed_unix_nano TEXT, last_record_time_unix_nano TEXT\n)"
+        },
+        {
+          "name": "tailapp_projection_identity",
+          "sql": "CREATE TABLE tailapp_projection_identity (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), tailapp TEXT NOT NULL,\n revision TEXT NOT NULL, runtime_profile TEXT NOT NULL, activation_mode TEXT NOT NULL\n)"
+        },
+        {
+          "name": "tailapp_stats",
+          "sql": "CREATE TABLE tailapp_stats (\n singleton INTEGER PRIMARY KEY CHECK (singleton=1), consumed_records INTEGER NOT NULL,\n ineffective_records INTEGER NOT NULL, emitted_events INTEGER NOT NULL\n)"
+        },
+        {
+          "name": "url_exclusions",
+          "sql": "CREATE TABLE url_exclusions (\n  exclusion_id TEXT PRIMARY KEY,\n  kind TEXT NOT NULL CHECK (kind IN ('host-exact', 'host-suffix', 'url-prefix')),\n  pattern TEXT NOT NULL,\n  enabled INTEGER NOT NULL CHECK (enabled IN (0, 1)),\n  updated_unix_nano TEXT NOT NULL,\n  last_source_position INTEGER NOT NULL\n)"
+        },
+        {
+          "name": "url_observations",
+          "sql": "CREATE TABLE url_observations (\n  observed_full TEXT PRIMARY KEY,\n  host TEXT NOT NULL,\n  first_observed_unix_nano TEXT NOT NULL,\n  last_observed_unix_nano TEXT NOT NULL,\n  observation_count INTEGER NOT NULL CHECK (observation_count >= 1),\n  latest_harness TEXT,\n  latest_session_id TEXT,\n  latest_session_id_prefix TEXT,\n  latest_tool_name TEXT,\n  latest_project TEXT,\n  last_source_position INTEGER NOT NULL\n)"
+        },
+        {
+          "name": "url_pipeline_counts",
+          "sql": "CREATE TABLE url_pipeline_counts (\n  day_utc INTEGER NOT NULL,\n  event_family TEXT NOT NULL CHECK (event_family IN ('observation', 'exclusion', 'reputation')),\n  record_count INTEGER NOT NULL CHECK (record_count >= 1),\n  error_count INTEGER NOT NULL CHECK (error_count >= 0),\n  first_event_time_unix_nano TEXT NOT NULL,\n  last_event_time_unix_nano TEXT NOT NULL,\n  last_source_position INTEGER NOT NULL,\n  PRIMARY KEY (day_utc, event_family)\n)"
+        },
+        {
+          "name": "url_verdicts",
+          "sql": "CREATE TABLE url_verdicts (\n  observed_full TEXT NOT NULL,\n  provider TEXT NOT NULL,\n  checked_full TEXT NOT NULL,\n  verdict TEXT NOT NULL CHECK (verdict IN ('clean', 'suspected', 'error')),\n  threat_types TEXT,\n  provider_reference TEXT,\n  error TEXT,\n  checked_unix_nano TEXT NOT NULL,\n  valid_until_unix_nano TEXT NOT NULL,\n  last_source_position INTEGER NOT NULL,\n  PRIMARY KEY (observed_full, provider)\n)"
+        }
+      ]
+    }
+  }
+}

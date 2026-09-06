@@ -1,0 +1,101 @@
+{
+  "generated_at": "2026-09-06T10:56:40.194798Z",
+  "snapshot_duration_milliseconds": 7552.894,
+  "runtime": {
+    "goroutines": 48,
+    "heap_objects_bytes": 17408952,
+    "total_memory_bytes": 68426008,
+    "gc_cycles": 160893
+  },
+  "inbox": {
+    "records": 87512,
+    "canonical_bytes": 183850386,
+    "delivery_head": 1511679,
+    "oldest_position": 1424168,
+    "newest_position": 1511679,
+    "oldest_received_at_unix_nano": 1788593843442052000,
+    "pending_obligations": 525072
+  },
+  "oldest_inbox_age_milliseconds": 98356752.865,
+  "active_tailapps": 6,
+  "unavailable_tailapps": 0,
+  "upgrade_pending_tailapps": 0,
+  "processing": {
+    "activity-stats": {
+      "attempts_total": 1305560,
+      "errors_total": 0,
+      "last_success_at": "2026-09-06T10:56:39.69448Z",
+      "outcomes": {
+        "error": 0,
+        "gap": 0,
+        "ok": 1305560,
+        "retry": 0
+      }
+    },
+    "agent-guard": {
+      "attempts_total": 1305560,
+      "errors_total": 0,
+      "last_success_at": "2026-09-06T10:56:39.695287Z",
+      "outcomes": {
+        "error": 0,
+        "gap": 0,
+        "ok": 1305560,
+        "retry": 0
+      }
+    },
+    "daily-review": {
+      "attempts_total": 1305561,
+      "errors_total": 1,
+      "last_success_at": "2026-09-06T10:56:39.697355Z",
+      "outcomes": {
+        "error": 0,
+        "gap": 0,
+        "ok": 1305560,
+        "retry": 1
+      }
+    },
+    "session-cost": {
+      "attempts_total": 1305561,
+      "errors_total": 1,
+      "last_success_at": "2026-09-06T10:56:39.698511Z",
+      "outcomes": {
+        "error": 0,
+        "gap": 0,
+        "ok": 1305560,
+        "retry": 1
+      }
+    },
+    "signal-counts": {
+      "attempts_total": 1305560,
+      "errors_total": 0,
+      "last_success_at": "2026-09-06T10:56:39.699444Z",
+      "outcomes": {
+        "error": 0,
+        "gap": 0,
+        "ok": 1305560,
+        "retry": 0
+      }
+    },
+    "url-reputation": {
+      "attempts_total": 1305484,
+      "errors_total": 0,
+      "last_success_at": "2026-09-06T10:56:39.700733Z",
+      "outcomes": {
+        "error": 0,
+        "gap": 0,
+        "ok": 1305484,
+        "retry": 0
+      }
+    }
+  },
+  "detached_obligations_total": 0,
+  "intake_outcomes": {
+    "backpressure": 0,
+    "busy": 10107,
+    "error": 6029,
+    "invalid": 0,
+    "limit": 0,
+    "not_ready": 0,
+    "ok": 78390
+  }
+}

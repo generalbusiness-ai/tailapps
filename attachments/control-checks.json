@@ -1,0 +1,23 @@
+[
+  {
+    "operation": "apps_list",
+    "observed_utc": "2026-09-06T10:56:22.620951+00:00",
+    "elapsed_seconds": 0.013,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  {
+    "operation": "status",
+    "observed_utc": "2026-09-06T10:56:32.630302+00:00",
+    "elapsed_seconds": 10.009,
+    "exit_code": 28,
+    "stderr": "curl: (28) Operation timed out after 10002 milliseconds with 0 bytes received\n"
+  },
+  {
+    "operation": "metrics",
+    "observed_utc": "2026-09-06T10:56:40.196189+00:00",
+    "elapsed_seconds": 7.565,
+    "exit_code": 0,
+    "stderr": ""
+  }
+]
