@@ -1,0 +1,37 @@
+[
+  {
+    "path": "tailapps/session-cost/README.md",
+    "line": 154,
+    "commit": "d816892bb305f10194a7403427838f1d643e66b3",
+    "status": "ready",
+    "sha256": "e31f4cdf66d5a90aa7f1f2615f3913f723dbddd449aeff2b40551bd0be5e9dff"
+  },
+  {
+    "path": "tailapps/agent-guard/README.md",
+    "line": 89,
+    "commit": "d816892bb305f10194a7403427838f1d643e66b3",
+    "status": "ready",
+    "sha256": "c19ee6810e5ee61da41b548374daad1e80ab13bb58b178059ac2d581d40de0db"
+  },
+  {
+    "path": "internal/projection/projection.go",
+    "line": 319,
+    "commit": "d816892bb305f10194a7403427838f1d643e66b3",
+    "status": "ready",
+    "sha256": "f5dcebc0a4e10f51a411e716063ab66fda7c8c1f1b4094c9430df36e33b1dbd2"
+  },
+  {
+    "path": "docs/reference/resident-upgrade.md",
+    "line": 23,
+    "commit": "d816892bb305f10194a7403427838f1d643e66b3",
+    "status": "ready",
+    "sha256": "b7c1debff0c2d5d667c9f951c019078b6ffd6a1d6852e0b9993015ea16bab669"
+  },
+  {
+    "path": "docs/reference/cli.md",
+    "line": 180,
+    "commit": "d816892bb305f10194a7403427838f1d643e66b3",
+    "status": "ready",
+    "sha256": "3ff86c3982733ae69ae6e59df7f764121c4f7db6c175348e3a7ab6cdbeace0c8"
+  }
+]
