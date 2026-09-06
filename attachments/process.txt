@@ -1,2 +1,0 @@
-  PID  PPID     ELAPSED  %CPU COMM
-66700     1 05-12:15:29   9.4 /Users/hughpyle/.local/bin/tailapp
