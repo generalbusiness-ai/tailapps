@@ -22,12 +22,24 @@ strings.
 `tailapp.url.observed` requires:
 
 - `tailapp.url.observed_full`: an absolute HTTP(S) URL retained exactly;
-- `tailapp.url.host`: the parsed host. Its lowercase value must immediately
-  follow the lowercase scheme and `://`, followed by end-of-string, `/`, `:`,
-  `?`, or `#`.
+- `tailapp.url.host`: the actual authority host, lowercased for storage. Optional
+  userinfo precedes the host; an optional port contains digits only. IPv6
+  hosts include their brackets, with any port outside them. A supplied host
+  that differs from the URL authority makes the observation ineffective.
 
 It may also carry `session.id` or `conversation.id`, `tool_name`, `project`,
 and `cwd`. The OTLP envelope timestamp is the observation time.
+
+The normalizer retains the original URL, including userinfo, case, query and
+fragment. It rejects malformed authority syntax, ambiguous userinfo, and host
+prefix lookalikes. It uses the current evaluator's bounded substring operations:
+18 halving steps locate the authority's first `@` within the 256 KiB input limit.
+This search does not treat `@` in a path, query or fragment as userinfo.
+
+Encoded input and output each have a 256 KiB limit. Output includes additional
+metadata, so a valid observation close to the input limit can exceed the output
+limit. That is an evaluation error, which the projection records as a gap; it
+is not an ineffective authority refusal. The original URL is never truncated.
 
 `tailapp.url.exclusion` requires:
 
