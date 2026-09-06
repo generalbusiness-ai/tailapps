@@ -1,1 +1,1 @@
-{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:fd9a80d440defc74e0733da3976af5bec196f52b","text":"Merge retired a covered predecessor; the successor is at tailapps/url_reputation_test.go."}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:2e1f4150c39649d6f803197fdaed1b98c25d1eae","text":"Retire this Builder-authored outside-target note candidate classified abandoned by sealed URL4086 delivery25b456c8. The current note publicatione6de7f33 is landed at c9bdbd32. Protected siblings and the wider carried tailapps pointer remain live."}
