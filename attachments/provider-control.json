@@ -1,0 +1,8 @@
+{
+  "calls": 1,
+  "canonical_output": "\"fixed-result\"",
+  "next_unbound_call_refused": true,
+  "pinned_jsonata": "v0.0.0-20250709164031-599f35f32e5f",
+  "raw_callback_error_contains_canary": true,
+  "scoped_call_succeeded": true
+}
