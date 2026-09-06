@@ -1,0 +1,65 @@
+Checker readiness review for tailapp request #4050 (promise c27bc512), filed 2026-09-06 against main e93505c95f4e42bf1b020002d33f5d4b8eef8e21. Every path:line citation was re-derived at that commit by the checker before filing. Analysis only: no source, hooks, providers, resident or telemetry were touched.
+
+# URL reputation Stage 3 readiness review
+
+Read-only review of `/Users/hughpyle/play/tailapp` at `e93505c95f4e42bf1b020002d33f5d4b8eef8e21` (checkout verified at that commit; only untracked `reports/` differs). Nothing was modified.
+
+## 1. Was Stage 3 assigned or deferred?
+
+**None found in the repository.** The decision note defines Stage 3 (`notes/2026-08-31-url-reputation-stage-1-decisions.md@e93505c95f4e42bf1b020002d33f5d4b8eef8e21:287`) and Stage 4 (`:305`), and its status line authorizes only Stage 2 (`:3`, `:328`). The bundle README defers enforcement to "the Stage 3 companion" (`tailapps/url-reputation/README.md@e93505c95f4e42bf1b020002d33f5d4b8eef8e21:103`, `:111`). Git history for the bundle is three commits (`9b289f4` add, `43c3579` example fix, `e3f71d4` install-doc wording) plus the Stage 2 merge `5d84ac7`; the grep over `--all` finds no later commit, note, or doc mentioning a Stage 3 assignment, deferral, or scope change. `scripts/url-capture/` and `scripts/url-reputation/` do not exist. The workroom log is outside this review.
+
+## 2. Minimal source-only Stage 3 scope
+
+Stage 2 shipped as one commit touching only `tailapps/url-reputation/*`, `tailapps/embed.go`, a fixture, and tests in `tailapps/`, `internal/query`, `internal/engine` — no engine, ingest, or CLI change. Stage 3 should follow the same shape: **no `internal/` change is required**. Everything the decision demands lives in two new script trees plus tests.
+
+| Decision requirement | Where it lives at this head |
+|---|---|
+| Dedicated HTTP(S) capture record `tailapp.url.observed` with `observed_full` + `host` (`decisions:24`, `:34`) | New `scripts/url-capture/` executable posting OTLP/HTTP JSON to `/v1/logs`. The receiver already accepts `application/json` (`internal/ingest/receiver.go@…:126`, `:139`); no receiver change. |
+| Exact local observation identity | Normalizer already keys on the exact string and enforces the host/authority boundary (`tailapps/url-reputation/folds/normalize.jsonata@…:24-28`); table PK is `observed_full` (`application.sql@…:35`). Capture must send the URL unmodified. |
+| No harness-local transcript/session-store access (`decisions:75`) | Capture reads only the hook stdin record. Note both Claude Code and Codex hooks supply `transcript_path`; the adapter must ignore it, and a test should assert no file opens outside stdin. |
+| Mandatory built-in + materialized exclusions immediately before egress (`decisions:180`, README `:103`) | New `scripts/url-reputation/`. Built-in rows carry symbolic patterns (`loopback-or-private-ip-literal`, `single-label-host`; `folds/pipeline.jsonata@…:35`, `:59`) that SQL cannot evaluate, so the companion must implement those semantics itself, plus exact/suffix/prefix matching on `url_exclusions WHERE enabled = 1` (README `:94-100`). |
+| Credential/secret scrubbing (`decisions:253-267`) | Companion scrubber: strip userinfo, fragment, whole query; redact JWT/token/long-hex path segments; refuse non-absolute results; `path-preserving` mode as the only alternative. |
+| Exactly one explicitly selected eligible provider (`decisions:56-58`, `:219`) | Companion config: one provider name, eligibility confirmation flag, env-only key (`TAILAPP_SAFE_BROWSING_API_KEY` / `TAILAPP_WEBRISK_API_KEY` / `TAILAPP_VIRUSTOTAL_API_KEY`); refuse when any is absent. Provider string must match the `url_verdicts.provider` value the due query is parameterized on (README `:83`, `:88`). |
+| Bounded requests and rate handling (`decisions:208-210`) | Provider adapters: Safe Browsing ≤50 URLs/search; Web Risk one URL/request; bounded concurrency; provider request URLs scrubbed before any error is reported (`decisions:222`). |
+| Dedup + exact-observation fan-out (`decisions:208-211`) | Companion groups due rows by scrubbed `checked_full`, calls once per distinct value, emits one `tailapp.url.reputation` per original `observed_full` (normalizer `:57-60`, verdict PK `application.sql@…:68`). |
+| Stored freshness (`decisions:185-198`) | Companion sets `checked_unix_nano`/`valid_until_unix_nano`: Safe Browsing `cacheDuration` capped 24 h for clean; Web Risk `expireTime`; TTL default 24 h / max 7 d otherwise; error → 5 min. Fold stores them verbatim (`pipeline.jsonata@…:134-135`). |
+| Local query path | `tailapp query --sql … --param` exists (`internal/cli/cli.go@…:534-577`); companion shells out or uses the control socket. |
+| Tests | Hook-fixture → adapter → normalizer → `url_observations` row; fake-provider test; loopback end-to-end (`decisions:295-301`). Pattern to copy: `tailapps/url_reputation_test.go` and `internal/query/url_reputation_test.go`. |
+
+Harness shims per `decisions:80-94`: Claude Code `PostToolUse` matcher `WebFetch|WebSearch`; Codex `PostToolUse` hook for named local/MCP fetch tools; OpenCode v2 plugin on `execute.after`.
+
+## 3. External-contract checks (fetched 2026-09-06)
+
+No local Codex hook documentation exists (`docs/harnesses/codex.md` covers OTLP/MCP only; `~/.codex` holds config/state, not docs). Local Codex CLI is 0.153.4; the harness fixture cites 0.150.1 (`docs/harnesses/codex.md@…:83`).
+
+| Contract | Result | Source |
+|---|---|---|
+| Claude Code hooks: `PreToolUse`/`PostToolUse` receive `session_id`, `cwd`, `transcript_path`, `tool_name`, `tool_input`, `tool_use_id`; `PostToolUse` fires only on success (`PostToolUseFailure` on failure); matcher on tool name, `\|` alternatives | **Unchanged** | https://code.claude.com/docs/en/hooks (no page date) |
+| Claude Code `WebFetch` input is `url` + `prompt` | **Partially confirmed**: tools reference says "WebFetch takes a URL and a prompt"; the hooks page shows no WebFetch `tool_input` example. The decision's fixture-backed approach (`decisions:81`) remains the right guard. `WebSearch` `tool_response` shape: **could not confirm** from docs. | https://code.claude.com/docs/en/tools-reference |
+| Codex hooks: `PreToolUse`/`PostToolUse` in `~/.codex/hooks.json` or `config.toml` `[hooks]`; stdin has `tool_name`, `tool_input` ("MCP and other local function tools send their arguments"), `tool_response`, `session_id`, `cwd`, `turn_id`; MCP names `mcp__server__tool`; hosted `WebSearch` bypasses the local hook path | **Unchanged**, with one addition: Codex requires the operator to review and trust the exact hook definition (`/hooks`) before a non-managed hook runs; `--dangerously-bypass-hook-trust` exists. Install docs must include the trust step. | https://learn.chatgpt.com/docs/hooks (no page date) |
+| OpenCode v2 plugin `execute.after` with `tool`, `input`, `status`, `result`/`error` | **Unchanged**; no `sessionID` documented (decision already tolerates unknown session, `decisions:36`) | https://opencode.ai/v2/docs/build/plugins/ |
+| Safe Browsing: non-commercial only; qualified wording + "Advisory provided by Google" attribution; default quota | **Unchanged** | https://developers.google.com/safe-browsing/reference/Appropriate.Usage (updated 2025-03-05) |
+| Safe Browsing v5 `urls.search`: ≤50 URLs; `cacheDuration`; clean-result extension capped at 24 h | **Unchanged** | https://developers.google.com/safe-browsing/reference/rest/v5/urls/search (updated 2026-02-20) |
+| Web Risk Lookup: one URL per request; no client canonicalization required; `threat.threatTypes`, `expireTime`; API key | **Unchanged**; URL moved to `docs.cloud.google.com` (301) | https://docs.cloud.google.com/web-risk/docs/lookup-api (updated 2026-08-26) |
+| Web Risk pricing: 100,000 free Lookup calls/month, then $0.50/1,000 | **Unchanged** (decision forbids baking pricing in) | https://cloud.google.com/web-risk/pricing (no date) |
+| VirusTotal Public API: not for commercial products/services or non-contributing business workflows; 500/day, 4/min; automated telemetry enrichment is a Premium use case | **Unchanged** | https://docs.virustotal.com/reference/public-vs-premium-api (updated 2025-12-23) |
+
+## 4. Blockers and decisions for Hugh
+
+1. **Assignment.** Stage 3 has no request, performer, or branch. It needs a durable request resting on the ratified decision (`decisions:318-326`).
+2. **Catalog inconsistency (Stage 4, but visible now).** `tailapps/embed.go@…:26` lists six bundles; `README.md@…:15`, `docs/reference/cli.md@…:118`, `docs/reference/mcp.md@…:225`, and `internal/cli/cli.go@…:146` (`tailapp setup` default) list five. Decide whether `setup` should install `url-reputation` by default; the decision (`:307`) says add it to the catalog, and the README says install it explicitly (`README.md@…:8`).
+3. **Codex hook trust** is an install precondition not mentioned in the decision; confirm the docs may direct operators to `/hooks` trust rather than the bypass flag.
+4. **`WebSearch` coverage on Claude Code**: `tool_response` shape is undocumented, so either capture a fixture during Stage 3 or scope Claude Code capture to `WebFetch` only. No provider terms changed; no new provider decision is needed.
+5. **Web Risk doc host moved**; update the decision's reference URL when Stage 3 lands.
+
+## 5. Conclusions
+
+**Architecture.** Stage 3 adds two producers outside the engine and changes no layer contract: ingest (`/v1/logs` JSON), evaluator, projection, query, and the bundle schema all stand as delivered. Fixtures at `tailapps/testdata/url-reputation-stage2.json` already model the companion's `service.name = tailapp-url-companion` records, so the interface is settled. Stage 4 touches `internal/cli` setup defaults and catalog docs only.
+
+**Security.** Ordering must be: due query → rebuild exclusion set (built-in semantics reimplemented in code, plus enabled materialized rows) → apply exclusions → scrub → dedup → single provider call → fan-out. Exclusion before scrubbing is required, since scrubbing can change the host-boundary reasoning only in the path; the README's "even if it checked the same URL earlier in a run" (`:105`) means the check runs per due row, not per cache hit. Secret scrubbing must cover both outbound target URLs and the provider request URL carrying `key=` before any error string becomes `tailapp.url.error`. Provider selection must be one explicit value plus an eligibility confirmation; absence of either refuses the run rather than falling back. The fake provider and loopback test must emit a distinguishable `tailapp.url.provider` value (for example `fake-provider`) and a distinct `service.name`, so a fixture verdict can never satisfy the due query for `safe-browsing-v5` or `web-risk` and cannot be mistaken for real capture. Hook stdin includes `transcript_path` on both harnesses; the adapter must never open it.
+
+**Simplification.** Keep both scripts single-file with a documented stdin contract and no framework. Do not add a fourth provider or a cache: `url_verdicts` already is the cache. Reuse the README's due and exclusion SQL verbatim rather than inventing a second query. The seven built-in rules are the only exclusion logic that needs code; everything else is string matching.
+
+## 6. Status
+
+Stage 3 (capture adapter, companion, end-to-end and scrubbing tests) and Stage 4 (catalog, setup default, daily-review instructions, MCP resource links) remain outstanding. This readiness review is analysis only; it cannot mark the URL reputation feature delivered.
