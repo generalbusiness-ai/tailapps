@@ -154,17 +154,17 @@ boundary or the producer supplied no timestamp.
 `tailapp_status` can also report `ingestion_ready: false` while a runtime
 upgrade is pending. In that state existing projections remain queryable and
 their frontier may still be `complete: true`, but OTLP intake is held closed
-with `ingestion_not_ready` until every active Tailapp is explicitly continued
-or reset. Use `tailapp_get`, chain changed sources through `tailapp_put`, then
-call `tailapp_validate` and `tailapp_activate`; unchanged drafts still require
-an explicit continue activation. The [CLI upgrade procedure](cli.md#upgrading-an-existing-resident)
-lists the changed built-in source paths for this release. It derives them from
-`git diff --name-only main..HEAD -- tailapps`, retaining only `application.sql`
-and `folds/*.jsonata`: `agent-guard` needs `application.sql`,
-`folds/normalize.jsonata`, and `folds/guard.jsonata`; `session-cost` needs
-`application.sql`, `folds/normalize.jsonata`, and `folds/cost.jsonata`;
-`daily-review` needs `folds/normalize.jsonata`; and `signal-counts` needs
-`application.sql`, `folds/normalize.jsonata`, and `folds/count.jsonata`.
+with `ingestion_not_ready`. A changed stored runtime requires explicitly
+acknowledged reset of each affected Tailapp, even when its draft and table
+shapes are unchanged. Reset discards materialized history; the engine cannot
+replay it. Within the same stored runtime, compatible source changes may
+continue when existing writable tables retain their stored shapes and meet
+the storage conditions in the [resident upgrade guide](resident-upgrade.md).
+
+Use `tailapp_get` and `tailapp_put` to prepare changed sources, then
+`tailapp_validate` and an explicit `tailapp_activate` with the required mode.
+Follow the resident upgrade guide for the procedure; upgrading the binary
+does not authorize or perform activation.
 
 ### Idempotency key
 
