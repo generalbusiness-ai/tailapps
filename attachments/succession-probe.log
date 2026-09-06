@@ -1,5 +1,0 @@
-=== RUN   TestTail3925ActualSuccession
-    tail3925_succession_probe_test.go:11: publish=25 retire=25 left_live=2; current main pointer preserved
---- PASS: TestTail3925ActualSuccession (0.02s)
-PASS
-ok  	github.com/generalbusiness-ai/gitseq/internal/mergeplan	0.425s
