@@ -39,6 +39,10 @@ full capability/context decision, its four stages and all eight admission
 gates; it proposes no change to their semantics. A later implementation needs
 its own request on the then-current adopted and delivered bases.
 
+Repository source links open at the immutable head of this note's owning
+artifact. Its source-provenance attachment records the earlier exact revisions
+and verifies that those files have identical bytes at this head.
+
 The governing requirements remain sections 3 and 5 of the
 [adoption note](https://github.com/generalbusiness-ai/gitseq/blob/860ee61a07aa753dcbc2d50e74da2b7b6547625b/notes/2026-09-04-tailapps-jsonataddl-adoption.md#L1) and the six rules and eight gates of the
 [stable-extensions note](https://github.com/generalbusiness-ai/gitseq/blob/860ee61a07aa753dcbc2d50e74da2b7b6547625b/notes/2026-08-27-jsonata-ddl-stable-extensions.md#L1). Chess is the first consumer. No Chess type, identity scheme, rules
@@ -61,34 +65,24 @@ These exact source references distinguish the two:
 
 | Current source | Implemented behavior and remaining integration |
 |---|---|
-| [Input admission](jsonataddl/input.go@7ecffd53013fd6ca45693a1a8e28b7c8d52432e8:10) | `ValidateProgramInput` validates metadata and the complete event before host reads. It marshals first, then checks encoded bytes/depth and declared values. It is not a pre-allocation meter. |
-| [Input contracts](jsonataddl/input_contract.go@7ecffd53013fd6ca45693a1a8e28b7c8d52432e8:9) | Four closed forms: scalar, string array, scalar object and opaque JSON object. Base metadata accepts scalar fields only; normalizer event scalars come from `HostEvent`. These forms are not arbitrary bounded arrays or tagged unions. |
-| [Dialect](jsonataddl/dialect.go@7ecffd53013fd6ca45693a1a8e28b7c8d52432e8:24) | Explicit host input contracts and limits are part of the dialect. Keep base metadata closed when adding compiled per-program context shapes. |
-| [Evaluation](jsonataddl/evaluate.go@7ecffd53013fd6ca45693a1a8e28b7c8d52432e8:64) | `Evaluate` marshals and repeats admission with declared read results before evaluating. Preserve this second check. Output size is checked after evaluator allocation, so I7 still needs bounded encoding and construction. |
-| [Compiled application](jsonataddl/application.go@7ecffd53013fd6ca45693a1a8e28b7c8d52432e8:76) | A mutex serializes evaluation of each compiled expression. I7 sessions must preserve isolation while supplying only their selected program's bindings. |
-| [Confinement](jsonataddl/confine.go@8c6d5e21ec5ae7f80ac1653a0a1d8047e45cbf23:19) and [compiler](jsonataddl/compile.go@7ecffd53013fd6ca45693a1a8e28b7c8d52432e8:448) | Nineteen fixed built-ins, no lambdas or dynamic calls; depth/range limits and a 2,000 ms safety deadline. No extension allowlist or deterministic allocation/work meter is implemented. |
-| [Loader](jsonataddl/load.go@8c6d5e21ec5ae7f80ac1653a0a1d8047e45cbf23:1) and [identity](jsonataddl/identity.go@7ecffd53013fd6ca45693a1a8e28b7c8d52432e8:22) | Loading accepts a runtime digest string; identity has exactly nine components. Registry verification and the tenth component remain I7 work. |
-| [Host read preparation](internal/projection/projection.go@7ecffd53013fd6ca45693a1a8e28b7c8d52432e8:518) | Both normalizer and fold paths validate before binding/performing reads. `Prepare` must retain this ordering and add verified context. |
-| [Engine upgrade](internal/engine/engine.go@7ecffd53013fd6ca45693a1a8e28b7c8d52432e8:187) and [stored-runtime guard](internal/projection/projection.go@7ecffd53013fd6ca45693a1a8e28b7c8d52432e8:306) | Historical runtimes can be opened for queries but remain upgrade-pending. Engine activation and transactional continuation check the physical stored runtime; acknowledged reset is required across identities. |
-| [Gap persistence](internal/projection/projection.go@7ecffd53013fd6ca45693a1a8e28b7c8d52432e8:424) and [MCP status](internal/mcp/tools.go@7ecffd53013fd6ca45693a1a8e28b7c8d52432e8:95) | Ordinary failures still persist `processErr.Error()` as `gap_reason`, exposed through status. I7 must sanitize the inner, outer and persistence boundaries. This is a future extension integration requirement, not evidence of a current extension leak. |
+| [Input admission](jsonataddl/input.go:10) | `ValidateProgramInput` validates metadata and the complete event before host reads. It marshals first, then checks encoded bytes/depth and declared values. It is not a pre-allocation meter. |
+| [Input contracts](jsonataddl/input_contract.go:9) | Four closed forms: scalar, string array, scalar object and opaque JSON object. Base metadata accepts scalar fields only; normalizer event scalars come from `HostEvent`. These forms are not arbitrary bounded arrays or tagged unions. |
+| [Dialect](jsonataddl/dialect.go:24) | Explicit host input contracts and limits are part of the dialect. Keep base metadata closed when adding compiled per-program context shapes. |
+| [Evaluation](jsonataddl/evaluate.go:64) | `Evaluate` marshals and repeats admission with declared read results before evaluating. Preserve this second check. Output size is checked after evaluator allocation, so I7 still needs bounded encoding and construction. |
+| [Compiled application](jsonataddl/application.go:76) | A mutex serializes evaluation of each compiled expression. I7 sessions must preserve isolation while supplying only their selected program's bindings. |
+| [Confinement](jsonataddl/confine.go:20) and [compiler](jsonataddl/compile.go:448) | Nineteen fixed built-ins, no lambdas or dynamic calls; depth/range limits and a 2,000 ms safety deadline. No extension allowlist or deterministic allocation/work meter is implemented. |
+| [Loader](jsonataddl/load.go:1) and [identity](jsonataddl/identity.go:22) | Loading accepts a runtime digest string; identity has exactly nine components. Registry verification and the tenth component remain I7 work. |
+| [Host read preparation](internal/projection/projection.go:518) | Both normalizer and fold paths validate before binding/performing reads. `Prepare` must retain this ordering and add verified context. |
+| [Engine upgrade](internal/engine/engine.go:187), [activation check](internal/engine/engine.go:626) and [stored-runtime guard](internal/projection/projection.go:306) | Historical runtimes can be opened for queries but remain upgrade-pending. Engine activation and transactional continuation check the physical stored runtime; acknowledged reset is required across identities. |
+| [Gap persistence](internal/projection/projection.go:428) and [MCP status](internal/mcp/tools.go:95) | Ordinary failures still persist `processErr.Error()` as `gap_reason`, exposed through status. I7 must sanitize the inner, outer and persistence boundaries. This is a future extension integration requirement, not evidence of a current extension leak. |
 
-The [module pin](jsonataddl/go.mod@9b11da6ad5b575e5637617f47ee9c87a493c1ada:8) still selects JSONata `599f35f32e5f31297f8b2153b5da44ddbb330e28` and SQLite
-adapter 0.35.3. The [resident upgrade contract](docs/reference/resident-upgrade.md@7ecffd53013fd6ca45693a1a8e28b7c8d52432e8:23) explains why source delivery and live
+The [module pin](jsonataddl/go.mod:8) still selects JSONata `599f35f32e5f31297f8b2153b5da44ddbb330e28` and SQLite
+adapter 0.35.3. The [resident upgrade contract](docs/reference/resident-upgrade.md:23) explains why source delivery and live
 recovery are separate: compatible schemas do not override a stored runtime
 mismatch. This note commissions no deployment or reset.
 
-Current exact source observations accompany this decision. The seven input,
-identity and projection files identified by #3926, plus compiler, engine and
-MCP diagnostics, match their prior live source bytes. Those older publications
-remain historically stale: the c57 integration chain depends on retired engine
-candidate `4761b410e3edd360a9b968cdaf592ff5856d48cc`. Re-examining today's
-input/upgrade behavior supplies current bases for this description; it does
-not erase their old staleness, retire unrelated candidates or renew the old
-commission. The separately published current exact paths make later source
-succession visible to this note.
-
 Chess is now at `b97c6a82ef7e3618721696f5a69efef13da10a79`. Its
-[module pins](https://github.com/generalbusiness-ai/gitseq-chess/blob/b97c6a82ef7e3618721696f5a69efef13da10a79/go.mod#L5) still select Gitseq host `7152e79a741e6c9c277568a6aabec8e9b6cbd792` and notnil/chess v1.10.0.
+[module pins](https://github.com/generalbusiness-ai/gitseq-chess/blob/b97c6a82ef7e3618721696f5a69efef13da10a79/go.mod#L6) still select Gitseq host `7152e79a741e6c9c277568a6aabec8e9b6cbd792` and notnil/chess v1.10.0.
 Its [projection initialization](https://github.com/generalbusiness-ai/gitseq-chess/blob/b97c6a82ef7e3618721696f5a69efef13da10a79/chess.go#L196) still resolves the whole log, and its
 [outcome mapping](https://github.com/generalbusiness-ai/gitseq-chess/blob/b97c6a82ef7e3618721696f5a69efef13da10a79/chess.go#L531) still uses `Method().String()`. Neither implementation is admitted by this
 decision; the bounded provider and exact-record differential gates still apply.
@@ -184,7 +178,7 @@ structured values: bounded arrays, closed objects and explicitly tagged unions.
 Every node has a byte/element bound and explicit nullability; no recursive
 schema references, executable validators or generic JSON Schema engine.
 INTEGER retains the safe-integer rule, REAL is finite, BLOB uses the existing
-[tagged codec](jsonataddl/values.go@9280be8b9b1d610c41bc6461188fe7ecbb70bf64:51), and text is UTF-8. Structured values cannot contain functions,
+[tagged codec](jsonataddl/values.go:51), and text is UTF-8. Structured values cannot contain functions,
 undefined values, channels or host pointers. Reuse the implemented scalar and
 closed-object validation rules. Extend them
 with the bounded arrays and tagged unions required by extension contracts;
@@ -281,7 +275,7 @@ transaction must remain recoverable after process death. WASM, subprocess
 loading and third-party plugins are outside this decision.
 
 Register no extension in SQLite in this version. Preserve the
-[default-deny read authorizer](jsonataddl/authorizer.go@7ecffd53013fd6ca45693a1a8e28b7c8d52432e8:14), writer seating/release and query pool contracts.
+[default-deny read authorizer](jsonataddl/authorizer.go:14), writer seating/release and query pool contracts.
 SQL reads, query SQL, views, checks, defaults, indexes and triggers cannot call
 an extension. A future internal SQLite adapter needs its own demonstrated
 need and review; SQLite's extension ABI never becomes the public contract.
@@ -301,10 +295,10 @@ their validated values under a reserved `meta.context` member before declared
 reads and validation/evaluation. Reject a caller-supplied `meta.context`; a
 program with no context receives none. Extend the compiled per-program metadata
 shape, not the host's arbitrary input map. The implemented base metadata
-contract remains
-closed and scalar-only, excluding this reserved slot. Add its structured shape
-to compiled per-program metadata rather than opening `InputContract.Meta` to
-caller-supplied context. Context does not become a SQL parameter
+contract remains closed and scalar-only; it does not yet reserve the name
+`context`. I7 must reserve that name and add its structured shape to compiled
+per-program metadata rather than accept caller-supplied context through
+`InputContract.Meta`. Context does not become a SQL parameter
 in the present `:event.scalar` read grammar.
 
 All programs for one host record use the same record token. A private emission
@@ -320,7 +314,7 @@ record and strength fields named by the stable-extensions note. Include
 self-signed Nostr and witnessed identities already supported by the pinned
 host. Identity equality is scheme plus stable subject; handle is display only.
 Applications still enforce their own scope and strength policy. For current
-Chess the [seat authority checks](https://github.com/generalbusiness-ai/gitseq-chess/blob/b97c6a82ef7e3618721696f5a69efef13da10a79/chess.go#L687) require scope `chess` or `chess:<game>`, vouching Witnessed/SelfSigned
+Chess the [seat authority checks](https://github.com/generalbusiness-ai/gitseq-chess/blob/b97c6a82ef7e3618721696f5a69efef13da10a79/chess.go#L696) require scope `chess` or `chess:<game>`, vouching Witnessed/SelfSigned
 and verification LiveLookup/InLog; an unknown value grants no seat authority.
 
 Resolve at position n with signed timestamp t: an anchor at n is visible at n;
@@ -468,10 +462,5 @@ The eight adopted gates have concrete checks, each with a positive control:
 Architecture review covers the compiler/evaluator and the host profile,
 projection and activation layers. This note changes no implemented contract.
 Every implementing head that changes those contracts must update their
-reference documentation and publish its exact candidate artifacts. Approval of
-this revision requires the fresh request and ordinary adopted proposal before
-independent review. Then ratify the exact verdict, seal and push the note with
-exact-path succession. Implementation requires a separate request resting on
-the then-current adopted proposal and delivered decision, preserving all four
-stages and eight gates above. Decision delivery alone activates no provider,
-module or service.
+reference documentation and publish its exact candidate artifacts. Decision
+delivery alone activates no provider, module or service.
