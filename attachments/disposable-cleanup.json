@@ -1,9 +1,0 @@
-{
-  "removed": [
-    "/private/tmp/tail3919-srcxxx",
-    "/private/tmp/tail3919-modx",
-    "/private/var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/tail-provenance-3919-bh2yivpi/build-cache"
-  ],
-  "retained": "Reference binary, source archive, input/toolchain manifests, comparator and bounded build/search evidence only. Original repository, binary, refs and caches were not cleanup targets.",
-  "completed_utc": "2026-09-06T11:43:56.282578+00:00"
-}
