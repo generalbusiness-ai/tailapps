@@ -86,12 +86,14 @@ evidence marks `action_fingerprint_coverage` as `degraded` and carries an
 can distinguish tools but not their arguments or targets, so three consecutive
 calls to the same tool can satisfy the repetition threshold.
 
-This release changes the runtime identity, so an existing resident still holds
-ingestion closed until every active Tailapp is explicitly continued or reset.
-Follow [Upgrading an existing resident](../../docs/reference/cli.md#upgrading-an-existing-resident);
-this version's timestamp columns change existing table shapes, so upgrading
-`agent-guard` requires the reset activation documented below rather than a
-continue activation.
+Within the same stored runtime, compatible source changes can continue when
+existing writable tables retain their stored shapes and meet the storage
+conditions in the [resident upgrade guide](../../docs/reference/resident-upgrade.md).
+A changed stored runtime requires explicitly acknowledged reset even when
+table shapes match. This version's timestamp columns also change existing
+table shapes, requiring the reset activation documented below. Reset discards
+materialized guard history, which the current engine cannot replay. Follow the
+resident upgrade guide for the full procedure.
 
 `bounded-no-progress` requires an observed `progress_fingerprint`. The native
 Claude Code, Codex, and OpenCode telemetry shapes documented here do not
