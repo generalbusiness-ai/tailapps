@@ -182,6 +182,8 @@ func TestURLReputationNormalizerActualAuthorityHost(t *testing.T) {
 		{"case-userinfo-port", "HTTP://User:pW@EXAMPLE.COM:443/Case?Secret=X#Fragment", "Example.COM", true},
 		{"empty-userinfo", "https://@example.com", "example.com", true},
 		{"escaped-userinfo", "https://u%40x:p%2F%3F%23@example.com", "example.com", true},
+		{"userinfo-literal-asterisk", "https://u*ser:pw@example.com/path", "example.com", true},
+		{"userinfo-escaped-asterisk", "https://u%2Aser:pw@example.com/path", "example.com", true},
 		{"userinfo-delimiters", "https://u!$&'()+,;=~:p@example.com", "example.com", true},
 		{"at-in-path", "https://example.com/path@evil.test", "example.com", true},
 		{"at-in-query", "https://example.com?email=u@evil.test", "example.com", true},
@@ -272,6 +274,31 @@ func TestURLReputationNormalizerLongUserinfo(t *testing.T) {
 		setURLAttributes(input, map[string]any{"tailapp.url.host": "evil.test"})
 		assertURLNormalizationRejected(t, compiled, input)
 	}
+}
+
+func TestURLReputationNormalizerOutputLimit(t *testing.T) {
+	compiled := loadURLReputation(t)
+	input := cloneURLInput(t, urlReputationFixtures(t)["observed"])
+	rawURL := "https://u@example.com/"
+	setURLAttributes(input, map[string]any{"tailapp.url.observed_full": rawURL, "tailapp.url.host": "example.com"})
+	encoded, err := json.Marshal(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rawURL += strings.Repeat("p", profile.MaxInputBytes-len(encoded)-64)
+	setURLAttributes(input, map[string]any{"tailapp.url.observed_full": rawURL})
+	encoded, err = json.Marshal(input)
+	if err != nil || len(encoded) >= profile.MaxInputBytes {
+		t.Fatalf("fixture is not inside the input bound: %d, %v", len(encoded), err)
+	}
+	// The event adds enough metadata to exceed the separate output ceiling.
+	// This remains an evaluation error, not an ineffective authority refusal.
+	result, err := compiled.Evaluate(urlPipelineNormalizer, input)
+	if err == nil || !strings.Contains(err.Error(), "output is empty or exceeds") || len(result.Events) != 0 || len(result.Tables) != 0 {
+		t.Fatalf("output bound: result=%#v error=%v", result, err)
+	}
+	setURLAttributes(input, map[string]any{"tailapp.url.host": "evil.test"})
+	assertURLNormalizationRejected(t, compiled, input)
 }
 
 func TestURLReputationNormalizerRejectsInvalidFamiliesAndUsesObservedTime(t *testing.T) {

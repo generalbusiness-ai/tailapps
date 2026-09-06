@@ -36,6 +36,11 @@ prefix lookalikes. It uses the current evaluator's bounded substring operations:
 18 halving steps locate the authority's first `@` within the 256 KiB input limit.
 This search does not treat `@` in a path, query or fragment as userinfo.
 
+Encoded input and output each have a 256 KiB limit. Output includes additional
+metadata, so a valid observation close to the input limit can exceed the output
+limit. That is an evaluation error, which the projection records as a gap; it
+is not an ineffective authority refusal. The original URL is never truncated.
+
 `tailapp.url.exclusion` requires:
 
 - `tailapp.url.exclusion.id`;

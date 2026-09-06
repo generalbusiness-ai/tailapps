@@ -144,6 +144,10 @@ numeric port, keeping IPv6 brackets separate from the port. Thus
 `example.com` is ineffective. Prefix lookalikes and malformed authorities are
 also ineffective. The original URL is retained exactly. This validation uses
 the existing bundle evaluator capabilities and needs no runtime extension.
+The separate 256 KiB input and output limits still apply: an otherwise valid
+observation near the input limit can exceed the output limit after metadata
+is added, causing an evaluation error and projection gap rather than an
+ineffective authority refusal. The URL is not truncated to fit.
 
 ### Tables and keys
 

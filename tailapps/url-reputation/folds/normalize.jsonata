@@ -41,7 +41,7 @@
     $scan.text = "@" ? $scan.offset + 1 : -1
   ) : 0;
   $userinfo_valid := $userinfo_end >= 0 and ($userinfo_end = 0 or
-    $contains($substring($after_scheme, 0, $userinfo_end), /^(?:[a-z0-9._~!$&'()+,;=:-]|%[0-9a-f]{2}){0,}@$/));
+    $contains($substring($after_scheme, 0, $userinfo_end), /^(?:[a-z0-9._~!$&'()+,;=:\x2a-]|%[0-9a-f]{2}){0,}@$/));
   $host_and_rest := $userinfo_end >= 0 ? $substring($after_scheme, $userinfo_end) : "";
   $host_shape_valid := $host != "" and
     $not($contains($host, "/")) and $not($contains($host, "?")) and
