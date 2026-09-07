@@ -394,9 +394,28 @@ field or group first adopts a borrowed value, and when appending an incoming
 value. Preserve wrapper metadata. A shared source subgraph is copied separately
 for each owning field/group; do not memoize across those ownership boundaries.
 Nested containers must not provide a route back to an input or sibling value.
-Fresh outer array storage holds each extension; it may carry forward already
-owned descendants of that same accumulator without recopying them. No observer
-or other owner may see a later mutation through those carried descendants.
+An accumulator may reuse its own capacity only while it and its mutable
+descendants have one owner and no input, sibling or published observer can see
+an append. Already owned descendants of that accumulator need not be recopied.
+
+Give the first private copy canonical capacity equal to its length, ignoring
+source backing capacity. A scalar pair starts at length/capacity 2. For an
+append requiring length `n` beyond current capacity `c`, grow to
+`min(B, max(n, max(1, 2*c)))`, where `B` is the admitted array-length bound;
+check `n <= B` and compute the clamped doubling without overflow. Below that
+capacity, retain storage. Reserve the entire new capacity, copying of the old
+prefix, and incoming-value copy before growth; charge every retained-capacity
+append before its write too. Private logical capacity follows this rule even
+if the allocator reserves more physical storage. Allocation rounding and copy
+work remain covered by the four-build bound proof. No source capacity, random
+map order or allocator decision enters the logical charge schedule.
+
+This avoids mandatory quadratic prefix copying for long repeated fields while
+retaining deterministic work/allocation totals and selected failures for the
+same values and limits. Sharing or publishing the accumulator ends permission
+to mutate it; any later adoption by another owner requires the recursive copy
+rule. The amendment does not permit borrowed append or an uncharged growth
+optimization.
 
 Immutable scalars, strings and approved immutable callable identities may be
 shared. A callable's established lexical environment is not a JSON container
@@ -445,6 +464,7 @@ later exact evaluator head, not a claim that this source note executes it.
 |---|---|
 | Admitted public reproducer above | Exact separate A/B result; retain both observed legacy outcomes. Run one compiled expression repeatedly, then separate expressions/sessions. |
 | Shared `[0,1,2]`, capacity 3 and 4; independent arrays at both capacities | All four produce `a=[0,1,2,"A"], b=[0,1,2,"B"]`. Force both field orders in the retained legacy control: capacity 4 distinguishes the alternatives. |
+| Private growth at capacity 0, 1, 2, 3 and the declared maximum; same values with different borrowed capacities | Pin initial capacity, retained-capacity append, clamped doubling, exact/one-below precharges and overflow refusal. No input capacity enters the charge schedule; omitted growth/copy charges permit measured forbidden work. |
 | Caller has a length-4 alias including a sentinel at slot 3 | Sentinel remains unchanged after reduction; caller input and sibling field snapshots remain byte-equal. |
 | First/middle/last missing fields, present undefined and null; three repeated names across tuples | Missing contributes nothing; present values use the two accumulation rules. Undefined still shadows; no conflation with missing or null. |
 | Scalar then array; array then array; empty arrays; nested array/object fields | Exact examples above; nested values retain their shape. No accidental spread, flattening, wrapper conversion or deep-copy alias to input. |
