@@ -1,0 +1,8 @@
+{
+  "unchanged_function_sha256": "1bfe5401977a97648d3c598963913c92193bdb7bf8b3e2d4b9cae931be50d035",
+  "byte_equal_pinned_function": true,
+  "exit": 0,
+  "output_byte_equal_attached": true,
+  "log": "/tmp/planner-tail4182-root-legacy-controls.log",
+  "scope": "Unchanged pinned helper, single-field continuation tuples force append order. Explicit caller sentinel and singleton @ deletion; this is mechanism evidence, not implementation of proposed semantics or a public evaluator admission proof."
+}
