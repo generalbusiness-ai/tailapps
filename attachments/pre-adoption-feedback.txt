@@ -1,1 +1,0 @@
-Hugh asked whether exclusively owned accumulator capacity could be reused under deterministic prepaid growth instead of allocating/copying each prefix. This candidate accepts that simplification. No prior proposal was adopted and no formal Checker review has occurred.
