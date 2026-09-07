@@ -1,0 +1,104 @@
+[
+  {
+    "path": "notes/2026-09-05-capability-context-contract.md",
+    "status": "ready",
+    "head": "67bc03e860bf5841d0c8e247de4a9479d684928b",
+    "byte_equal": true
+  },
+  {
+    "path": "docs/reference/resident-upgrade.md",
+    "status": "ready",
+    "head": "67bc03e860bf5841d0c8e247de4a9479d684928b",
+    "byte_equal": true
+  },
+  {
+    "path": "internal/engine/engine.go",
+    "status": "ready",
+    "head": "67bc03e860bf5841d0c8e247de4a9479d684928b",
+    "byte_equal": true
+  },
+  {
+    "path": "internal/mcp/tools.go",
+    "status": "ready",
+    "head": "67bc03e860bf5841d0c8e247de4a9479d684928b",
+    "byte_equal": true
+  },
+  {
+    "path": "internal/projection/projection.go",
+    "status": "ready",
+    "head": "67bc03e860bf5841d0c8e247de4a9479d684928b",
+    "byte_equal": true
+  },
+  {
+    "path": "jsonataddl/application.go",
+    "status": "ready",
+    "head": "67bc03e860bf5841d0c8e247de4a9479d684928b",
+    "byte_equal": true
+  },
+  {
+    "path": "jsonataddl/authorizer.go",
+    "status": "ready",
+    "head": "67bc03e860bf5841d0c8e247de4a9479d684928b",
+    "byte_equal": true
+  },
+  {
+    "path": "jsonataddl/compile.go",
+    "status": "ready",
+    "head": "67bc03e860bf5841d0c8e247de4a9479d684928b",
+    "byte_equal": true
+  },
+  {
+    "path": "jsonataddl/confine.go",
+    "status": "ready",
+    "head": "67bc03e860bf5841d0c8e247de4a9479d684928b",
+    "byte_equal": true
+  },
+  {
+    "path": "jsonataddl/dialect.go",
+    "status": "ready",
+    "head": "67bc03e860bf5841d0c8e247de4a9479d684928b",
+    "byte_equal": true
+  },
+  {
+    "path": "jsonataddl/evaluate.go",
+    "status": "ready",
+    "head": "67bc03e860bf5841d0c8e247de4a9479d684928b",
+    "byte_equal": true
+  },
+  {
+    "path": "jsonataddl/go.mod",
+    "status": "ready",
+    "head": "67bc03e860bf5841d0c8e247de4a9479d684928b",
+    "byte_equal": true
+  },
+  {
+    "path": "jsonataddl/identity.go",
+    "status": "ready",
+    "head": "67bc03e860bf5841d0c8e247de4a9479d684928b",
+    "byte_equal": true
+  },
+  {
+    "path": "jsonataddl/input.go",
+    "status": "ready",
+    "head": "67bc03e860bf5841d0c8e247de4a9479d684928b",
+    "byte_equal": true
+  },
+  {
+    "path": "jsonataddl/input_contract.go",
+    "status": "ready",
+    "head": "67bc03e860bf5841d0c8e247de4a9479d684928b",
+    "byte_equal": true
+  },
+  {
+    "path": "jsonataddl/load.go",
+    "status": "ready",
+    "head": "67bc03e860bf5841d0c8e247de4a9479d684928b",
+    "byte_equal": true
+  },
+  {
+    "path": "jsonataddl/values.go",
+    "status": "ready",
+    "head": "67bc03e860bf5841d0c8e247de4a9479d684928b",
+    "byte_equal": true
+  }
+]
