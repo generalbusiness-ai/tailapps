@@ -1,6 +1,0 @@
-{"calls":["same","same"],"error":"","input":[1,2],"output":"[\"same\",\"same\"]","source":"[$probe(\"same\"),$probe(\"same\")]"}
-{"calls":[],"error":"","input":[1,2],"output":"\"ok\"","source":"false ? $probe(\"unused\") : \"ok\""}
-{"calls":["item","item"],"error":"","input":[1,2],"output":"[\"item\",\"item\"]","source":"$.($probe(\"item\"))"}
-{"calls":["key","key","key"],"error":"","input":[1,2],"output":"{\"key\":[1,2]}","source":"{$probe(\"key\"): $}"}
-{"calls":["probe-only"],"error":"","input":[1,2],"output":"{\"k\":[1,2]}","source":"{$count($)\u003e1 ? $probe(\"probe-only\") : \"k\":$}"}
-{"calls":["value"],"error":"","input":[1,2],"output":"{\"k\":\"value\"}","source":"{\"k\":$probe(\"value\")}"}
