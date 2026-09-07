@@ -1,10 +1,10 @@
 ---
 date: 2026-09-05
-status: Adopted I7 baseline with a callable-boundary amendment pending ordinary adoption; no runtime change is delivered by this note.
+status: Adopted I7 baseline and callable amendment; group-order amendment pending ordinary adoption. No runtime change is delivered by this note.
 author: builder
 rests_on:
-  - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5996f922f97886b026e433809c509fc400db09d1
-  - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:8c17d9e03de8cacb255a59d1859dc84ef6f78c70
+  - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:155ce10aab90af9a224f36e9893180c1a5e08e1f
+  - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:d57c7611630a752c260c48c7300007a14070e735
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:4b35df409937323e350d2312ab7e78418a4ec624
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:8481b0930148b2ac6452bd2deb42f4d3eddf68d2
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:c559f37cda0ea323f61704ebb32369dd583e04fd
@@ -34,12 +34,17 @@ the host alone owns the transaction and frontier.
 
 Hugh adopted the #3926 baseline through proposal #4033 and ratification #4034;
 its published decision is #4040. Request #4043 and promise `5cfedb59` carry the
-full stage-1 implementation. Hugh's child request #4135 commissions the focused
-callable-boundary amendment below. Its exact artifact needs a fresh ordinary
-proposal and Hugh's ratification before independent Checker review. Technical
-review and source landing do not adopt policy. This amendment narrows only the
-accidental outside-set builtin access; all four stages and eight admission
-gates remain. It neither replaces nor partially closes the original I7 work.
+full stage-1 implementation. Hugh adopted the callable amendment at `67bc03e8`
+through proposal `b9b7fb7c` and ratification `2b8cd0be`; Checker approved it in
+`f087b14c`. It landed through receipt `fe1e8d8e` and publication `d57c7611` under
+#4135. Its policy below is unchanged.
+
+Hugh's child request #4144 commissions the group-order amendment below. That
+exact amendment still needs an ordinary proposal and Hugh's ratification
+before independent Checker review. The commission chooses the direction;
+technical review and source landing do not adopt policy. All four stages and
+eight admission gates remain. Neither amendment replaces or partially closes
+the original I7 implementation.
 
 Repository source links open at the immutable head of this note's owning
 artifact. Its source-provenance attachment records the earlier exact revisions
@@ -117,7 +122,8 @@ reports its own cost nor a timer around it supplies that guarantee.
 Consequently, no production extension is admitted on the current evaluator.
 The implementation first needs a narrowly maintained instrumentation patch to
 this evaluator, covering its admitted subset and codecs. Preserve its language
-except for the explicit callable-boundary compatibility change below; preserve
+except for the explicit callable-boundary and group-order compatibility
+changes below; preserve
 the SQLite pin. A new exact evaluator pin is an essential, corpus-gated change
 only after that patch proves the bounds below; no unreviewed replacement,
 `replace` directive or timer-only fallback qualifies. If this cannot be done,
@@ -201,6 +207,83 @@ migration/reset. This source amendment authorizes no evaluator/module
 publication, production admission, live operation, reset or release. After
 exact adoption, all implementation and remaining stage-1 conditions stay on
 request #4043 and promise `5cfedb59`.
+
+## Object and group order amendment for adoption
+
+The pinned evaluator's [group value loop](https://github.com/jsonata-go/jsonata/blob/599f35f32e5f31297f8b2153b5da44ddbb330e28/v206/jsonata.go#L2676)
+ranges over a Go map after collecting groups. Current confinement accepts:
+
+```jsonata
+($x := 0; {"a": $x := 1, "b": $x})
+```
+
+Two independent runs of 1,000 identical executions each produced both
+`{"a":1,"b":0}` and `{"a":1,"b":1}`. The reproduction and exact pinned source
+are retained with requests #4139 and #4144. These observations establish the
+existing variation, not probabilities or a determinism proof. They exercise
+confinement and the evaluator, not host replay or production admission.
+
+Preserve two phases, with this order:
+
+1. Discover groups in input sequence order and, within each input, source
+   key/value-expression order. Keep the existing preliminary object-constructor
+   key checks, their evaluations and errors, and the subsequent key evaluation.
+   Finish all grouping before evaluating any group's value.
+2. Evaluate each distinct group's value once, in the order its key was first
+   encountered during that discovery. Repeated production of the same key by
+   the same key expression keeps its first slot and accumulates inputs in their
+   existing sequence order. A different key expression producing that key
+   retains the existing duplicate-key error in the discovery phase; it is
+   neither overwrite nor a second value evaluation.
+
+Keep existing undefined-key, invalid-key-type, empty-input and tuple/reduce
+behavior, lexical frames and nested-block scope. Numeric-looking and Unicode
+keys follow encounter order, not numeric or lexical sorting. This order governs
+semantic evaluation; JSON object serialization and canonical encoding remain
+separate. Preserve the adopted callable policy and all syntax refusals.
+
+Use an ordered vector of group slots with a key lookup that finds an existing
+slot. Add a slot only on first encounter, then traverse that vector for the
+value phase. Do not use key-map iteration to choose semantic order. Charge key
+lookup, order bookkeeping, group accumulation, growth, copying and traversal
+before their work or allocation, and reserve recursive entry before evaluating
+children. Outcomes, selected errors, work/allocation counts and failure
+boundaries must all be deterministic for the same admitted inputs and limits.
+This is the implementation strategy for the later I7 work, not delivered code.
+
+This is an explicit compatibility exception: previously order-dependent
+admitted programs acquire the single specified outcome. Preserve pure,
+order-independent outputs and existing refusals. The implementation corpus
+must cover every admitted grouping path that can affect values or budget
+failure, including these controls:
+
+| Case | Required result or preserved condition |
+|---|---|
+| Direct binding above | Always `a=1,b=1`. |
+| Reverse those source pairs: `{"b": $x, "a": $x := 1}` after `$x := 0` | `b=0,a=1`; source order matters. |
+| Repeat one key through the same key expression, interleaved with another key | One value evaluation per key in first-encounter order; retain grouped input sequence order and the original first slot. |
+| Different key expressions collide | The existing duplicate-key refusal occurs during discovery, before group values run. |
+| `($x := 0; {"a": ($x := 1), "b": $x})` | Preserve `a=1,b=0`: the nested block owns its binding. |
+| Undefined or invalid keys; empty input; tuple/reduce and nested groups | Preserve their existing results, key checks and scope rules; complete discovery before values. |
+| Keys such as `"10"` then `"2"`, or Unicode keys in reverse lexical order | An order-sensitive value expression follows encounter order; sorting serialized fields proves nothing about evaluation order. |
+
+Use positive controls that distinguish the chosen order. Intentionally reverse
+or shuffle value traversal, or remove order tracking, and show a changed value,
+error or budget boundary. Remove the relevant charges and demonstrate actual
+extra work/allocation beyond the limit. Repeated Go-map executions without
+observed divergence are not proof, and sorting only output fields is not a
+semantic fix. Do not replace the retained evaluator contract with a blanket
+grouping refusal.
+
+Revalidate stored programs before replay writes; refusal leaves the projection
+and frontier unchanged. Account for changed evaluator semantics and the corpus
+in I7's existing `core.jsonata`, grammar, dialect and identity versions wherever
+affected. Retain exactly ten components, historical identity recognition,
+stored-identity refusal and separate acknowledged reset/activation. Add no
+component or automatic reset/migration. After exact ordinary adoption, all
+runtime implementation and remaining stage-1 conditions stay on #4043 and
+promise `5cfedb59`. This source amendment authorizes no evaluator/module
+publication, production provider admission, resident operation, reset or release.
 
 ## Declaration and immutable loading
 
