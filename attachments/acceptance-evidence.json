@@ -1,0 +1,16 @@
+{
+  "checked_utc": "2026-09-07T17:09:05.837216+00:00",
+  "report4207": "8bf1ceb266f5a9facb8c16eaf74e15a3b6968123",
+  "root_checks": {
+    "privacy_paragraph_byte_identical": true,
+    "six_artifacts_all_retired": true,
+    "old_head_guarded_verdict_count": 0,
+    "later2142_approved_ratified": true,
+    "two_original_merge_candidates": "7e5a40f4388864edf6f60393a3b3ec56b0ded275 and6aa38a36e2e7140c089ccf39ad1e92ebc87aef9c were directmergeparents; a498991 was the stacked parent, never asserted to be a directmergeparent by root evidence.",
+    "source": "https://code.claude.com/docs/en/monitoring-usage",
+    "source_checked_date": "2026-09-07",
+    "vendor_summary": "Tool details and tool content remain distinct opt-in controls; content applies to trace span events. Unset assistant-response control inherits prompt-content setting. The guide leaves both off. This confirms the bounded clarification, not all telemetry settings or current host interoperability.",
+    "current_guard_inspected": "Raw tool structures are retained as strings for observed failures, not interpreted to derive target coverage; the guide says does not parse/interpret, not does not retain. Other broader catalog/analytics corrections remain4087/4161."
+  },
+  "disposition": "Accept only historical missing guarded-verdict exception for a498991; no retrospective approval. Current two clarification outcomes sufficiently reconciled; no residual oldheadreview or sourcecorrection assigned. Existingfutureguardedreviewrequired."
+}
