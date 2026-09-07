@@ -1,8 +1,9 @@
 ---
 date: 2026-09-05
-status: Adopted I7 baseline, callable, group-order and tuple-value amendments; object-key probe amendment pending ordinary adoption. No runtime change is delivered by this note.
+status: Adopted I7 baseline, callable, group-order, tuple-value and object-key amendments; numeric conversion amendment pending ordinary adoption. No runtime change is delivered by this note.
 author: builder
 rests_on:
+  - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:b7cf90a836aec8f99072a150e6f66d73ea80c1c0
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:25fb87520cd4dec29a01623a19d02707cea50925
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:46ea04c2b168dd54c173579532c593fcf6f0a8d9
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:4357cae21cccb883131fe9ad679696ad14ac14a5
@@ -47,9 +48,12 @@ Hugh adopted the group-order amendment under #4144 through proposal
 `43168a26` and ratification `501d65f9`. It landed at `3a593721` through receipt
 `5396efab` and publication `4357cae2`. The tuple value amendment under #4182
 landed at `756ce43a` through receipt `3c288b2a` and publication `727ab6a7` after
-Hugh's adoption and independent review. Request #4228 now commissions the
-object-key probe amendment below. It still needs an ordinary proposal and
-Hugh's ratification before independent Checker review. A commission or technical
+Hugh's adoption and independent review. The object-key amendment under #4228
+landed at `62fde541` through receipt `e73c4b74` and publication `a1c97964`, after
+Hugh adopted proposal `077daf8d` and Checker approved exact head `f0eed793`.
+Request #4252 now commissions the numeric conversion amendment below. It needs
+Hugh's ordinary adoption of its exact proposal before independent Checker review.
+A commission or technical
 approval does not adopt policy. All four stages and eight admission gates
 remain; these source amendments do not close the original I7 implementation.
 
@@ -129,8 +133,8 @@ reports its own cost nor a timer around it supplies that guarantee.
 Consequently, no production extension is admitted on the current evaluator.
 The implementation first needs a narrowly maintained instrumentation patch to
 this evaluator, covering its admitted subset and codecs. Preserve its language
-except for the explicit callable-boundary, group-order, tuple-value and proposed
-object-key probe compatibility changes below; preserve the SQLite pin.
+except for the explicit callable-boundary, group-order, tuple-value, object-key
+and proposed numeric conversion changes below; preserve the SQLite pin.
 A new exact evaluator pin is an essential, corpus-gated change
 only after that patch proves the bounds below; no unreviewed replacement,
 `replace` directive or timer-only fallback qualifies. If this cannot be done,
@@ -589,6 +593,85 @@ After exact ordinary adoption, runtime implementation, the eventual pin and
 all callers stay on #4043's existing promise. This source amendment authorizes
 no public evaluator/module publication, production admission, live operation,
 reset or release.
+
+## Numeric conversion amendment for adoption
+
+Define one portable signed64 conversion where an admitted operation converts a
+number to an index or precision: NaN becomes zero; values at or above exact
+`2^63`, including positive infinity, become `MaxInt64`; values at or below
+exact `-2^63`, including negative infinity, become `MinInt64`. Other finite
+values truncate toward zero, preserving the existing fractional and negative-zero
+behavior. Compare with the exactly representable powers of two **before** a
+native cast. `float64(MaxInt64)` rounds up to `2^63`, so it cannot be an
+inclusive safe upper bound. Use this language rule on all four supported 64-bit
+targets, without a runtime architecture branch.
+
+This deliberately chooses the observed ARM behavior. It changes AMD64 behavior
+where the pinned native conversion produces the signed integer-indefinite value.
+It is neither an already-portable property of the pinned evaluator nor a new
+policy rejecting every nonfinite intermediate. The initial affected builtin
+sites are `$round` precision and `$substring` start and length; the complete
+reachable conversion inventory, including internal helpers, accompanies the
+owning artifact as `numeric-conversion-inventory.json`.
+
+Keep each operation's evaluation order, early returns, errors and subsequent
+arithmetic. Substring bound additions and round's decimal-exponent additions
+and subtractions use signed64 arithmetic, including its defined wrap behavior.
+Check an invalid substring slice at its existing semantic point and retain its
+protected failure, without a native bounds panic, successful empty substitute,
+or conversion to an ordinary error that a preliminary group-key probe can ignore.
+Undefined and empty-string handling remain operation-specific.
+
+| Expression | Required portable outcome | Pinned evidence or unchanged control |
+|---|---|---|
+| `$round(1.25,0/0)` | `1` | Observed ARM `1`; masked-Intel conversion implies `0`. |
+| `$substring("abc",0,1e300)` | `"abc"` | Observed ARM `"abc"`; masked-Intel conversion implies `""`. |
+| `$substring("abc",1,1e300)` | Protected bounds failure | Observed ARM failure; masked-Intel conversion implies `""`. |
+| `$substring("abc",1,9223372036854774784)` | `"bc"` | Nearest representable value below positive `2^63`; no saturation. |
+| `$round(1.25,1.9)`; `$substring("abc",1.9,1.9)` | `1.2`; `"b"` | Finite truncation is unchanged. |
+| `$round(missing,0/0)`; `$substring("",1,1e300)` | Undefined, encoded as `null` by the existing complete JSON entry | Existing early returns remain. |
+| `[1,2,3][0/0]` | `[1,2,3]` | NaN is a truthy predicate, not an index. |
+| `[1,2,3][1/0]` | Existing `D1001` refusal | Preserve predicate classification before conversion. |
+| `[1,2,3][1e300]`; `[1,2,3][-1e300]`; `[1,2,3][1.9]` | Undefined; undefined; `2` | Out-of-input indices select nothing; numeric predicates floor before indexing. |
+
+Do not apply the conversion to every floating intermediate or Go cast. A
+predicate first keeps its existing numeric/truthy/error classification, then
+floors a finite index and checks the input bounds before casting. Earlier
+type/range/length bounds justify the other portable casts. The signed inventory
+must cover every admitted AST and callable route, including aliases, partials,
+compositions, closed matcher callbacks and helper calls. Each excluded builtin
+cast needs an actual confinement reason; the three native sites alone are not
+a completeness proof. Existing nonfinite input, output and value-graph gates
+remain unchanged. Selected extensions remain confined to direct calls.
+
+The signed evidence separates pinned `599f35f3` native runs, private `311d9afc`
+native runs and controlled Go overlays. Builder's 40 cases and Hugh's independent
+24 cases seed the expanded executable controls. Hugh's four Go 1.26.7 builds
+show `FCVTZSD` on ARM64 and `CVTTSD2SQ` on AMD64 at round precision. Intel's
+[SDM volume 1, table D-8](https://cdrdv2-public.intel.com/843827/253665-sdm-vol-1-dec-24.pdf)
+establishes the masked NaN conversion to integer-indefinite. This supports the
+stated Intel inference; it is not AMD64 evaluator execution or full host replay.
+
+Extend gate 3 with exact outputs or existing error classes, ordered calls and
+deterministic work/allocation totals for positive/negative infinities and huge
+finite values, both signed64 boundaries and their nearest representable neighbors,
+negative zero, fractional start/length/precision, huge exponent arithmetic,
+missing values and empty strings. Runtime-generated error text is not a portable
+criterion. Require equal accounting for equal portable semantics across targets,
+actual at-bound/one-over outcomes and omission controls that restore a native
+cast, omit a guard or remove a relevant charge. The attached controls and
+inventory do not replace complete corpus coverage or the four-build physical
+proof. A native-cast omission can survive ARM-only output tests; record that
+limitation and require the cross-target proof before admission.
+
+Include changed semantics in the existing `core.jsonata`, grammar/dialect and
+corpus/version identities wherever affected. Retain exactly ten components and
+old-identity recognition. Revalidate stored programs before replay writes;
+refusal leaves projection and frontier unchanged. Preserve acknowledged
+reset/activation and all four stages and eight gates. After exact ordinary
+adoption, implementation, eventual pin and all callers remain on #4043. This
+source amendment authorizes no public evaluator/module publication, production
+admission, live operation, reset, migration or release.
 
 ## Declaration and immutable loading
 
