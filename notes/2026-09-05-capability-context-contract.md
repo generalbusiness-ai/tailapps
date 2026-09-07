@@ -1,9 +1,10 @@
 ---
 date: 2026-09-05
-status: I7 decision candidate for ordinary adoption; no provider or runtime change is delivered by this note.
+status: Adopted I7 baseline with a callable-boundary amendment pending ordinary adoption; no runtime change is delivered by this note.
 author: builder
 rests_on:
-  - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:2f561c9230c44429860fb7811c1d6f5901096321
+  - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5996f922f97886b026e433809c509fc400db09d1
+  - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:8c17d9e03de8cacb255a59d1859dc84ef6f78c70
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:4b35df409937323e350d2312ab7e78418a4ec624
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:8481b0930148b2ac6452bd2deb42f4d3eddf68d2
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:c559f37cda0ea323f61704ebb32369dd583e04fd
@@ -31,13 +32,14 @@ and context. Missing or unenforceable providers make the application
 uninterpretable before replay. JSONata alone returns decisions and mutations;
 the host alone owns the transaction and frontier.
 
-Hugh's fresh request #3926 commissions this baseline and integration refresh.
-Adopt the revised decision through an ordinary proposal and ratification before
-independent review. The satisfied original commission is historically stale
-and supplies no current implementation authority. This revision preserves the
-full capability/context decision, its four stages and all eight admission
-gates; it proposes no change to their semantics. A later implementation needs
-its own request on the then-current adopted and delivered bases.
+Hugh adopted the #3926 baseline through proposal #4033 and ratification #4034;
+its published decision is #4040. Request #4043 and promise `5cfedb59` carry the
+full stage-1 implementation. Hugh's child request #4135 commissions the focused
+callable-boundary amendment below. Its exact artifact needs a fresh ordinary
+proposal and Hugh's ratification before independent Checker review. Technical
+review and source landing do not adopt policy. This amendment narrows only the
+accidental outside-set builtin access; all four stages and eight admission
+gates remain. It neither replaces nor partially closes the original I7 work.
 
 Repository source links open at the immutable head of this note's owning
 artifact. Its source-provenance attachment records the earlier exact revisions
@@ -70,7 +72,7 @@ These exact source references distinguish the two:
 | [Dialect](jsonataddl/dialect.go:24) | Explicit host input contracts and limits are part of the dialect. Keep base metadata closed when adding compiled per-program context shapes. |
 | [Evaluation](jsonataddl/evaluate.go:64) | `Evaluate` marshals and repeats admission with declared read results before evaluating. Preserve this second check. Output size is checked after evaluator allocation, so I7 still needs bounded encoding and construction. |
 | [Compiled application](jsonataddl/application.go:76) | A mutex serializes evaluation of each compiled expression. I7 sessions must preserve isolation while supplying only their selected program's bindings. |
-| [Confinement](jsonataddl/confine.go:20) and [compiler](jsonataddl/compile.go:448) | Nineteen fixed built-ins, no lambdas or dynamic calls; depth/range limits and a 2,000 ms safety deadline. No extension allowlist or deterministic allocation/work meter is implemented. |
+| [Confinement](jsonataddl/confine.go:20) and [compiler](jsonataddl/compile.go:448) | Nineteen allowed procedure spellings, with lambdas and other dynamic call syntax refused; depth/range limits and a 2,000 ms safety deadline. This name check does not confine builtin values: see the current callable evidence below. No extension allowlist or deterministic allocation/work meter is implemented. |
 | [Loader](jsonataddl/load.go:1) and [identity](jsonataddl/identity.go:22) | Loading accepts a runtime digest string; identity has exactly nine components. Registry verification and the tenth component remain I7 work. |
 | [Host read preparation](internal/projection/projection.go:518) | Both normalizer and fold paths validate before binding/performing reads. `Prepare` must retain this ordering and add verified context. |
 | [Engine upgrade](internal/engine/engine.go:187), [activation check](internal/engine/engine.go:626) and [stored-runtime guard](internal/projection/projection.go:306) | Historical runtimes can be opened for queries but remain upgrade-pending. Engine activation and transactional continuation check the physical stored runtime; acknowledged reset is required across identities. |
@@ -115,7 +117,8 @@ reports its own cost nor a timer around it supplies that guarantee.
 Consequently, no production extension is admitted on the current evaluator.
 The implementation first needs a narrowly maintained instrumentation patch to
 this evaluator, covering its admitted subset and codecs. Preserve its language
-and SQLite pin. A new exact evaluator pin is an essential, corpus-gated change
+except for the explicit callable-boundary compatibility change below; preserve
+the SQLite pin. A new exact evaluator pin is an essential, corpus-gated change
 only after that patch proves the bounds below; no unreviewed replacement,
 `replace` directive or timer-only fallback qualifies. If this cannot be done,
 leave extensions unavailable and report the blocker. This is also the adoption
@@ -124,6 +127,80 @@ Develop the patch in an isolated evaluator checkout with a temporary workspace
 or module override for proof runs. Record that override in the evidence; it
 must not enter the delivered module. Publish a reviewed immutable evaluator
 revision and use its ordinary exact dependency pin for final admission tests.
+
+## Callable-boundary amendment for adoption
+
+At Tailapps `c9bdbd32792008e942727248c2cf9ecb30f7d2d8`, the
+[confinement check](jsonataddl/confine.go:20)
+examines procedure spelling, not the value bound to it. Thus direct
+`$reverse([1,2])` refuses, but rebinding `$sum` to `$reverse` admits that same
+outside-set implementation. Even `$exists($reverse)` admits a reference
+without invoking it. Hugh independently reproduced these paths in #4135's
+`callable-decision-evidence.json`. These are confinement/evaluator probes,
+not evidence of host replay or production admission.
+
+Retain exactly these nineteen builtin implementations by immutable callable
+identity: `abs`, `boolean`, `ceil`, `contains`, `count`, `exists`, `floor`,
+`length`, `lookup`, `lowercase`, `max`, `min`, `not`, `number`, `round`,
+`string`, `substring`, `sum` and `uppercase`. Retain already-admitted aliases
+and partials whose ultimate target is one of those implementations, including
+nested rebinding. An allowed procedure name grants no authority to a different
+implementation. Do not add a builtin or admit new dynamic syntax. Preserve all
+existing syntactic and ambient-source refusals, and the stricter extension
+rules: direct calls only, with no reference, shadowing or partial application.
+
+Outside-set builtin values must not become visible through references,
+containers, callbacks, partials or returned values. Refuse an explicit reference
+that resolves to one, including a non-invoked reference such as
+`$exists($reverse)`; substituting an absent value or another result is not a
+refusal. Resolve actual builtin identity through lexical scope: an ordinary
+local variable called `$reverse` containing data, or an object member named
+`reverse`, is not that builtin. Do not implement this distinction by blanket
+text matching; the existing ambient-source rejection remains unchanged.
+
+Reject at compilation where resolution proves the violation. For admitted
+paths whose values need runtime resolution, use a fail-closed, metered identity
+guard before exposing the value or invoking its ultimate target. Meter alias
+resolution, partial construction/application, container and callback traversal,
+and every retained callable path under the same work, allocation and depth
+rules as direct calls. Immutable callable identity carries no mutable session
+state; preserve session isolation and prohibit package-global replacement.
+
+This deliberately narrows the former preserve-language promise for accidental
+outside-set access only. It does not claim that every previously admitted
+program remains equivalent. The compatibility corpus must separate unchanged
+allowed behavior from deliberate new refusals, with at least these fixtures:
+
+| Source or path | Required outcome under the amended runtime |
+|---|---|
+| `($sum := $length; $sum("abc"))` | Preserve `3`; the target is the permitted `length` implementation. |
+| `($sum := $substring(?,1); $sum("abc"))` | Preserve `"bc"`; an already-admitted partial retains its permitted ultimate target. |
+| `($sum := $length; ($sum := $abs; $sum(-2)); $sum("abc"))` | Preserve `3`; the nested binding must not leak into its parent scope. |
+| `($reverse := 3; $exists($reverse))` and `{"reverse":3}.reverse` | Preserve `true` and `3`; ordinary lexical data and object keys grant no builtin authority. |
+| `$exists([$length])` | Preserve `true`; a permitted callable value may follow an already-admitted container path. |
+| `($sum := $reverse; $sum([1,2]))` | New refusal before exposure or invocation, rather than the former `[2,1]`. |
+| `($sum := $map; $sum(["aa","bbb"], $length))` | New refusal of the outside-set higher-order target, rather than the former `[2,3]`. |
+| `$exists($reverse)` and `$exists([$reverse])` | New refusal of the non-invoked reference/container value, rather than the former `true`. |
+| Direct `$reverse([1,2])`, existing forbidden dynamic syntax and ambient sources | Continue to refuse. |
+
+Also cover nested outside-set rebinding, outside-set partials, callback and
+returned-value paths, permitted controls and separate sessions. Remove static
+resolution checks and demonstrate forbidden compile-time admission. Exercise
+the dynamic identity guard independently and remove it to expose an actual
+extra value or invocation. Remove metering on
+each retained indirect path and demonstrate work/allocation beyond the bound;
+a test that only observes a refusal is not sufficient coverage proof.
+
+Revalidate stored programs under the new runtime before any replay write.
+A refusal leaves the projection and frontier unchanged. Account for this
+confinement change in I7's already-required `core.jsonata`, grammar, dialect
+and corpus/version changes wherever affected. Keep exactly ten identity
+components, old-identity recognition, stored-identity refusal and the separate
+acknowledged reset/activation gate. Add no extra component or automatic
+migration/reset. This source amendment authorizes no evaluator/module
+publication, production admission, live operation, reset or release. After
+exact adoption, all implementation and remaining stage-1 conditions stay on
+request #4043 and promise `5cfedb59`.
 
 ## Declaration and immutable loading
 
@@ -224,9 +301,10 @@ must not share counters, arguments, results or context.
 Use per-evaluation bindings for entry instrumentation too; [Assign](https://github.com/jsonata-go/jsonata/blob/599f35f32e5f31297f8b2153b5da44ddbb330e28/v206/jsonata.go#L524) mutates the
 cached expression's environment and would share a meter between sessions.
 The pinned library also exposes [package-global registration](https://github.com/jsonata-go/jsonata/blob/599f35f32e5f31297f8b2153b5da44ddbb330e28/v206/jsonata.go#L538). The compile-time
-allowlist keeps names outside the nineteen built-ins and selected aliases
-unreachable; admission must separately prohibit replacement of those allowed
-built-ins. No host may register an extension globally or alter that frame.
+name allowlist alone does not keep outside-set builtin values unreachable.
+The callable-boundary amendment requires immutable-identity confinement as
+well as the preserved syntax checks; admission must prohibit replacement of
+allowed built-ins. No host may register an extension globally or alter that frame.
 
 Before calling a provider, validate arity, complete shape, nulls, canonical
 encoding, byte/collection/depth limits and the remaining budgets. Charge
