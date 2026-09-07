@@ -1,0 +1,23 @@
+{
+  "request": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:42c2ce37bf635f3fffa9b5109ec95ac513b92c49",
+  "promise": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5cfedb59bc1285a0de3609b8dc7ae3221076fa2a",
+  "checkout": "/Users/hughpyle/play/tailapp-worktrees/i7-metered-evaluator",
+  "branch": "request/i7-metering-proof",
+  "head": "e9fa318e42ca830063ead9f669f6d75faa4ffba1",
+  "upstream_base": "599f35f32e5f31297f8b2153b5da44ddbb330e28",
+  "base_is_ancestor": true,
+  "only_remote": "origin https://github.com/jsonata-go/jsonata.git",
+  "commits_over_base": 78,
+  "diff_summary": "133 files changed, 19380 insertions(+), 18 deletions(-)",
+  "worktree_clean": true,
+  "module": "github.com/jsonata-go/jsonata",
+  "go_mod": "go 1.23.0; toolchain go1.24.2; indirect golang.org/x/text v0.26.0",
+  "go_mod_sum_licenses_changed": false,
+  "license_files": [
+    "LICENSE: MIT, copyright 2021 Blues Inc",
+    "v206/jsonata-js/LICENSE: MIT"
+  ],
+  "proof_toolchain": "Go1.26.7; CGO0 darwin/linux arm64/amd64 builds; physical mapping incomplete",
+  "publication_or_pin_performed": false,
+  "authorized_publication_destination_established": false
+}
