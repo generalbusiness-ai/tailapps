@@ -1,0 +1,7 @@
+=== RUN   TestNumericArchitectureConfinementProbe
+    compile_test.go:55: admitted=$round(1.25, 0/0) output=1 error=<nil>
+    compile_test.go:55: admitted=$round(1.25, 0) output=1 error=<nil>
+    compile_test.go:55: admitted=$round(1.25, -9223372036854775808) output=0 error=<nil>
+--- PASS: TestNumericArchitectureConfinementProbe (0.00s)
+PASS
+ok  	github.com/generalbusiness-ai/tailapps/jsonataddl	0.300s

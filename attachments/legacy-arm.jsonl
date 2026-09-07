@@ -1,0 +1,5 @@
+{"calls":[],"error":"","input":null,"name":"round-nan-precision","output":"1","source":"$round(1.25, 0/0)"}
+{"calls":[],"error":"","input":null,"name":"round-positive-huge-precision","output":"0","source":"$round(1.25, 1e300)"}
+{"calls":[],"error":"","input":null,"name":"round-negative-huge-precision","output":"0","source":"$round(1.25, -1e300)"}
+{"calls":[],"error":"","input":null,"name":"round-zero-precision","output":"1","source":"$round(1.25, 0)"}
+{"calls":[],"error":"","input":null,"name":"round-min-int-precision","output":"0","source":"$round(1.25, -9223372036854775808)"}
