@@ -1,0 +1,5 @@
+=== RUN   TestI7GroupOrderProbe
+    i7_group_order_probe_test.go:7: source=($x := 0; {"a": $x := 1, "b": $x}) accepted=true outputs=map[{"a":1,"b":0}:121 {"a":1,"b":1}:879]
+--- PASS: TestI7GroupOrderProbe (0.00s)
+PASS
+ok  	github.com/generalbusiness-ai/tailapps/jsonataddl	0.384s
