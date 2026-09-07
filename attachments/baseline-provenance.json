@@ -1,0 +1,8 @@
+{
+  "module": "github.com/jsonata-go/jsonata",
+  "version": "v0.0.0-20250709164031-599f35f32e5f",
+  "sum": "h1:JnGon8QHtmjFPq0NcSu8OTEnQDDEgFME7gtj/NkjCUo=",
+  "toolchain": "go1.26.7",
+  "reducer_unchanged_in_private_checkout": true,
+  "reducer_sha256": "1bfe5401977a97648d3c598963913c92193bdb7bf8b3e2d4b9cae931be50d035"
+}

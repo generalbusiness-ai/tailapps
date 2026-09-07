@@ -1,0 +1,15 @@
+capacity=3 independent=false reverse=false result={"a":[0,1,2,"A"],"b":[0,1,2,"B"]}
+capacity=3 independent=false reverse=true result={"a":[0,1,2,"A"],"b":[0,1,2,"B"]}
+capacity=3 independent=true reverse=false result={"a":[0,1,2,"A"],"b":[0,1,2,"B"]}
+capacity=3 independent=true reverse=true result={"a":[0,1,2,"A"],"b":[0,1,2,"B"]}
+capacity=4 independent=false reverse=false result={"a":[0,1,2,"B"],"b":[0,1,2,"B"]}
+capacity=4 independent=false reverse=true result={"a":[0,1,2,"A"],"b":[0,1,2,"A"]}
+capacity=4 independent=true reverse=false result={"a":[0,1,2,"A"],"b":[0,1,2,"B"]}
+capacity=4 independent=true reverse=true result={"a":[0,1,2,"A"],"b":[0,1,2,"B"]}
+legacy borrowed append overwrites caller sentinel [0,1,2,"B"] result {"a":[0,1,2,"B"],"b":[0,1,2,"B"]}
+legacy singleton context context input after value-phase delete {"a":1}
+unchanged nesting {"a":[1,[2,3]]}
+unchanged nesting {"a":[1,2,[3,4]]}
+unchanged nesting {"a":[[]]}
+unchanged nesting {"a":[1,2,3]}
+unchanged missing fields {"a":[1,3],"b":2}
