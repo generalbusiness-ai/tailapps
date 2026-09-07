@@ -1,0 +1,8 @@
+=== RUN   TestI7AliasConfinementProbe
+    i7_alias_probe_test.go:5: source=$reverse([1,2]) ambient=false lexical=<nil> AST=JSONata function $reverse is outside the bounded profile output=[2,1] eval=<nil>
+    i7_alias_probe_test.go:5: source=($sum := $reverse; $sum([1,2])) ambient=false lexical=<nil> AST=<nil> output=[2,1] eval=<nil>
+    i7_alias_probe_test.go:5: source=$exists($reverse) ambient=false lexical=<nil> AST=<nil> output=true eval=<nil>
+    i7_alias_probe_test.go:5: source=($sum := $map; $sum(["aa","bbb"], $length)) ambient=false lexical=<nil> AST=<nil> output=[2,3] eval=<nil>
+--- PASS: TestI7AliasConfinementProbe (0.00s)
+PASS
+ok  	github.com/generalbusiness-ai/tailapps/jsonataddl	0.466s
