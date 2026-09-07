@@ -1,0 +1,98 @@
+{
+  "main": "3a593721231326d589541113add606b270490e35",
+  "probe": "real current embedded normalizer and session fold, via Go overlay; exact current README SQL against resulting row in in-memory SQLite",
+  "scope": "synthetic two-event same-session time boundary with scrubbed fixture token values, not observed live event stream",
+  "query": "SELECT harness,\n       CAST(last_seen_unix_nano AS INTEGER) / 86400000000000 AS unix_day,\n       SUM(input_tokens) AS input_tokens,\n       SUM(cached_input_tokens) AS cached_input_tokens,\n       CASE WHEN SUM(input_tokens + cached_input_tokens) = 0 THEN NULL\n            ELSE 100.0 * SUM(cached_input_tokens) /\n                 SUM(input_tokens + cached_input_tokens) END AS cache_percent,\n       SUM(output_tokens) AS output_tokens,\n       SUM(cost_microusd) / 1000000.0 AS cost_usd\nFROM session_activity\nGROUP BY harness, unix_day\nORDER BY unix_day, harness;",
+  "cases": [
+    {
+      "cross_midnight": false,
+      "row": {
+        "cached_input_tokens": 80,
+        "cost_microusd": 0,
+        "event_count": 2,
+        "failure_count": 0,
+        "first_seen_unix_nano": "1788739080000000000",
+        "harness": "codex",
+        "input_tokens": 240,
+        "last_seen_unix_nano": "1788739140000000000",
+        "last_source_position": 43,
+        "outcome_unknown_count": 2,
+        "output_tokens": 60,
+        "prompt_count": 0,
+        "reasoning_output_tokens": 18,
+        "reported_length_total": 0,
+        "request_count": 0,
+        "response_count": 0,
+        "session_id": "session-scrubbed",
+        "shell_command_count": 0,
+        "success_count": 0,
+        "tool_event_count": 0,
+        "unknown_field_observations": 2
+      },
+      "recipe_result": [
+        {
+          "harness": "codex",
+          "unix_day": 20702,
+          "input_tokens": 240,
+          "cached_input_tokens": 80,
+          "cache_percent": 25.0,
+          "output_tokens": 60,
+          "cost_usd": 0.0
+        }
+      ],
+      "expected_input_tokens_by_day": {
+        "20702": 240
+      },
+      "actual_input_tokens_by_day": {
+        "20702": 240
+      },
+      "matches_event_days": true
+    },
+    {
+      "cross_midnight": true,
+      "row": {
+        "cached_input_tokens": 80,
+        "cost_microusd": 0,
+        "event_count": 2,
+        "failure_count": 0,
+        "first_seen_unix_nano": "1788739080000000000",
+        "harness": "codex",
+        "input_tokens": 240,
+        "last_seen_unix_nano": "1788739260000000000",
+        "last_source_position": 43,
+        "outcome_unknown_count": 2,
+        "output_tokens": 60,
+        "prompt_count": 0,
+        "reasoning_output_tokens": 18,
+        "reported_length_total": 0,
+        "request_count": 0,
+        "response_count": 0,
+        "session_id": "session-scrubbed",
+        "shell_command_count": 0,
+        "success_count": 0,
+        "tool_event_count": 0,
+        "unknown_field_observations": 2
+      },
+      "recipe_result": [
+        {
+          "harness": "codex",
+          "unix_day": 20703,
+          "input_tokens": 240,
+          "cached_input_tokens": 80,
+          "cache_percent": 25.0,
+          "output_tokens": 60,
+          "cost_usd": 0.0
+        }
+      ],
+      "expected_input_tokens_by_day": {
+        "20702": 120,
+        "20703": 120
+      },
+      "actual_input_tokens_by_day": {
+        "20703": 240
+      },
+      "matches_event_days": false
+    }
+  ],
+  "result": "Same-day control matches240; crossing midnight silently moves all240 tokens into day20703 instead of120 on each day. Old day disappears. Hourly recovery4161 is the existing owning outcome; correct daily recipe by summing event-time hourly buckets after delivery, not grouping whole-session totals by last observation."
+}
