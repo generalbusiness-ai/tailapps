@@ -1,8 +1,9 @@
 ---
 date: 2026-09-05
-status: Adopted I7 baseline, callable and group-order amendments; tuple value amendment pending ordinary adoption. No runtime change is delivered by this note.
+status: Adopted I7 baseline, callable, group-order and tuple-value amendments; object-key probe amendment pending ordinary adoption. No runtime change is delivered by this note.
 author: builder
 rests_on:
+  - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:25fb87520cd4dec29a01623a19d02707cea50925
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:46ea04c2b168dd54c173579532c593fcf6f0a8d9
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:4357cae21cccb883131fe9ad679696ad14ac14a5
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5f18c7a25e3db4273f34173d61ef343a4a23561e
@@ -44,9 +45,11 @@ through proposal `b9b7fb7c` and ratification `2b8cd0be`; Checker approved it in
 
 Hugh adopted the group-order amendment under #4144 through proposal
 `43168a26` and ratification `501d65f9`. It landed at `3a593721` through receipt
-`5396efab` and publication `4357cae2`. Request #4182 now commissions the narrow
-tuple value amendment below. It still needs an ordinary proposal and Hugh's
-ratification before independent Checker review. A commission or technical
+`5396efab` and publication `4357cae2`. The tuple value amendment under #4182
+landed at `756ce43a` through receipt `3c288b2a` and publication `727ab6a7` after
+Hugh's adoption and independent review. Request #4228 now commissions the
+object-key probe amendment below. It still needs an ordinary proposal and
+Hugh's ratification before independent Checker review. A commission or technical
 approval does not adopt policy. All four stages and eight admission gates
 remain; these source amendments do not close the original I7 implementation.
 
@@ -126,9 +129,9 @@ reports its own cost nor a timer around it supplies that guarantee.
 Consequently, no production extension is admitted on the current evaluator.
 The implementation first needs a narrowly maintained instrumentation patch to
 this evaluator, covering its admitted subset and codecs. Preserve its language
-except for the explicit callable-boundary, group-order and proposed tuple-value
-compatibility changes below; preserve
-the SQLite pin. A new exact evaluator pin is an essential, corpus-gated change
+except for the explicit callable-boundary, group-order, tuple-value and proposed
+object-key probe compatibility changes below; preserve the SQLite pin.
+A new exact evaluator pin is an essential, corpus-gated change
 only after that patch proves the bounds below; no unreviewed replacement,
 `replace` directive or timer-only fallback qualifies. If this cannot be done,
 leave extensions unavailable and report the blocker. This is also the adoption
@@ -231,7 +234,8 @@ Preserve two phases, with this order:
 
 1. Discover groups in input sequence order and, within each input, source
    key/value-expression order. Keep the existing preliminary object-constructor
-   key checks, their evaluations and errors, and the subsequent key evaluation.
+   key checks, their evaluations and errors, and the subsequent key evaluation,
+   except for the selected-extension key rule proposed below.
    Finish all grouping before evaluating any group's value.
 2. Evaluate each distinct group's value once, in the order its key was first
    encountered during that discovery. Repeated production of the same key by
@@ -240,9 +244,10 @@ Preserve two phases, with this order:
    retains the existing duplicate-key error in the discovery phase; it is
    neither overwrite nor a second value evaluation.
 
-Keep existing undefined-key, invalid-key-type and empty-input behavior, lexical
-frames and nested-block scope. The proposed tuple value amendment below
-qualifies only tuple/group container alias effects in this preservation rule. Numeric-looking and Unicode
+Keep existing undefined-key, per-item invalid-key-type and empty-input behavior,
+lexical frames and nested-block scope. The tuple value amendment below
+qualifies tuple/group container alias effects; the object-key probe amendment
+qualifies preliminary key evaluation. Numeric-looking and Unicode
 keys follow encounter order, not numeric or lexical sorting. This order governs
 semantic evaluation; JSON object serialization and canonical encoding remain
 separate. Preserve the adopted callable policy and all syntax refusals.
@@ -379,7 +384,8 @@ shadows its parent just as before; a missing field contributes nothing.
    before reducing/evaluating group values, once per group in first-encounter
    order. Different key expressions colliding still raise `D1009` during
    discovery. Undefined keys, `T1003` checks and preliminary constructor checks
-   keep their existing evaluations, scope and selected errors.
+   keep their existing evaluations, scope and selected errors, except for the
+   selected-extension preliminary evaluation rule proposed below.
 5. Apply these rules recursively in nested tuple/group evaluation. Retain the
    distinction between ordinary arrays and evaluator sequence/tuple wrappers,
    including their metadata and existing singleton collapse behavior. Do not
@@ -499,6 +505,90 @@ migration, actual reset, module publication/pin/replace, provider admission,
 installation or live service change. Runtime implementation and all remaining
 I7 gates stay on #4043 and promise `5cfedb59`. This child delivers only the
 ordinary-adopted, independently reviewed source amendment.
+
+## Object-key probe amendment for adoption
+
+The pinned evaluator preliminarily evaluates each constructor key on the whole
+input before discovering its per-item keys. The legacy callback controls in
+#4225 reproduce three calls for `{$probe("key"):$}` on `[1,2]`, and one call
+for `{$count($)>1 ? $probe("probe-only") : "k":$}` whose per-item branch never calls
+the provider. These are baseline observations, not admitted metered providers.
+Keeping that probe conflicts with the no-speculation rule below.
+
+At compile/admission, classify each constructor key expression by a complete,
+bounded walk of its admitted AST, including nested expressions and all branches.
+Use resolved direct calls to selected extensions, never source-text matching
+or evaluation of the expression. If any such call occurs in that key AST,
+omit its **entire preliminary whole-input evaluation**, including pure work,
+lexical effects and errors, even when the selected call's branch is dormant.
+Do not substitute a dry-run provider, memoized result, alternate argument frame,
+result reuse or uncharged speculative dispatch. This changes neither extension
+selection nor its direct-call/no-reference/no-shadow/no-partial confinement.
+
+Evaluate that key normally once at each existing per-item/tuple semantic
+evaluation point, with its normal lexical scope, key checks, provider calls,
+work charging and failure ordering. Preserve source key-expression order,
+undefined keys, per-item `T1003`, discovery-phase duplicate-key `D1009`, and
+complete discovery before values run once per group in adopted first-encounter
+order. Preserve empty/null/tuple discovery: if it creates a virtual undefined
+item, its one normal key evaluation is semantic and any executed selected call
+is charged once. Neither omit that evaluation nor add a second provider probe.
+A key AST with no selected extension retains the legacy preliminary evaluation
+and errors. A call only in a group's value does not change that group's key rule.
+
+This is an explicit compatibility exception. A pure whole-input branch that
+previously returned a non-string and caused preliminary `T1003` can now yield
+valid per-item string keys, including when the selected call is never executed.
+Omitting pure lexical effects can also change later keys and values; the lexical
+scope rules themselves remain. For input `[1,2]`, the pinned evaluator gives
+`{"2":3,"3":3}` with zero calls for:
+
+```jsonata
+($x := 0; {$string($x := $x+1) & (false ? $probe("never") : ""): $x})
+```
+
+The amended result must be `{"1":2,"2":2}`, still with zero calls. Its
+extension-free twin, replacing `$probe("never")` with `"never"`, must retain
+`{"2":3,"3":3}`. The amendment artifact retains executable baseline evidence
+for both; proposed results are requirements for #4043, not delivered behavior.
+
+The fixture provider below returns its string argument. Unless stated otherwise,
+input is `[1,2]`; each listed call is charged once when executed.
+
+| Expression or case | Required result and ordered provider calls |
+|---|---|
+| `[$probe("same"),$probe("same")]` | `["same","same"]`; `same,same`. |
+| `false ? $probe("unused") : "ok"` | `"ok"`; no calls. |
+| `$.($probe("item"))` | `["item","item"]`; `item,item`. |
+| `{$probe("key"):$}` | `{"key":[1,2]}`; `key,key`, not three calls. |
+| `{$count($)>1 ? $probe("whole") : "k":$}` | `{"k":[1,2]}`; no calls, not one. |
+| `{"k":$probe("value")}` | `{"k":"value"}`; `value`. |
+| `{$count($)>1 ? 7 : $probe("k"):$}` | `{"k":[1,2]}`; `k,k`, replacing preliminary `T1003`. |
+| `{false ? $probe("unused") : ($count($)>1 ? 7 : "k"):$}` | `{"k":[1,2]}`; no calls, replacing preliminary `T1003`. |
+| `{$count($)>1 ? 7 : "k":$}` | Preserve preliminary `T1003`; no calls. |
+| `{$count($)>1 ? $probe("whole") : 7:$}` | Preserve per-item `T1003`; no calls. |
+| `{$probe("k"):$}` with `[]`, then with `null` | `{}`, then `{"k":null}`; one `k` call in each separate evaluation. |
+
+Require exact output/error, ordered call traces, deterministic work/allocation
+totals and at-bound/one-over judgments for these cases and the lexical pair.
+Also cover nested key expressions/groups, tuple/reduce and two colliding key
+expressions, including failure before any group value. Pair the cases with an
+extension-free corpus. Remove a semantic dispatch, restore the extra probe,
+misclassify a dormant/nested call, or skip a relevant charge and demonstrate
+the changed result, error, trace or actual work/allocation beyond the bound.
+These necessary controls extend gate 3; they do not replace complete coverage
+or any of the eight gates.
+
+Account for changed evaluation/admission and corpus semantics in the existing
+`core.jsonata`, grammar, dialect and corpus/version components wherever affected.
+Keep exactly ten identity components and old-identity recognition. Revalidate
+stored programs before replay writes; refusal leaves projection and frontier
+unchanged. Preserve the separate acknowledged reset/activation boundary and
+all four delivery stages. Add no identity component or automatic migration.
+After exact ordinary adoption, runtime implementation, the eventual pin and
+all callers stay on #4043's existing promise. This source amendment authorizes
+no public evaluator/module publication, production admission, live operation,
+reset or release.
 
 ## Declaration and immutable loading
 
