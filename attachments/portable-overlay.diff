@@ -1,0 +1,74 @@
+--- v206/functions.go
++++ evidence-overlay/functions.go
+@@ -632,7 +632,7 @@
+ 		start := 0
+ 		if len(args) > 1 {
+ 			if s, ok := args[1].(float64); ok {
+-				start = int(s)
++				start = numericDecisionInt(scope,s)
+ 			} else if s, ok := args[1].(int); ok {
+ 				start = s
+ 			}
+@@ -641,7 +641,7 @@
+ 		var length *int
+ 		if len(args) > 2 {
+ 			if l, ok := args[2].(float64); ok {
+-				val := int(l)
++				val := numericDecisionInt(scope,l)
+ 				length = &val
+ 			} else if l, ok := args[2].(int); ok {
+ 				length = &l
+@@ -679,7 +679,7 @@
+ 			if start < 0 {
+ 				start = 0
+ 			}
+-			return joinResourceCharacters(scope, strArray[start:end]), nil
++			if start < 0 || end < start || end > len(strArray) { panic(scope.fail(ResourceContract)) }; return joinResourceCharacters(scope, strArray[start:end]), nil
+ 		}
+ 
+ 		if start < 0 {
+@@ -688,7 +688,7 @@
+ 		if start < 0 {
+ 			start = 0
+ 		}
+-		return joinResourceCharacters(scope, strArray[start:]), nil
++		if start < 0 || start > len(strArray) { panic(scope.fail(ResourceContract)) }; return joinResourceCharacters(scope, strArray[start:]), nil
+ 	}
+ 	substringFunc = resourcePrimitive(scope, substringFunc)
+ 
+@@ -2889,7 +2889,7 @@
+ 		var precision *int
+ 		if len(args) > 1 && args[1] != nil {
+ 			if p, ok := args[1].(float64); ok {
+-				val := int(p)
++				val := numericDecisionInt(scope,p)
+ 				precision = &val
+ 			} else if p, ok := args[1].(int); ok {
+ 				precision = &p
+@@ -4377,3 +4377,12 @@
+ 	Groups []string
+ 	Next   func() *MatchResult
+ }
++
++// Evidence-only proposed semantic conversion; not a delivered implementation.
++func numericDecisionInt(scope *ResourceScope,n float64) int {
++ if scope!=nil {requireResources(scope,8,resourceScalarUnits)}
++ if math.IsNaN(n){return 0}
++ if n>=9223372036854775808.0{return 9223372036854775807}
++ if n<=-9223372036854775808.0{return -9223372036854775808}
++ return int(n)
++}
+--- v206/meter_filter.go
++++ evidence-overlay/meter_filter.go
+@@ -103,6 +103,11 @@
+ 		selected := false
+ 		switch value := value.(type) {
+ 		case float64:
++            if math.IsNaN(value) {
++                requireResources(scope,1,resourceFrameUnits+resourceScalarUnits)
++                selected=resourceBoolize(environment,value)
++                break
++            }
+ 			requireResources(scope, 1, resourceFrameUnits+resourceScalarUnits)
+ 			position, valid := resourceFilterIndex(scope, value, len(values))
+ 			selected = valid && position == index

@@ -1,0 +1,1943 @@
+{
+  "go_files": [
+    "datetime.go",
+    "functions.go",
+    "jsonata.go",
+    "meter.go",
+    "meter_apply.go",
+    "meter_array.go",
+    "meter_array_constructor.go",
+    "meter_ast.go",
+    "meter_binary.go",
+    "meter_builtin_value.go",
+    "meter_call_name.go",
+    "meter_clone.go",
+    "meter_composition.go",
+    "meter_contains.go",
+    "meter_copy.go",
+    "meter_equal.go",
+    "meter_evaluate.go",
+    "meter_expression_error.go",
+    "meter_filter.go",
+    "meter_filter_indices.go",
+    "meter_frame.go",
+    "meter_functions.go",
+    "meter_group.go",
+    "meter_group_keys.go",
+    "meter_group_values.go",
+    "meter_includes.go",
+    "meter_invoke.go",
+    "meter_json_decode.go",
+    "meter_json_decode_string.go",
+    "meter_json_encode.go",
+    "meter_json_number.go",
+    "meter_json_string.go",
+    "meter_match.go",
+    "meter_number.go",
+    "meter_numeric.go",
+    "meter_object.go",
+    "meter_owned_array.go",
+    "meter_partial.go",
+    "meter_partial_hole.go",
+    "meter_path.go",
+    "meter_program.go",
+    "meter_property.go",
+    "meter_regex.go",
+    "meter_regex_capture.go",
+    "meter_regex_invoke.go",
+    "meter_regex_result.go",
+    "meter_sequence_result.go",
+    "meter_signature.go",
+    "meter_sort.go",
+    "meter_sort_path.go",
+    "meter_string.go",
+    "meter_stringify.go",
+    "meter_transform_body.go",
+    "meter_transform_invoke.go",
+    "meter_transform_value.go",
+    "meter_tuple_frame.go",
+    "meter_tuple_reduce.go",
+    "meter_tuple_stages.go",
+    "meter_tuple_step.go",
+    "meter_value_object.go",
+    "parser.go",
+    "signature.go",
+    "utils.go"
+  ],
+  "method": "go/types: all integer-target conversions in every production package file; closure ownership retained. Reachability and numeric parsing/native helpers are assessed separately.",
+  "package": "github.com/generalbusiness-ai/jsonata/v206",
+  "sites": [
+    {
+      "file": "datetime.go",
+      "line": 184,
+      "function": "initDateTime/numberToWords/lookup",
+      "expression": "int(math.Floor(math.Log10(float64(num)) / 3))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "datetime.go",
+      "line": 188,
+      "function": "initDateTime/numberToWords/lookup",
+      "expression": "int(math.Pow(10, float64(mag*3)))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "datetime.go",
+      "line": 224,
+      "function": "initDateTime",
+      "expression": "int(math.Pow(10, float64((index+1)*3)))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "datetime.go",
+      "line": 331,
+      "function": "initDateTime/decimalToLetters",
+      "expression": "int(aChar)",
+      "from": "rune",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 333,
+      "function": "initDateTime/decimalToLetters",
+      "expression": "rune((value-1)%26 + aCode)",
+      "from": "int",
+      "to": "rune",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 346,
+      "function": "initDateTime/lettersToDecimal",
+      "expression": "int(aChar)",
+      "from": "rune",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 350,
+      "function": "initDateTime/lettersToDecimal",
+      "expression": "int(runes[len(runes)-i-1])",
+      "from": "rune",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 350,
+      "function": "initDateTime/lettersToDecimal",
+      "expression": "int(math.Pow(26, float64(i)))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "datetime.go",
+      "line": 390,
+      "function": "initDateTime/formatInteger",
+      "expression": "int(math.Floor(v))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "datetime.go",
+      "line": 393,
+      "function": "initDateTime/formatInteger",
+      "expression": "int(math.Floor(float64(v)))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "datetime.go",
+      "line": 439,
+      "function": "initDateTime/_formatInteger",
+      "expression": "int(math.Abs(float64(value)))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "datetime.go",
+      "line": 472,
+      "function": "initDateTime/_formatInteger",
+      "expression": "rune(format.zeroCode)",
+      "from": "int",
+      "to": "rune",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 587,
+      "function": "initDateTime/analyseIntegerPicture",
+      "expression": "int(codePoint)",
+      "from": "rune",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 587,
+      "function": "initDateTime/analyseIntegerPicture",
+      "expression": "int(codePoint)",
+      "from": "rune",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 808,
+      "function": "initDateTime/analyseDateTimePicture",
+      "expression": "rune(lastChar)",
+      "from": "byte",
+      "to": "rune",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 895,
+      "function": "initDateTime",
+      "expression": "int64(1000 * 60 * 60 * 24)",
+      "from": "int64",
+      "to": "int64",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 902,
+      "function": "initDateTime/startOfFirstWeek",
+      "expression": "time.Month(ym.month + 1)",
+      "from": "int",
+      "to": "time.Month",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 903,
+      "function": "initDateTime/startOfFirstWeek",
+      "expression": "int(jan1.Weekday())",
+      "from": "time.Weekday",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 909,
+      "function": "initDateTime/startOfFirstWeek",
+      "expression": "int64(8 - dayOfJan1)",
+      "from": "int",
+      "to": "int64",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 911,
+      "function": "initDateTime/startOfFirstWeek",
+      "expression": "int64(dayOfJan1 - 1)",
+      "from": "int",
+      "to": "int64",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 931,
+      "function": "initDateTime/getDateTimeFragment",
+      "expression": "int(date.Month())",
+      "from": "time.Month",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 939,
+      "function": "initDateTime/getDateTimeFragment",
+      "expression": "int((today.Unix() - firstJan.Unix()) / 86400)",
+      "from": "int64",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 941,
+      "function": "initDateTime/getDateTimeFragment",
+      "expression": "int(date.Weekday())",
+      "from": "time.Weekday",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 962,
+      "function": "initDateTime/getDateTimeFragment",
+      "expression": "int(math.Floor(week))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "datetime.go",
+      "line": 964,
+      "function": "initDateTime/getDateTimeFragment",
+      "expression": "int(date.Month())",
+      "from": "time.Month",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 979,
+      "function": "initDateTime/getDateTimeFragment",
+      "expression": "int(math.Floor(week))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "datetime.go",
+      "line": 1001,
+      "function": "initDateTime/getDateTimeFragment",
+      "expression": "int(date.Month())",
+      "from": "time.Month",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 1087,
+      "function": "initDateTime/formatDateTime/formatComponent",
+      "expression": "int(math.Pow(10, float64(markerSpec.n)))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "datetime.go",
+      "line": 1217,
+      "function": "initDateTime/formatDateTime",
+      "expression": "int64((60*offsetHours + offsetMinutes) * 60 * 1000)",
+      "from": "int",
+      "to": "int64",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 1426,
+      "function": "initDateTime/generateRegex/matcher.parse",
+      "expression": "rune(spec.zeroCode)",
+      "from": "int",
+      "to": "rune",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 1686,
+      "function": "initDateTime/parseDateTime",
+      "expression": "int64(offsetMillis / 1000)",
+      "from": "int",
+      "to": "int64",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 1687,
+      "function": "initDateTime/parseDateTime",
+      "expression": "int(derivedDate.Month())",
+      "from": "time.Month",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 1717,
+      "function": "initDateTime/parseDateTime",
+      "expression": "time.Month(getInt(\"M\") + 1)",
+      "from": "int",
+      "to": "time.Month",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 1722,
+      "function": "initDateTime/parseDateTime",
+      "expression": "int64(z * 60 * 1000)",
+      "from": "int",
+      "to": "int64",
+      "from_float": false
+    },
+    {
+      "file": "datetime.go",
+      "line": 1725,
+      "function": "initDateTime/parseDateTime",
+      "expression": "int64(z * 60 * 1000)",
+      "from": "int",
+      "to": "int64",
+      "from_float": false
+    },
+    {
+      "file": "functions.go",
+      "line": 635,
+      "function": "initFunctionsWithResources/substringFunc",
+      "expression": "int(s)",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "functions.go",
+      "line": 644,
+      "function": "initFunctionsWithResources/substringFunc",
+      "expression": "int(l)",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "functions.go",
+      "line": 850,
+      "function": "initFunctionsWithResources/lengthFunc",
+      "expression": "uint64(len(str))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "functions.go",
+      "line": 913,
+      "function": "initFunctionsWithResources/padFunc",
+      "expression": "int(w)",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "functions.go",
+      "line": 930,
+      "function": "initFunctionsWithResources/padFunc",
+      "expression": "int(width)",
+      "from": "int",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "functions.go",
+      "line": 932,
+      "function": "initFunctionsWithResources/padFunc",
+      "expression": "int(math.Abs(float64(width)))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "functions.go",
+      "line": 1018,
+      "function": "initFunctionsWithResources/convertMapToMatchResult",
+      "expression": "int(s)",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "functions.go",
+      "line": 1023,
+      "function": "initFunctionsWithResources/convertMapToMatchResult",
+      "expression": "int(e)",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "functions.go",
+      "line": 1155,
+      "function": "initFunctionsWithResources/evaluateMatcher",
+      "expression": "int(s)",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "functions.go",
+      "line": 1162,
+      "function": "initFunctionsWithResources/evaluateMatcher",
+      "expression": "int(e)",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "functions.go",
+      "line": 1261,
+      "function": "initFunctionsWithResources/containsFunc",
+      "expression": "uint64(len(str))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "functions.go",
+      "line": 1261,
+      "function": "initFunctionsWithResources/containsFunc",
+      "expression": "uint64(len(tokenStr))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "functions.go",
+      "line": 1314,
+      "function": "initFunctionsWithResources/matchFunc",
+      "expression": "int(limitVal)",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "functions.go",
+      "line": 1470,
+      "function": "initFunctionsWithResources/replaceFunc",
+      "expression": "int(limitVal)",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "functions.go",
+      "line": 1824,
+      "function": "initFunctionsWithResources/splitFunc",
+      "expression": "int(limitVal)",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "functions.go",
+      "line": 2012,
+      "function": "initFunctionsWithResources/formatNumberFunc",
+      "expression": "int([]rune(properties[\"zero-digit\"])[0])",
+      "from": "rune",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "functions.go",
+      "line": 2014,
+      "function": "initFunctionsWithResources/formatNumberFunc",
+      "expression": "rune(ii)",
+      "from": "int",
+      "to": "rune",
+      "from_float": false
+    },
+    {
+      "file": "functions.go",
+      "line": 2511,
+      "function": "initFunctionsWithResources/formatNumberFunc",
+      "expression": "int(math.Abs(result))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "functions.go",
+      "line": 2539,
+      "function": "initFunctionsWithResources/formatNumberFunc/makeString",
+      "expression": "int(ch - '0')",
+      "from": "rune",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "functions.go",
+      "line": 2667,
+      "function": "initFunctionsWithResources/formatBaseFunc",
+      "expression": "int(r)",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "functions.go",
+      "line": 2683,
+      "function": "initFunctionsWithResources/formatBaseFunc",
+      "expression": "int(math.Round(float64(*radix)))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "functions.go",
+      "line": 2693,
+      "function": "initFunctionsWithResources/formatBaseFunc",
+      "expression": "int64(value)",
+      "from": "float64",
+      "to": "int64",
+      "from_float": true
+    },
+    {
+      "file": "functions.go",
+      "line": 2892,
+      "function": "initFunctionsWithResources/roundFunc",
+      "expression": "int(p)",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "jsonata.go",
+      "line": 299,
+      "function": "SetMaxTime",
+      "expression": "time.Duration(maxMs)",
+      "from": "int",
+      "to": "time.Duration",
+      "from_float": false
+    },
+    {
+      "file": "jsonata.go",
+      "line": 1554,
+      "function": "evaluateFilter",
+      "expression": "int(math.Floor(num))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "jsonata.go",
+      "line": 1576,
+      "function": "evaluateFilter",
+      "expression": "int(math.Floor(predNode.Value.(float64)))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "jsonata.go",
+      "line": 1600,
+      "function": "evaluateFilter",
+      "expression": "int(math.Floor(num))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "jsonata.go",
+      "line": 1662,
+      "function": "evaluateFilter",
+      "expression": "int(math.Floor(ires))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "jsonata.go",
+      "line": 2801,
+      "function": "evaluateRangeExpression",
+      "expression": "int(lhs.(float64))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "jsonata.go",
+      "line": 2802,
+      "function": "evaluateRangeExpression",
+      "expression": "int(rhs.(float64))",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "jsonata.go",
+      "line": 4535,
+      "function": "init/closure@4505",
+      "expression": "int64(v)",
+      "from": "float64",
+      "to": "int64",
+      "from_float": true
+    },
+    {
+      "file": "jsonata.go",
+      "line": 4537,
+      "function": "init/closure@4505",
+      "expression": "int64(v)",
+      "from": "int",
+      "to": "int64",
+      "from_float": false
+    },
+    {
+      "file": "meter_apply.go",
+      "line": 21,
+      "function": "evaluateResourceApply",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_apply.go",
+      "line": 21,
+      "function": "evaluateResourceApply",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_apply.go",
+      "line": 25,
+      "function": "evaluateResourceApply",
+      "expression": "uint64(n)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_array.go",
+      "line": 27,
+      "function": "appendResourceValue",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_array.go",
+      "line": 27,
+      "function": "appendResourceValue",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_array.go",
+      "line": 30,
+      "function": "appendResourceValue",
+      "expression": "uint64(len(values))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_array.go",
+      "line": 37,
+      "function": "appendResourceValues",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_array.go",
+      "line": 37,
+      "function": "appendResourceValues",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_array.go",
+      "line": 40,
+      "function": "appendResourceValues",
+      "expression": "uint64(len(values) + len(extra))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_array_constructor.go",
+      "line": 13,
+      "function": "appendResourceConstructorValue",
+      "expression": "uint64(length)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_ast.go",
+      "line": 107,
+      "function": "evaluateResourceASTEntered",
+      "expression": "uint64(len(node.Arguments))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_binary.go",
+      "line": 87,
+      "function": "convertResourceToString",
+      "expression": "uint64(len(encoded))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_binary.go",
+      "line": 101,
+      "function": "evaluateResourceStringConcat",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_binary.go",
+      "line": 101,
+      "function": "evaluateResourceStringConcat",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_binary.go",
+      "line": 104,
+      "function": "evaluateResourceStringConcat",
+      "expression": "uint64(len(left) + len(right))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_copy.go",
+      "line": 88,
+      "function": "copyResourceValueEntered",
+      "expression": "uint64(len(value.entries))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_copy.go",
+      "line": 95,
+      "function": "copyResourceValueEntered",
+      "expression": "uint64(len(previous))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_copy.go",
+      "line": 95,
+      "function": "copyResourceValueEntered",
+      "expression": "uint64(len(entry.key))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_copy.go",
+      "line": 114,
+      "function": "copyResourceArray",
+      "expression": "uint64(len(values))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_equal.go",
+      "line": 50,
+      "function": "resourceEqualEntered",
+      "expression": "uint64(len(left))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_equal.go",
+      "line": 50,
+      "function": "resourceEqualEntered",
+      "expression": "uint64(len(right))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_equal.go",
+      "line": 107,
+      "function": "resourceEqualEntered",
+      "expression": "uint64(len(leftKey))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_equal.go",
+      "line": 107,
+      "function": "resourceEqualEntered",
+      "expression": "uint64(len(rightKey))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_evaluate.go",
+      "line": 35,
+      "function": "evaluateResourceProgram",
+      "expression": "uint64(len(values))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_filter_indices.go",
+      "line": 11,
+      "function": "selectResourceFilterIndices",
+      "expression": "uint64(len(input))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_filter_indices.go",
+      "line": 53,
+      "function": "resourceFilterIndex",
+      "expression": "int(number)",
+      "from": "float64",
+      "to": "int",
+      "from_float": true
+    },
+    {
+      "file": "meter_group.go",
+      "line": 59,
+      "function": "add",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_group.go",
+      "line": 59,
+      "function": "add",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_group.go",
+      "line": 65,
+      "function": "add",
+      "expression": "uint64(length)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_group_keys.go",
+      "line": 80,
+      "function": "collectResourceGroupKeys",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_group_keys.go",
+      "line": 80,
+      "function": "collectResourceGroupKeys",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_group_values.go",
+      "line": 21,
+      "function": "evaluateResourceGroup",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_group_values.go",
+      "line": 21,
+      "function": "evaluateResourceGroup",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_includes.go",
+      "line": 42,
+      "function": "resourceMembershipEqual",
+      "expression": "uint64(len(left))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_includes.go",
+      "line": 42,
+      "function": "resourceMembershipEqual",
+      "expression": "uint64(len(right))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_decode.go",
+      "line": 208,
+      "function": "number",
+      "expression": "uint64(length)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_decode_string.go",
+      "line": 16,
+      "function": "decodeResourceJSONString",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_decode_string.go",
+      "line": 16,
+      "function": "decodeResourceJSONString",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_decode_string.go",
+      "line": 23,
+      "function": "decodeResourceJSONString",
+      "expression": "uint64(length)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_decode_string.go",
+      "line": 108,
+      "function": "resourceJSONHexRune",
+      "expression": "rune(digit)",
+      "from": "byte",
+      "to": "rune",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_encode.go",
+      "line": 75,
+      "function": "object",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_encode.go",
+      "line": 75,
+      "function": "object",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_encode.go",
+      "line": 107,
+      "function": "array",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_encode.go",
+      "line": 107,
+      "function": "array",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_encode.go",
+      "line": 121,
+      "function": "token",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_encode.go",
+      "line": 121,
+      "function": "token",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_encode.go",
+      "line": 126,
+      "function": "token",
+      "expression": "uint64(length)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_encode.go",
+      "line": 137,
+      "function": "indent",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_encode.go",
+      "line": 137,
+      "function": "indent",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_encode.go",
+      "line": 142,
+      "function": "indent",
+      "expression": "uint64(length)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_number.go",
+      "line": 15,
+      "function": "appendResourceJSONNumber",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_number.go",
+      "line": 15,
+      "function": "appendResourceJSONNumber",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_number.go",
+      "line": 20,
+      "function": "appendResourceJSONNumber",
+      "expression": "uint64(capacity)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_number.go",
+      "line": 25,
+      "function": "appendResourceJSONNumber",
+      "expression": "int64(value)",
+      "from": "int",
+      "to": "int64",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_number.go",
+      "line": 27,
+      "function": "appendResourceJSONNumber",
+      "expression": "int64(value)",
+      "from": "int8",
+      "to": "int64",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_number.go",
+      "line": 29,
+      "function": "appendResourceJSONNumber",
+      "expression": "int64(value)",
+      "from": "int16",
+      "to": "int64",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_number.go",
+      "line": 31,
+      "function": "appendResourceJSONNumber",
+      "expression": "int64(value)",
+      "from": "int32",
+      "to": "int64",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_number.go",
+      "line": 35,
+      "function": "appendResourceJSONNumber",
+      "expression": "uint64(value)",
+      "from": "uint",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_number.go",
+      "line": 37,
+      "function": "appendResourceJSONNumber",
+      "expression": "uint64(value)",
+      "from": "uint8",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_number.go",
+      "line": 39,
+      "function": "appendResourceJSONNumber",
+      "expression": "uint64(value)",
+      "from": "uint16",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_number.go",
+      "line": 41,
+      "function": "appendResourceJSONNumber",
+      "expression": "uint64(value)",
+      "from": "uint32",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_number.go",
+      "line": 59,
+      "function": "appendResourceJSONFloat",
+      "expression": "byte('f')",
+      "from": "byte",
+      "to": "byte",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_string.go",
+      "line": 14,
+      "function": "appendResourceJSONString",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_string.go",
+      "line": 14,
+      "function": "appendResourceJSONString",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_json_string.go",
+      "line": 19,
+      "function": "appendResourceJSONString",
+      "expression": "uint64(capacity)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_number.go",
+      "line": 16,
+      "function": "reserveResourceNumber",
+      "expression": "uint64(len(input))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_numeric.go",
+      "line": 99,
+      "function": "evaluateResourceComparison",
+      "expression": "uint64(len(left))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_numeric.go",
+      "line": 99,
+      "function": "evaluateResourceComparison",
+      "expression": "uint64(len(right))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_object.go",
+      "line": 12,
+      "function": "reserveResourceLookup",
+      "expression": "uint64(len(key))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_owned_array.go",
+      "line": 34,
+      "function": "appendResourceOwnedValue",
+      "expression": "uint64(capacity)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_partial.go",
+      "line": 23,
+      "function": "evaluateResourcePartial",
+      "expression": "uint64(len(node.Arguments))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_partial.go",
+      "line": 85,
+      "function": "newResourcePartial",
+      "expression": "uint64(n)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_partial.go",
+      "line": 110,
+      "function": "bindResourcePartial",
+      "expression": "uint64(len(partial.captured))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_partial.go",
+      "line": 113,
+      "function": "bindResourcePartial",
+      "expression": "uint64(len(partial.open))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_partial.go",
+      "line": 141,
+      "function": "expandResourcePartial",
+      "expression": "uint64(len(partial.captured))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_partial.go",
+      "line": 154,
+      "function": "expandResourcePartial",
+      "expression": "uint64(len(partial.bound))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_partial_hole.go",
+      "line": 108,
+      "function": "partialHole",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_partial_hole.go",
+      "line": 108,
+      "function": "partialHole",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_partial_hole.go",
+      "line": 114,
+      "function": "partialHole",
+      "expression": "uint64(length)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_program.go",
+      "line": 41,
+      "function": "compileResourceProgram",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_program.go",
+      "line": 41,
+      "function": "compileResourceProgram",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex.go",
+      "line": 33,
+      "function": "resourceRegexMatch",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex.go",
+      "line": 33,
+      "function": "resourceRegexMatch",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex.go",
+      "line": 38,
+      "function": "resourceRegexMatch",
+      "expression": "uint64(n)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex.go",
+      "line": 44,
+      "function": "resourceRegexMatch",
+      "expression": "rune(-1)",
+      "from": "rune",
+      "to": "rune",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex.go",
+      "line": 47,
+      "function": "resourceRegexMatch",
+      "expression": "rune(-1)",
+      "from": "rune",
+      "to": "rune",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex.go",
+      "line": 64,
+      "function": "resourceRegexMatch",
+      "expression": "uint32(program.Start)",
+      "from": "int",
+      "to": "uint32",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex.go",
+      "line": 82,
+      "function": "resourceRegexMatch",
+      "expression": "syntax.EmptyOp(instruction.Arg)",
+      "from": "uint32",
+      "to": "regexp/syntax.EmptyOp",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex.go",
+      "line": 82,
+      "function": "resourceRegexMatch",
+      "expression": "syntax.EmptyOp(instruction.Arg)",
+      "from": "uint32",
+      "to": "regexp/syntax.EmptyOp",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex.go",
+      "line": 116,
+      "function": "enqueue",
+      "expression": "uint64(pc)",
+      "from": "uint32",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex.go",
+      "line": 116,
+      "function": "enqueue",
+      "expression": "uint64(len(machine.program.Inst))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex.go",
+      "line": 145,
+      "function": "resourceRegexRune",
+      "expression": "syntax.Flags(instruction.Arg)",
+      "from": "uint32",
+      "to": "regexp/syntax.Flags",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex_capture.go",
+      "line": 26,
+      "function": "resourceRegexCaptures",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex_capture.go",
+      "line": 26,
+      "function": "resourceRegexCaptures",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex_capture.go",
+      "line": 35,
+      "function": "resourceRegexCaptures",
+      "expression": "uint64(stackSize)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex_capture.go",
+      "line": 37,
+      "function": "resourceRegexCaptures",
+      "expression": "uint64(stackSize * slots)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex_capture.go",
+      "line": 39,
+      "function": "resourceRegexCaptures",
+      "expression": "uint64(slots)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex_capture.go",
+      "line": 48,
+      "function": "resourceRegexCaptures",
+      "expression": "rune(-1)",
+      "from": "rune",
+      "to": "rune",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex_capture.go",
+      "line": 56,
+      "function": "resourceRegexCaptures",
+      "expression": "uint32(program.Start)",
+      "from": "int",
+      "to": "uint32",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex_capture.go",
+      "line": 112,
+      "function": "newResourceRegexQueue",
+      "expression": "uint64(n)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex_capture.go",
+      "line": 114,
+      "function": "newResourceRegexQueue",
+      "expression": "uint64(n * slots)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex_capture.go",
+      "line": 149,
+      "function": "push",
+      "expression": "uint64(pc)",
+      "from": "uint32",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex_capture.go",
+      "line": 149,
+      "function": "push",
+      "expression": "uint64(len(machine.program.Inst))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex_capture.go",
+      "line": 181,
+      "function": "add",
+      "expression": "uint64(instruction.Arg)",
+      "from": "uint32",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex_capture.go",
+      "line": 181,
+      "function": "add",
+      "expression": "uint64(machine.slots)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex_capture.go",
+      "line": 187,
+      "function": "add",
+      "expression": "syntax.EmptyOp(instruction.Arg)",
+      "from": "uint32",
+      "to": "regexp/syntax.EmptyOp",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex_capture.go",
+      "line": 187,
+      "function": "add",
+      "expression": "syntax.EmptyOp(instruction.Arg)",
+      "from": "uint32",
+      "to": "regexp/syntax.EmptyOp",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex_result.go",
+      "line": 59,
+      "function": "searchResourceRegexResult",
+      "expression": "uint64(groupsCount)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_regex_result.go",
+      "line": 121,
+      "function": "resourceRegexResultObject",
+      "expression": "uint64(len(result.groups))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_sequence_result.go",
+      "line": 36,
+      "function": "finishResourceSequence",
+      "expression": "uint64(len(array.Data))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_sequence_result.go",
+      "line": 50,
+      "function": "finishResourceSequence",
+      "expression": "uint64(len(array.Data))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_signature.go",
+      "line": 157,
+      "function": "validateResourceBuiltinArguments",
+      "expression": "uint64(count)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_signature.go",
+      "line": 198,
+      "function": "resourceSignatureArray",
+      "expression": "uint64(length)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_sort.go",
+      "line": 55,
+      "function": "mergeResourceSortEntered",
+      "expression": "uint64(len(values))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_sort.go",
+      "line": 109,
+      "function": "resourceSortAfter",
+      "expression": "uint64(len(aa))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_sort.go",
+      "line": 109,
+      "function": "resourceSortAfter",
+      "expression": "uint64(len(bb))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_string.go",
+      "line": 17,
+      "function": "reserveResourceCase",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_string.go",
+      "line": 17,
+      "function": "reserveResourceCase",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_string.go",
+      "line": 20,
+      "function": "reserveResourceCase",
+      "expression": "uint64(len(input))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_string.go",
+      "line": 29,
+      "function": "stringToArrayWithResources",
+      "expression": "uint64(len(input))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_string.go",
+      "line": 44,
+      "function": "joinResourceCharacters",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_string.go",
+      "line": 44,
+      "function": "joinResourceCharacters",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_string.go",
+      "line": 47,
+      "function": "joinResourceCharacters",
+      "expression": "uint64(len(values))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_stringify.go",
+      "line": 33,
+      "function": "resourceStringify",
+      "expression": "uint64(len(encoded))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_stringify.go",
+      "line": 68,
+      "function": "preprocessResourceString",
+      "expression": "uint64(n)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_stringify.go",
+      "line": 77,
+      "function": "preprocessResourceString",
+      "expression": "uint64(len(value))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_tuple_frame.go",
+      "line": 17,
+      "function": "createResourceTupleEnvironment",
+      "expression": "uint64(len(entry.key))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_tuple_reduce.go",
+      "line": 31,
+      "function": "reduceResourceTupleStream",
+      "expression": "uint64(len(previous))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_tuple_reduce.go",
+      "line": 31,
+      "function": "reduceResourceTupleStream",
+      "expression": "uint64(len(entry.key))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_value_object.go",
+      "line": 37,
+      "function": "locate",
+      "expression": "uint64(len(key))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_value_object.go",
+      "line": 37,
+      "function": "locate",
+      "expression": "uint64(len(entry.key))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_value_object.go",
+      "line": 41,
+      "function": "locate",
+      "expression": "uint64(len(key))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_value_object.go",
+      "line": 41,
+      "function": "locate",
+      "expression": "uint64(len(entry.key))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_value_object.go",
+      "line": 68,
+      "function": "set",
+      "expression": "int(^uint(0) \u003e\u003e 1)",
+      "from": "uint",
+      "to": "int",
+      "from_float": false
+    },
+    {
+      "file": "meter_value_object.go",
+      "line": 68,
+      "function": "set",
+      "expression": "uint(0)",
+      "from": "uint",
+      "to": "uint",
+      "from_float": false
+    },
+    {
+      "file": "meter_value_object.go",
+      "line": 74,
+      "function": "set",
+      "expression": "uint64(length)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_value_object.go",
+      "line": 89,
+      "function": "remove",
+      "expression": "uint64(last - index)",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "meter_value_object.go",
+      "line": 107,
+      "function": "clone",
+      "expression": "uint64(len(object.entries))",
+      "from": "int",
+      "to": "uint64",
+      "from_float": false
+    },
+    {
+      "file": "parser.go",
+      "line": 257,
+      "function": "initParser/tokenizer/next",
+      "expression": "rune(currentChar)",
+      "from": "byte",
+      "to": "rune",
+      "from_float": false
+    },
+    {
+      "file": "parser.go",
+      "line": 364,
+      "function": "initParser/tokenizer/next",
+      "expression": "rune(codepoint)",
+      "from": "int64",
+      "to": "rune",
+      "from_float": false
+    },
+    {
+      "file": "parser.go",
+      "line": 452,
+      "function": "initParser/tokenizer/next",
+      "expression": "rune(ch)",
+      "from": "byte",
+      "to": "rune",
+      "from_float": false
+    }
+  ]
+}

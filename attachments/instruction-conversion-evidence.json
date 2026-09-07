@@ -1,0 +1,22 @@
+{
+  "darwin-arm64": [
+    "\t0x009c 00156 (/Users/hughpyle/play/tailapp-worktrees/i7-metered-evaluator/v206/functions.go:2892)\tFCVTZSD\tF1, R5",
+    "\t0x00a0 00160 (/Users/hughpyle/play/tailapp-worktrees/i7-metered-evaluator/v206/functions.go:2892)\tMOVD\tR5, github.com/generalbusiness-ai/jsonata/v206.val-128(SP)",
+    "\t0x00a4 00164 (/Users/hughpyle/play/tailapp-worktrees/i7-metered-evaluator/v206/functions.go:2892)\tMOVD\t$github.com/generalbusiness-ai/jsonata/v206.val-128(SP), R0"
+  ],
+  "darwin-amd64": [
+    "\t0x00a4 00164 (/Users/hughpyle/play/tailapp-worktrees/i7-metered-evaluator/v206/functions.go:2892)\tCVTTSD2SQ\tX1, SI",
+    "\t0x00a9 00169 (/Users/hughpyle/play/tailapp-worktrees/i7-metered-evaluator/v206/functions.go:2892)\tMOVQ\tSI, github.com/generalbusiness-ai/jsonata/v206.val+56(SP)",
+    "\t0x00ae 00174 (/Users/hughpyle/play/tailapp-worktrees/i7-metered-evaluator/v206/functions.go:2892)\tLEAQ\tgithub.com/generalbusiness-ai/jsonata/v206.val+56(SP), AX"
+  ],
+  "linux-arm64": [
+    "\t0x009c 00156 (/Users/hughpyle/play/tailapp-worktrees/i7-metered-evaluator/v206/functions.go:2892)\tFCVTZSD\tF1, R5",
+    "\t0x00a0 00160 (/Users/hughpyle/play/tailapp-worktrees/i7-metered-evaluator/v206/functions.go:2892)\tMOVD\tR5, github.com/generalbusiness-ai/jsonata/v206.val-128(SP)",
+    "\t0x00a4 00164 (/Users/hughpyle/play/tailapp-worktrees/i7-metered-evaluator/v206/functions.go:2892)\tMOVD\t$github.com/generalbusiness-ai/jsonata/v206.val-128(SP), R0"
+  ],
+  "linux-amd64": [
+    "\t0x00a4 00164 (/Users/hughpyle/play/tailapp-worktrees/i7-metered-evaluator/v206/functions.go:2892)\tCVTTSD2SQ\tX1, SI",
+    "\t0x00a9 00169 (/Users/hughpyle/play/tailapp-worktrees/i7-metered-evaluator/v206/functions.go:2892)\tMOVQ\tSI, github.com/generalbusiness-ai/jsonata/v206.val+56(SP)",
+    "\t0x00ae 00174 (/Users/hughpyle/play/tailapp-worktrees/i7-metered-evaluator/v206/functions.go:2892)\tLEAQ\tgithub.com/generalbusiness-ai/jsonata/v206.val+56(SP), AX"
+  ]
+}

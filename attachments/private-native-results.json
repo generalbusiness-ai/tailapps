@@ -1,0 +1,3021 @@
+[
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1",
+    "source": "$round(1.25,0/0)",
+    "used": {
+      "Work": 83953386,
+      "Allocation": 410464,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",0/0)",
+    "used": {
+      "Work": 67250,
+      "Allocation": 83744,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",0,0/0)",
+    "used": {
+      "Work": 67155,
+      "Allocation": 84866,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",1,0/0)",
+    "used": {
+      "Work": 67155,
+      "Allocation": 84866,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",-1,0/0)",
+    "used": {
+      "Work": 67155,
+      "Allocation": 84866,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [],
+    "error": "resource_contract",
+    "output": "",
+    "source": "[1,2,3][0/0]",
+    "used": {
+      "Work": 66048,
+      "Allocation": 84480,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1",
+    "source": "($sum:=$round(? ,0/0);$sum(1.25))",
+    "used": {
+      "Work": 83953176,
+      "Allocation": 422176,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "($sum:=$substring(?,1,0/0);$sum(\"abc\"))",
+    "used": {
+      "Work": 66948,
+      "Allocation": 97154,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "$round(1.25,1/0)",
+    "used": {
+      "Work": 83953386,
+      "Allocation": 410464,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",1/0)",
+    "used": {
+      "Work": 67250,
+      "Allocation": 83744,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",0,1/0)",
+    "used": {
+      "Work": 67314,
+      "Allocation": 85152,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [
+      "substring"
+    ],
+    "error": "resource_contract",
+    "output": "",
+    "source": "$substring(\"abc\",1,1/0)",
+    "used": {
+      "Work": 67134,
+      "Allocation": 82880,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [
+      "substring"
+    ],
+    "error": "resource_contract",
+    "output": "",
+    "source": "$substring(\"abc\",-1,1/0)",
+    "used": {
+      "Work": 67134,
+      "Allocation": 82880,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [],
+    "error": "resource_contract",
+    "output": "",
+    "source": "[1,2,3][1/0]",
+    "used": {
+      "Work": 66048,
+      "Allocation": 84480,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "($sum:=$round(? ,1/0);$sum(1.25))",
+    "used": {
+      "Work": 83953176,
+      "Allocation": 422176,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [
+      "substring"
+    ],
+    "error": "resource_contract",
+    "output": "",
+    "source": "($sum:=$substring(?,1,1/0);$sum(\"abc\"))",
+    "used": {
+      "Work": 66925,
+      "Allocation": 94528,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "$round(1.25,-1/0)",
+    "used": {
+      "Work": 83953386,
+      "Allocation": 410464,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",-1/0)",
+    "used": {
+      "Work": 67250,
+      "Allocation": 83744,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",0,-1/0)",
+    "used": {
+      "Work": 67155,
+      "Allocation": 84866,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",1,-1/0)",
+    "used": {
+      "Work": 67155,
+      "Allocation": 84866,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",-1,-1/0)",
+    "used": {
+      "Work": 67155,
+      "Allocation": 84866,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [],
+    "error": "resource_contract",
+    "output": "",
+    "source": "[1,2,3][-1/0]",
+    "used": {
+      "Work": 66048,
+      "Allocation": 84480,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "($sum:=$round(? ,-1/0);$sum(1.25))",
+    "used": {
+      "Work": 83953176,
+      "Allocation": 422176,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "($sum:=$substring(?,1,-1/0);$sum(\"abc\"))",
+    "used": {
+      "Work": 66948,
+      "Allocation": 97154,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "$round(1.25,1e300)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",1e300)",
+    "used": {
+      "Work": 67116,
+      "Allocation": 80544,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",0,1e300)",
+    "used": {
+      "Work": 67180,
+      "Allocation": 81952,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [
+      "substring"
+    ],
+    "error": "resource_contract",
+    "output": "",
+    "source": "$substring(\"abc\",1,1e300)",
+    "used": {
+      "Work": 67000,
+      "Allocation": 79680,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [
+      "substring"
+    ],
+    "error": "resource_contract",
+    "output": "",
+    "source": "$substring(\"abc\",-1,1e300)",
+    "used": {
+      "Work": 67000,
+      "Allocation": 79680,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "null",
+    "source": "[1,2,3][1e300]",
+    "used": {
+      "Work": 65862,
+      "Allocation": 81604,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "($sum:=$round(? ,1e300);$sum(1.25))",
+    "used": {
+      "Work": 83953042,
+      "Allocation": 418976,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [
+      "substring"
+    ],
+    "error": "resource_contract",
+    "output": "",
+    "source": "($sum:=$substring(?,1,1e300);$sum(\"abc\"))",
+    "used": {
+      "Work": 66791,
+      "Allocation": 91328,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "$round(1.25,-1e300)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",-1e300)",
+    "used": {
+      "Work": 67116,
+      "Allocation": 80544,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",0,-1e300)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",1,-1e300)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",-1,-1e300)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "null",
+    "source": "[1,2,3][-1e300]",
+    "used": {
+      "Work": 65862,
+      "Allocation": 81604,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "($sum:=$round(? ,-1e300);$sum(1.25))",
+    "used": {
+      "Work": 83953042,
+      "Allocation": 418976,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "($sum:=$substring(?,1,-1e300);$sum(\"abc\"))",
+    "used": {
+      "Work": 66814,
+      "Allocation": 93954,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "$round(1.25,9223372036854775808)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",9223372036854775808)",
+    "used": {
+      "Work": 67116,
+      "Allocation": 80544,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",0,9223372036854775808)",
+    "used": {
+      "Work": 67180,
+      "Allocation": 81952,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [
+      "substring"
+    ],
+    "error": "resource_contract",
+    "output": "",
+    "source": "$substring(\"abc\",1,9223372036854775808)",
+    "used": {
+      "Work": 67000,
+      "Allocation": 79680,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [
+      "substring"
+    ],
+    "error": "resource_contract",
+    "output": "",
+    "source": "$substring(\"abc\",-1,9223372036854775808)",
+    "used": {
+      "Work": 67000,
+      "Allocation": 79680,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "null",
+    "source": "[1,2,3][9223372036854775808]",
+    "used": {
+      "Work": 65862,
+      "Allocation": 81604,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "($sum:=$round(? ,9223372036854775808);$sum(1.25))",
+    "used": {
+      "Work": 83953042,
+      "Allocation": 418976,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [
+      "substring"
+    ],
+    "error": "resource_contract",
+    "output": "",
+    "source": "($sum:=$substring(?,1,9223372036854775808);$sum(\"abc\"))",
+    "used": {
+      "Work": 66791,
+      "Allocation": 91328,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "$round(1.25,9223372036854774784)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [
+      "substring"
+    ],
+    "error": "resource_contract",
+    "output": "",
+    "source": "$substring(\"abc\",9223372036854774784)",
+    "used": {
+      "Work": 66936,
+      "Allocation": 78272,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",0,9223372036854774784)",
+    "used": {
+      "Work": 67180,
+      "Allocation": 81952,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"bc\"",
+    "source": "$substring(\"abc\",1,9223372036854774784)",
+    "used": {
+      "Work": 67127,
+      "Allocation": 81942,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"c\"",
+    "source": "$substring(\"abc\",-1,9223372036854774784)",
+    "used": {
+      "Work": 67074,
+      "Allocation": 81932,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "null",
+    "source": "[1,2,3][9223372036854774784]",
+    "used": {
+      "Work": 65862,
+      "Allocation": 81604,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "($sum:=$round(? ,9223372036854774784);$sum(1.25))",
+    "used": {
+      "Work": 83953042,
+      "Allocation": 418976,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"bc\"",
+    "source": "($sum:=$substring(?,1,9223372036854774784);$sum(\"abc\"))",
+    "used": {
+      "Work": 66920,
+      "Allocation": 94230,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "$round(1.25,9223372036854777856)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",9223372036854777856)",
+    "used": {
+      "Work": 67116,
+      "Allocation": 80544,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",0,9223372036854777856)",
+    "used": {
+      "Work": 67180,
+      "Allocation": 81952,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [
+      "substring"
+    ],
+    "error": "resource_contract",
+    "output": "",
+    "source": "$substring(\"abc\",1,9223372036854777856)",
+    "used": {
+      "Work": 67000,
+      "Allocation": 79680,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [
+      "substring"
+    ],
+    "error": "resource_contract",
+    "output": "",
+    "source": "$substring(\"abc\",-1,9223372036854777856)",
+    "used": {
+      "Work": 67000,
+      "Allocation": 79680,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "null",
+    "source": "[1,2,3][9223372036854777856]",
+    "used": {
+      "Work": 65862,
+      "Allocation": 81604,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "($sum:=$round(? ,9223372036854777856);$sum(1.25))",
+    "used": {
+      "Work": 83953042,
+      "Allocation": 418976,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [
+      "substring"
+    ],
+    "error": "resource_contract",
+    "output": "",
+    "source": "($sum:=$substring(?,1,9223372036854777856);$sum(\"abc\"))",
+    "used": {
+      "Work": 66791,
+      "Allocation": 91328,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "$round(1.25,-9223372036854775808)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",-9223372036854775808)",
+    "used": {
+      "Work": 67116,
+      "Allocation": 80544,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",0,-9223372036854775808)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",1,-9223372036854775808)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",-1,-9223372036854775808)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "null",
+    "source": "[1,2,3][-9223372036854775808]",
+    "used": {
+      "Work": 65862,
+      "Allocation": 81604,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "($sum:=$round(? ,-9223372036854775808);$sum(1.25))",
+    "used": {
+      "Work": 83953042,
+      "Allocation": 418976,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "($sum:=$substring(?,1,-9223372036854775808);$sum(\"abc\"))",
+    "used": {
+      "Work": 66814,
+      "Allocation": 93954,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "$round(1.25,-9223372036854774784)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",-9223372036854774784)",
+    "used": {
+      "Work": 67116,
+      "Allocation": 80544,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",0,-9223372036854774784)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",1,-9223372036854774784)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",-1,-9223372036854774784)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "null",
+    "source": "[1,2,3][-9223372036854774784]",
+    "used": {
+      "Work": 65862,
+      "Allocation": 81604,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "($sum:=$round(? ,-9223372036854774784);$sum(1.25))",
+    "used": {
+      "Work": 83953042,
+      "Allocation": 418976,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "($sum:=$substring(?,1,-9223372036854774784);$sum(\"abc\"))",
+    "used": {
+      "Work": 66814,
+      "Allocation": 93954,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "$round(1.25,-9223372036854777856)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",-9223372036854777856)",
+    "used": {
+      "Work": 67116,
+      "Allocation": 80544,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",0,-9223372036854777856)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",1,-9223372036854777856)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",-1,-9223372036854777856)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "null",
+    "source": "[1,2,3][-9223372036854777856]",
+    "used": {
+      "Work": 65862,
+      "Allocation": 81604,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "($sum:=$round(? ,-9223372036854777856);$sum(1.25))",
+    "used": {
+      "Work": 83953042,
+      "Allocation": 418976,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "($sum:=$substring(?,1,-9223372036854777856);$sum(\"abc\"))",
+    "used": {
+      "Work": 66814,
+      "Allocation": 93954,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1",
+    "source": "$round(1.25,0)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",0)",
+    "used": {
+      "Work": 67116,
+      "Allocation": 80544,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",0,0)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",1,0)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",-1,0)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "1",
+    "source": "[1,2,3][0]",
+    "used": {
+      "Work": 16843325,
+      "Allocation": 147872,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1",
+    "source": "($sum:=$round(? ,0);$sum(1.25))",
+    "used": {
+      "Work": 83953042,
+      "Allocation": 418976,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "($sum:=$substring(?,1,0);$sum(\"abc\"))",
+    "used": {
+      "Work": 66814,
+      "Allocation": 93954,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1",
+    "source": "$round(1.25,-0)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",-0)",
+    "used": {
+      "Work": 67116,
+      "Allocation": 80544,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",0,-0)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",1,-0)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",-1,-0)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "1",
+    "source": "[1,2,3][-0]",
+    "used": {
+      "Work": 16843325,
+      "Allocation": 147872,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1",
+    "source": "($sum:=$round(? ,-0);$sum(1.25))",
+    "used": {
+      "Work": 83953042,
+      "Allocation": 418976,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "($sum:=$substring(?,1,-0);$sum(\"abc\"))",
+    "used": {
+      "Work": 66814,
+      "Allocation": 93954,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1.2",
+    "source": "$round(1.25,1.9)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"bc\"",
+    "source": "$substring(\"abc\",1.9)",
+    "used": {
+      "Work": 67063,
+      "Allocation": 80534,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"a\"",
+    "source": "$substring(\"abc\",0,1.9)",
+    "used": {
+      "Work": 67074,
+      "Allocation": 81932,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"b\"",
+    "source": "$substring(\"abc\",1,1.9)",
+    "used": {
+      "Work": 67074,
+      "Allocation": 81932,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"c\"",
+    "source": "$substring(\"abc\",-1,1.9)",
+    "used": {
+      "Work": 67074,
+      "Allocation": 81932,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "2",
+    "source": "[1,2,3][1.9]",
+    "used": {
+      "Work": 16843325,
+      "Allocation": 147872,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1.2",
+    "source": "($sum:=$round(? ,1.9);$sum(1.25))",
+    "used": {
+      "Work": 83953042,
+      "Allocation": 418976,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"b\"",
+    "source": "($sum:=$substring(?,1,1.9);$sum(\"abc\"))",
+    "used": {
+      "Work": 66867,
+      "Allocation": 94220,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "$round(1.25,-1.9)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"c\"",
+    "source": "$substring(\"abc\",-1.9)",
+    "used": {
+      "Work": 67010,
+      "Allocation": 80524,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",0,-1.9)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",1,-1.9)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",-1,-1.9)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "2",
+    "source": "[1,2,3][-1.9]",
+    "used": {
+      "Work": 16843325,
+      "Allocation": 147872,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "($sum:=$round(? ,-1.9);$sum(1.25))",
+    "used": {
+      "Work": 83953042,
+      "Allocation": 418976,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "($sum:=$substring(?,1,-1.9);$sum(\"abc\"))",
+    "used": {
+      "Work": 66814,
+      "Allocation": 93954,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1",
+    "source": "$round(1.25,0.5)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",0.5)",
+    "used": {
+      "Work": 67116,
+      "Allocation": 80544,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",0,0.5)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",1,0.5)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",-1,0.5)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "1",
+    "source": "[1,2,3][0.5]",
+    "used": {
+      "Work": 16843325,
+      "Allocation": 147872,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1",
+    "source": "($sum:=$round(? ,0.5);$sum(1.25))",
+    "used": {
+      "Work": 83953042,
+      "Allocation": 418976,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "($sum:=$substring(?,1,0.5);$sum(\"abc\"))",
+    "used": {
+      "Work": 66814,
+      "Allocation": 93954,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1",
+    "source": "$round(1.25,-0.5)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",-0.5)",
+    "used": {
+      "Work": 67116,
+      "Allocation": 80544,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",0,-0.5)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",1,-0.5)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring(\"abc\",-1,-0.5)",
+    "used": {
+      "Work": 67021,
+      "Allocation": 81666,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "3",
+    "source": "[1,2,3][-0.5]",
+    "used": {
+      "Work": 16843325,
+      "Allocation": 147872,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1",
+    "source": "($sum:=$round(? ,-0.5);$sum(1.25))",
+    "used": {
+      "Work": 83953042,
+      "Allocation": 418976,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "($sum:=$substring(?,1,-0.5);$sum(\"abc\"))",
+    "used": {
+      "Work": 66814,
+      "Allocation": 93954,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1",
+    "source": "$round(1.25,missing)",
+    "used": {
+      "Work": 83953327,
+      "Allocation": 412000,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",missing)",
+    "used": {
+      "Work": 67190,
+      "Allocation": 85280,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",0,missing)",
+    "used": {
+      "Work": 67255,
+      "Allocation": 86688,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"bc\"",
+    "source": "$substring(\"abc\",1,missing)",
+    "used": {
+      "Work": 67202,
+      "Allocation": 86678,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"c\"",
+    "source": "$substring(\"abc\",-1,missing)",
+    "used": {
+      "Work": 67149,
+      "Allocation": 86668,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "null",
+    "source": "[1,2,3][missing]",
+    "used": {
+      "Work": 66293,
+      "Allocation": 102532,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1",
+    "source": "($sum:=$round(? ,missing);$sum(1.25))",
+    "used": {
+      "Work": 83953118,
+      "Allocation": 423712,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"bc\"",
+    "source": "($sum:=$substring(?,1,missing);$sum(\"abc\"))",
+    "used": {
+      "Work": 66996,
+      "Allocation": 98966,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round",
+      "substring"
+    ],
+    "error": "",
+    "output": "[1,\"abc\"]",
+    "source": "[$round(1.25,0/0),$substring(\"abc\",0,1e300)]",
+    "used": {
+      "Work": 83955160,
+      "Allocation": 426833,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [
+      "round",
+      "substring"
+    ],
+    "error": "resource_contract",
+    "output": "",
+    "source": "[$round(1.25,0/0),$substring(\"abc\",1,1e300),$round(2.25,0)]",
+    "used": {
+      "Work": 67177427,
+      "Allocation": 355520,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [
+      "number"
+    ],
+    "error": "resource_contract",
+    "output": "",
+    "source": "$round($number(\"invalid\"),0/0)",
+    "used": {
+      "Work": 16844685,
+      "Allocation": 87104,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "string",
+      "floor",
+      "ceil",
+      "substring"
+    ],
+    "error": "",
+    "output": "\"\"",
+    "source": "$substring($string(7),$floor(1.9),$ceil(1.9))",
+    "used": {
+      "Work": 83957030,
+      "Allocation": 428323,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "$round(1e300,1e300)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "$round(1e300,-1e300)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "$round(1e-300,1e300)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "0",
+    "source": "$round(1e-300,-1e300)",
+    "used": {
+      "Work": 83953252,
+      "Allocation": 407264,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "null",
+    "source": "$round(missing,0/0)",
+    "used": {
+      "Work": 67137,
+      "Allocation": 87492,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1",
+    "source": "$round(1.25)",
+    "used": {
+      "Work": 83953190,
+      "Allocation": 405856,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1",
+    "source": "$round(1.25,missing)",
+    "used": {
+      "Work": 83953327,
+      "Allocation": 412000,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "null",
+    "source": "$substring(\"\",1,1e300)",
+    "used": {
+      "Work": 67011,
+      "Allocation": 81028,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "null",
+    "source": "$substring(missing,1,1e300)",
+    "used": {
+      "Work": 67086,
+      "Allocation": 85764,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "$substring(\"abc\",0,missing)",
+    "used": {
+      "Work": 67255,
+      "Allocation": 86688,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"b\"",
+    "source": "$substring(\"abc\",1.9,1.9)",
+    "used": {
+      "Work": 67074,
+      "Allocation": 81932,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"c\"",
+    "source": "$substring(\"abc\",-1.9,1.9)",
+    "used": {
+      "Work": 67074,
+      "Allocation": 81932,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "[1,2,3]",
+    "source": "[1,2,3][[0/0]]",
+    "used": {
+      "Work": 50399499,
+      "Allocation": 316665,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "[1,2,3]",
+    "source": "[1,2,3][[1/0]]",
+    "used": {
+      "Work": 50399499,
+      "Allocation": 316665,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [],
+    "error": "",
+    "output": "2",
+    "source": "[1,2,3][[-1e300,1.9,1e300]]",
+    "used": {
+      "Work": 16843640,
+      "Allocation": 159200,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1",
+    "source": "($sum:=$round;$sum(1.25,0/0))",
+    "used": {
+      "Work": 83953605,
+      "Allocation": 416224,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "($sum:=$substring;$sum(\"abc\",0,1e300))",
+    "used": {
+      "Work": 67399,
+      "Allocation": 87712,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "round"
+    ],
+    "error": "",
+    "output": "1",
+    "source": "1.25 ~> $round(0/0)",
+    "used": {
+      "Work": 83953386,
+      "Allocation": 410976,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "substring"
+    ],
+    "error": "",
+    "output": "\"abc\"",
+    "source": "\"abc\" ~> $substring(0,1e300)",
+    "used": {
+      "Work": 67180,
+      "Allocation": 82464,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "number"
+    ],
+    "error": "",
+    "output": "9223372036854776000",
+    "source": "$number(\"0x7fffffffffffffff\")",
+    "used": {
+      "Work": 33622684,
+      "Allocation": 152992,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {},
+    "calls": [
+      "number"
+    ],
+    "error": "resource_contract",
+    "output": "",
+    "source": "$number(\"0x8000000000000000\")",
+    "used": {
+      "Work": 16845207,
+      "Allocation": 85440,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "number"
+    ],
+    "error": "",
+    "output": "7",
+    "source": "$number(\"0b111\")",
+    "used": {
+      "Work": 33621852,
+      "Allocation": 152160,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "string"
+    ],
+    "error": "",
+    "output": "\"1e+300\"",
+    "source": "$string(1e300)",
+    "used": {
+      "Work": 83953511,
+      "Allocation": 407308,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "string"
+    ],
+    "error": "",
+    "output": "\"1e-300\"",
+    "source": "$string(1e-300)",
+    "used": {
+      "Work": 83953511,
+      "Allocation": 407308,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "floor"
+    ],
+    "error": "",
+    "output": "1",
+    "source": "$floor(1.9)",
+    "used": {
+      "Work": 16844313,
+      "Allocation": 143648,
+      "Depth": 0
+    }
+  },
+  {
+    "bounds": {
+      "allocation-one-short": "resource_allocation",
+      "exact": "success",
+      "work-one-short": "resource_work"
+    },
+    "calls": [
+      "ceil"
+    ],
+    "error": "",
+    "output": "-1",
+    "source": "$ceil(-1.9)",
+    "used": {
+      "Work": 16844311,
+      "Allocation": 143648,
+      "Depth": 0
+    }
+  }
+]
