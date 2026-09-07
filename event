@@ -1,1 +1,1 @@
-{"kind":"artifact","text":"Merge published the current artifact at notes/2026-09-05-capability-context-contract.md","body":{"commit":"19eee8f25b0086b0b1c4e39a45598d1878dac69b","path":"notes/2026-09-05-capability-context-contract.md"}}
+{"target":"git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:36afeb2d532955d3a21ea5654dcbbad4a028b54b","text":"Merge retired a covered predecessor; the successor is at notes/2026-09-05-capability-context-contract.md."}
