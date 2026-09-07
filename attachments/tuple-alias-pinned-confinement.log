@@ -1,0 +1,10 @@
+=== RUN   TestCodexTupleAliasPinnedConfinement
+    codex_tuple_alias_probe_test.go:13: run 1 confinement accepted
+    codex_tuple_alias_probe_test.go:14: 864 {"one":{"a":[0,1,2,"B"],"b":[0,1,2,"B"]}}
+    codex_tuple_alias_probe_test.go:14: 136 {"one":{"a":[0,1,2,"A"],"b":[0,1,2,"A"]}}
+    codex_tuple_alias_probe_test.go:13: run 2 confinement accepted
+    codex_tuple_alias_probe_test.go:14: 852 {"one":{"a":[0,1,2,"B"],"b":[0,1,2,"B"]}}
+    codex_tuple_alias_probe_test.go:14: 148 {"one":{"a":[0,1,2,"A"],"b":[0,1,2,"A"]}}
+--- PASS: TestCodexTupleAliasPinnedConfinement (0.01s)
+PASS
+ok  	github.com/generalbusiness-ai/tailapps/jsonataddl	0.361s
