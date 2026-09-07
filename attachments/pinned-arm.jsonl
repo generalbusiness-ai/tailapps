@@ -1,0 +1,40 @@
+{"output":"1","source":"$round(1.25,0/0)"}
+{"output":"\"abc\"","source":"$substring(\"abc\",0/0)"}
+{"output":"\"\"","source":"$substring(\"abc\",1,0/0)"}
+{"output":"\"\"","source":"$substring(\"abc\",0,0/0)"}
+{"output":"0","source":"$round(1.25,1/0)"}
+{"output":"\"abc\"","source":"$substring(\"abc\",1/0)"}
+{"error":"runtime error: slice bounds out of range [:-9223372036854775808]","output":"","source":"$substring(\"abc\",1,1/0)"}
+{"output":"\"abc\"","source":"$substring(\"abc\",0,1/0)"}
+{"output":"0","source":"$round(1.25,-1/0)"}
+{"output":"\"abc\"","source":"$substring(\"abc\",-1/0)"}
+{"output":"\"\"","source":"$substring(\"abc\",1,-1/0)"}
+{"output":"\"\"","source":"$substring(\"abc\",0,-1/0)"}
+{"output":"0","source":"$round(1.25,1e300)"}
+{"output":"\"abc\"","source":"$substring(\"abc\",1e300)"}
+{"error":"runtime error: slice bounds out of range [:-9223372036854775808]","output":"","source":"$substring(\"abc\",1,1e300)"}
+{"output":"\"abc\"","source":"$substring(\"abc\",0,1e300)"}
+{"output":"0","source":"$round(1.25,-1e300)"}
+{"output":"\"abc\"","source":"$substring(\"abc\",-1e300)"}
+{"output":"\"\"","source":"$substring(\"abc\",1,-1e300)"}
+{"output":"\"\"","source":"$substring(\"abc\",0,-1e300)"}
+{"output":"0","source":"$round(1.25,9223372036854775808)"}
+{"output":"\"abc\"","source":"$substring(\"abc\",9223372036854775808)"}
+{"error":"runtime error: slice bounds out of range [:-9223372036854775808]","output":"","source":"$substring(\"abc\",1,9223372036854775808)"}
+{"output":"\"abc\"","source":"$substring(\"abc\",0,9223372036854775808)"}
+{"output":"0","source":"$round(1.25,-9223372036854775808)"}
+{"output":"\"abc\"","source":"$substring(\"abc\",-9223372036854775808)"}
+{"output":"\"\"","source":"$substring(\"abc\",1,-9223372036854775808)"}
+{"output":"\"\"","source":"$substring(\"abc\",0,-9223372036854775808)"}
+{"output":"1.2","source":"$round(1.25,1.5)"}
+{"output":"\"bc\"","source":"$substring(\"abc\",1.5)"}
+{"output":"\"b\"","source":"$substring(\"abc\",1,1.5)"}
+{"output":"\"a\"","source":"$substring(\"abc\",0,1.5)"}
+{"output":"0","source":"$round(1.25,-1.5)"}
+{"output":"\"c\"","source":"$substring(\"abc\",-1.5)"}
+{"output":"\"\"","source":"$substring(\"abc\",1,-1.5)"}
+{"output":"\"\"","source":"$substring(\"abc\",0,-1.5)"}
+{"output":"1","source":"$round(1.25,0)"}
+{"output":"\"abc\"","source":"$substring(\"abc\",0)"}
+{"output":"\"\"","source":"$substring(\"abc\",1,0)"}
+{"output":"\"\"","source":"$substring(\"abc\",0,0)"}
