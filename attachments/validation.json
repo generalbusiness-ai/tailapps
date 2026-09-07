@@ -1,0 +1,37 @@
+{
+  "base": "3a593721231326d589541113add606b270490e35",
+  "checks": {
+    "original_declaration_through_gates_unchanged": true,
+    "callable_section_unchanged": true,
+    "local_source_links_valid": 22,
+    "legacy_reducer_control_byte_identical": true,
+    "owned_growth_policy_explicit": true
+  },
+  "local_links": [
+    "jsonataddl/input.go:10",
+    "jsonataddl/input_contract.go:9",
+    "jsonataddl/dialect.go:24",
+    "jsonataddl/evaluate.go:64",
+    "jsonataddl/application.go:76",
+    "jsonataddl/confine.go:20",
+    "jsonataddl/compile.go:448",
+    "jsonataddl/load.go:1",
+    "jsonataddl/identity.go:22",
+    "internal/projection/projection.go:518",
+    "internal/engine/engine.go:187",
+    "internal/engine/engine.go:626",
+    "internal/projection/projection.go:306",
+    "internal/projection/projection.go:428",
+    "internal/mcp/tools.go:95",
+    "jsonataddl/go.mod:8",
+    "docs/reference/resident-upgrade.md:23",
+    "jsonataddl/confine.go:20",
+    "jsonataddl/confine.go:20",
+    "jsonataddl/go.mod:8",
+    "jsonataddl/values.go:51",
+    "jsonataddl/authorizer.go:14"
+  ],
+  "unresolved_semantic_choices": [],
+  "evidence_limit": "Source decision and unchanged legacy controls only. No proposed tuple runtime implementation or admission proof.",
+  "head": "bdd32c7a62afa4a30107a2893f5eb2efa0e25628"
+}
