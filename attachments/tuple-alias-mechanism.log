@@ -1,9 +1,0 @@
-=== RUN   TestCodexTupleAliasMechanism
-    codex_tuple_alias_mechanism_test.go:11: initial shared slice len3 capacity 3
-    codex_tuple_alias_mechanism_test.go:12: 1000 {"a":[0,1,2,"A"],"b":[0,1,2,"B"]}
-    codex_tuple_alias_mechanism_test.go:11: initial shared slice len3 capacity 4
-    codex_tuple_alias_mechanism_test.go:12: 864 {"a":[0,1,2,"B"],"b":[0,1,2,"B"]}
-    codex_tuple_alias_mechanism_test.go:12: 136 {"a":[0,1,2,"A"],"b":[0,1,2,"A"]}
---- PASS: TestCodexTupleAliasMechanism (0.00s)
-PASS
-ok  	github.com/jsonata-go/jsonata/v206	0.309s
