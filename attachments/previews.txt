@@ -1,0 +1,76 @@
+== source previews: 16 behaviour bases at their own commits (event = base artifact)
+  ok  a82d0cc8 jsonataddl/load.go ready 8c6d5e21 size 5484
+  ok  5a154ada jsonataddl/values.go ready 9280be8b size 9392
+  ok  12260ffd jsonataddl/authorizer.go ready 7ecffd53 size 2839
+  ok  8a4ec624 jsonataddl/input.go ready 7ecffd53 size 7223
+  ok  f6cbd08c jsonataddl/compile.go ready 7ecffd53 size 37761
+  ok  2cef65b2 internal/engine/engine.go ready 7ecffd53 size 35939
+  ok  b69c6c06 internal/mcp/tools.go ready 7ecffd53 size 14058
+  ok  57e3ae6e jsonataddl/go.mod ready 9b11da6a size 502
+  ok  eddf68d2 jsonataddl/input_contract.go ready 7ecffd53 size 3983
+  ok  bfa401dc internal/projection/projection.go ready 7ecffd53 size 28648
+  ok  f9066798 jsonataddl/confine.go ready 8c6d5e21 size 5075
+  ok  ffdba647 docs/reference/resident-upgrade.md ready 7ecffd53 size 6947
+  ok  583e04fd jsonataddl/dialect.go ready 7ecffd53 size 10281
+  ok  c0c20014 jsonataddl/identity.go ready 7ecffd53 size 4685
+  ok  094b549d jsonataddl/application.go ready 7ecffd53 size 8845
+  ok  0fe8e8a9 jsonataddl/evaluate.go ready 7ecffd53 size 8278
+== source preview: the note at the reviewed head (event = artifact 65812158)
+Traceback (most recent call last):
+  File "<stdin>", line 20, in <module>
+  File "<stdin>", line 8, in preview
+  File "/Users/hughpyle/.pyenv/versions/3.14.5/lib/python3.14/urllib/request.py", line 187, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hughpyle/.pyenv/versions/3.14.5/lib/python3.14/urllib/request.py", line 493, in open
+    response = meth(req, response)
+  File "/Users/hughpyle/.pyenv/versions/3.14.5/lib/python3.14/urllib/request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "/Users/hughpyle/.pyenv/versions/3.14.5/lib/python3.14/urllib/request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/hughpyle/.pyenv/versions/3.14.5/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/Users/hughpyle/.pyenv/versions/3.14.5/lib/python3.14/urllib/request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+== source preview: the note at the reviewed head (event = artifact 65812158; this resident takes no line parameter)
+  ok  ready bdd32c7a size 62993
+== evidence previews: attachments on artifact 65812158
+  ok  acceptance-fixtures.json ready size 3498 
+  ok  baseline-provenance.json ready size 322 
+  ok  gates.json ready size 627 
+  ok  legacy-controls.go ready size 3409 
+  ok  legacy-controls.log ready size 1013 
+  ok  pinned-confinement.log ready size 647 
+  ok  pinned-confinement_test.go ready size 939 
+  ok  pre-adoption-feedback.txt ready size 268 
+  ok  source-provenance.json ready size 7045 
+  ok  tuple-reducer-source.go.txt ready size 819 
+  ok  validation.json ready size 1316 
+== total exact source/evidence previews ready: 28 of 28
+== the 22 local source links at the head, via the artifact (path resolves at bdd32c7a; line checked against the returned content)
+  ok  jsonataddl/input.go:10 ready bdd32c7a lines 241
+  ok  jsonataddl/input_contract.go:9 ready bdd32c7a lines 121
+  ok  jsonataddl/dialect.go:24 ready bdd32c7a lines 273
+  ok  jsonataddl/evaluate.go:64 ready bdd32c7a lines 218
+  ok  jsonataddl/application.go:76 ready bdd32c7a lines 289
+  ok  jsonataddl/confine.go:20 ready bdd32c7a lines 194
+  ok  jsonataddl/compile.go:448 ready bdd32c7a lines 1098
+  ok  jsonataddl/load.go:1 ready bdd32c7a lines 181
+  ok  jsonataddl/identity.go:22 ready bdd32c7a lines 118
+  ok  internal/projection/projection.go:518 ready bdd32c7a lines 785
+  ok  internal/engine/engine.go:187 ready bdd32c7a lines 1068
+  ok  internal/engine/engine.go:626 ready bdd32c7a lines 1068
+  ok  internal/projection/projection.go:306 ready bdd32c7a lines 785
+  ok  internal/projection/projection.go:428 ready bdd32c7a lines 785
+  ok  internal/mcp/tools.go:95 ready bdd32c7a lines 117
+  ok  jsonataddl/go.mod:8 ready bdd32c7a lines 18
+  ok  docs/reference/resident-upgrade.md:23 ready bdd32c7a lines 134
+  ok  jsonataddl/confine.go:20 ready bdd32c7a lines 194
+  ok  jsonataddl/confine.go:20 ready bdd32c7a lines 194
+  ok  jsonataddl/go.mod:8 ready bdd32c7a lines 18
+  ok  jsonataddl/values.go:51 ready bdd32c7a lines 313
+  ok  jsonataddl/authorizer.go:14 ready bdd32c7a lines 84
+== local links ready and exact at bdd32c7a: 22 of 22
