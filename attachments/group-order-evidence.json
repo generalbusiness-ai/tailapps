@@ -1,0 +1,21 @@
+{
+  "core_head": "c9bdbd32792008e942727248c2cf9ecb30f7d2d8",
+  "module": "github.com/jsonata-go/jsonata v0.0.0-20250709164031-599f35f32e5f",
+  "upstream_source": "https://github.com/jsonata-go/jsonata/blob/599f35f32e5f31297f8b2153b5da44ddbb330e28/v206/jsonata.go#L2676",
+  "upstream_source_sha256": "e095262e6c3062a560130ffd521e34b9a1891b47e5e3d158cbbbb2f756a8c1a2",
+  "actual_map_iteration_line": 2676,
+  "probe": {
+    "command": "go test ./... -run ^TestI7GroupOrderProbe$ -count=1 -v",
+    "result": "PASS0.315s in independent detached current-main c9b core checkout",
+    "evaluations": 1000,
+    "expression": "($x := 0; {\"a\": $x := 1, \"b\": $x})",
+    "confinement": "actual ambient/lexical/AST accepted",
+    "outputs": {
+      "{\"a\":1,\"b\":0}": 154,
+      "{\"a\":1,\"b\":1}": 846
+    },
+    "meaning": "Two actual outcomes, not frequency guarantees; non-reproduction on one randomized run would not prove determinism. No host replay/live execution. Own worktree removed."
+  },
+  "source_read": "evaluateGroupExpression builds groups by outer input-sequence index and inner source key/value-pair index, appends same-expression repeats to group data, throws D1009 for another key expression generating the same key, then ranges Go groups map to evaluate values. Key evaluation and value evaluation are separate phases. The requested decision chooses a prospective deterministic order; it is not a claim of mandated upstream/JavaScript ordering.",
+  "chosen_direction": "Distinct groups evaluate once in first-encounter order from existing key-discovery traversal; retain complete key/group discovery before value phase, lexical scopes, duplicate-key conditions and grouped-input sequence order. Numeric/Unicode-looking key names do not introduce sorting; serialized JSON field order is separate and unchanged. Meter any order-tracking storage and all traversals before work."
+}
