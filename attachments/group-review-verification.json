@@ -1,0 +1,379 @@
+{
+  "head": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78",
+  "base": "19eee8f25b0086b0b1c4e39a45598d1878dac69b",
+  "actual_parent": "19eee8f25b0086b0b1c4e39a45598d1878dac69b",
+  "changed_paths": [
+    "notes/2026-09-05-capability-context-contract.md"
+  ],
+  "callable_section_unchanged": true,
+  "declaration_through_gates_unchanged": true,
+  "behavior_bases": [
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:4b35df409937323e350d2312ab7e78418a4ec624",
+      "path": "jsonataddl/input.go",
+      "live": true,
+      "stale": false,
+      "effective": true,
+      "exact": true,
+      "digest_matches": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:8481b0930148b2ac6452bd2deb42f4d3eddf68d2",
+      "path": "jsonataddl/input_contract.go",
+      "live": true,
+      "stale": false,
+      "effective": true,
+      "exact": true,
+      "digest_matches": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:c559f37cda0ea323f61704ebb32369dd583e04fd",
+      "path": "jsonataddl/dialect.go",
+      "live": true,
+      "stale": false,
+      "effective": true,
+      "exact": true,
+      "digest_matches": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:eecb4b4b5ec6ccf8760574971c1a236a0fe8e8a9",
+      "path": "jsonataddl/evaluate.go",
+      "live": true,
+      "stale": false,
+      "effective": true,
+      "exact": true,
+      "digest_matches": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:e0a136b5d39cd816e2ddba7eb0ce79e3094b549d",
+      "path": "jsonataddl/application.go",
+      "live": true,
+      "stale": false,
+      "effective": true,
+      "exact": true,
+      "digest_matches": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:c6004de1a348d21a47de8819e8459abbc0c20014",
+      "path": "jsonataddl/identity.go",
+      "live": true,
+      "stale": false,
+      "effective": true,
+      "exact": true,
+      "digest_matches": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5f053189530b7fa137bf307edc2967f8f6cbd08c",
+      "path": "jsonataddl/compile.go",
+      "live": true,
+      "stale": false,
+      "effective": true,
+      "exact": true,
+      "digest_matches": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:97fc3ede2cbdb5154fdd9fe4c656b160bfa401dc",
+      "path": "internal/projection/projection.go",
+      "live": true,
+      "stale": false,
+      "effective": true,
+      "exact": true,
+      "digest_matches": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:61abf2ec8d2bd831ec6f73864387c70f2cef65b2",
+      "path": "internal/engine/engine.go",
+      "live": true,
+      "stale": false,
+      "effective": true,
+      "exact": true,
+      "digest_matches": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:624d1573104bb80410494f0e862c9b23b69c6c06",
+      "path": "internal/mcp/tools.go",
+      "live": true,
+      "stale": false,
+      "effective": true,
+      "exact": true,
+      "digest_matches": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:ae3801cfd041232f9a87aa7d9e3cfb05f9066798",
+      "path": "jsonataddl/confine.go",
+      "live": true,
+      "stale": false,
+      "effective": true,
+      "exact": true,
+      "digest_matches": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:007036be14f46653e931b2f75cc0434ca82d0cc8",
+      "path": "jsonataddl/load.go",
+      "live": true,
+      "stale": false,
+      "effective": true,
+      "exact": true,
+      "digest_matches": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:7462d4f4f1998929f2ddc79832ba73b757e3ae6e",
+      "path": "jsonataddl/go.mod",
+      "live": true,
+      "stale": false,
+      "effective": true,
+      "exact": true,
+      "digest_matches": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:bff81b1bd1b944923392e76802f7e04bffdba647",
+      "path": "docs/reference/resident-upgrade.md",
+      "live": true,
+      "stale": false,
+      "effective": true,
+      "exact": true,
+      "digest_matches": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:4b34dd24e29560a022bc86073695eedd12260ffd",
+      "path": "jsonataddl/authorizer.go",
+      "live": true,
+      "stale": false,
+      "effective": true,
+      "exact": true,
+      "digest_matches": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:43766b053958f896ca932ae65d3ec2055a154ada",
+      "path": "jsonataddl/values.go",
+      "live": true,
+      "stale": false,
+      "effective": true,
+      "exact": true,
+      "digest_matches": true
+    }
+  ],
+  "links": [
+    {
+      "path": "jsonataddl/input.go",
+      "line": 10,
+      "exists": true
+    },
+    {
+      "path": "jsonataddl/input_contract.go",
+      "line": 9,
+      "exists": true
+    },
+    {
+      "path": "jsonataddl/dialect.go",
+      "line": 24,
+      "exists": true
+    },
+    {
+      "path": "jsonataddl/evaluate.go",
+      "line": 64,
+      "exists": true
+    },
+    {
+      "path": "jsonataddl/application.go",
+      "line": 76,
+      "exists": true
+    },
+    {
+      "path": "jsonataddl/confine.go",
+      "line": 20,
+      "exists": true
+    },
+    {
+      "path": "jsonataddl/compile.go",
+      "line": 448,
+      "exists": true
+    },
+    {
+      "path": "jsonataddl/load.go",
+      "line": 1,
+      "exists": true
+    },
+    {
+      "path": "jsonataddl/identity.go",
+      "line": 22,
+      "exists": true
+    },
+    {
+      "path": "internal/projection/projection.go",
+      "line": 518,
+      "exists": true
+    },
+    {
+      "path": "internal/engine/engine.go",
+      "line": 187,
+      "exists": true
+    },
+    {
+      "path": "internal/engine/engine.go",
+      "line": 626,
+      "exists": true
+    },
+    {
+      "path": "internal/projection/projection.go",
+      "line": 306,
+      "exists": true
+    },
+    {
+      "path": "internal/projection/projection.go",
+      "line": 428,
+      "exists": true
+    },
+    {
+      "path": "internal/mcp/tools.go",
+      "line": 95,
+      "exists": true
+    },
+    {
+      "path": "jsonataddl/go.mod",
+      "line": 8,
+      "exists": true
+    },
+    {
+      "path": "docs/reference/resident-upgrade.md",
+      "line": 23,
+      "exists": true
+    },
+    {
+      "path": "jsonataddl/confine.go",
+      "line": 20,
+      "exists": true
+    },
+    {
+      "path": "jsonataddl/values.go",
+      "line": 51,
+      "exists": true
+    },
+    {
+      "path": "jsonataddl/authorizer.go",
+      "line": 14,
+      "exists": true
+    }
+  ],
+  "previews": [
+    {
+      "path": "docs/reference/resident-upgrade.md",
+      "status": "ready",
+      "exact": true,
+      "commit": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78"
+    },
+    {
+      "path": "internal/engine/engine.go",
+      "status": "ready",
+      "exact": true,
+      "commit": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78"
+    },
+    {
+      "path": "internal/mcp/tools.go",
+      "status": "ready",
+      "exact": true,
+      "commit": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78"
+    },
+    {
+      "path": "internal/projection/projection.go",
+      "status": "ready",
+      "exact": true,
+      "commit": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78"
+    },
+    {
+      "path": "jsonataddl/application.go",
+      "status": "ready",
+      "exact": true,
+      "commit": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78"
+    },
+    {
+      "path": "jsonataddl/authorizer.go",
+      "status": "ready",
+      "exact": true,
+      "commit": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78"
+    },
+    {
+      "path": "jsonataddl/compile.go",
+      "status": "ready",
+      "exact": true,
+      "commit": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78"
+    },
+    {
+      "path": "jsonataddl/confine.go",
+      "status": "ready",
+      "exact": true,
+      "commit": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78"
+    },
+    {
+      "path": "jsonataddl/dialect.go",
+      "status": "ready",
+      "exact": true,
+      "commit": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78"
+    },
+    {
+      "path": "jsonataddl/evaluate.go",
+      "status": "ready",
+      "exact": true,
+      "commit": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78"
+    },
+    {
+      "path": "jsonataddl/go.mod",
+      "status": "ready",
+      "exact": true,
+      "commit": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78"
+    },
+    {
+      "path": "jsonataddl/identity.go",
+      "status": "ready",
+      "exact": true,
+      "commit": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78"
+    },
+    {
+      "path": "jsonataddl/input.go",
+      "status": "ready",
+      "exact": true,
+      "commit": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78"
+    },
+    {
+      "path": "jsonataddl/input_contract.go",
+      "status": "ready",
+      "exact": true,
+      "commit": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78"
+    },
+    {
+      "path": "jsonataddl/load.go",
+      "status": "ready",
+      "exact": true,
+      "commit": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78"
+    },
+    {
+      "path": "jsonataddl/values.go",
+      "status": "ready",
+      "exact": true,
+      "commit": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78"
+    },
+    {
+      "path": "notes/2026-09-05-capability-context-contract.md",
+      "status": "ready",
+      "exact": true,
+      "commit": "a3fed8b8df0c0cd57e3c9e92bb229bea20dd0e78"
+    }
+  ],
+  "baseline_probe": {
+    "command": "GOWORK=off go test -count=1 -run ^TestI7GroupOrderProbe$ -v .",
+    "outcomes": {
+      "a1b0": 97,
+      "a1b1": 903
+    },
+    "count": 1000,
+    "result": "passed",
+    "scope": "actual current confinement and pinned evaluator; not runtime meter, host replay or future deterministic implementation proof"
+  },
+  "ci": {
+    "34075944214": "exact head success all verify steps",
+    "34075944256": "exact head release-dry-run success; release job skipped"
+  },
+  "ordinary_adoption": "501d65f9fa47f5187e4d2fef2e32d6aa2c28e7e0 effective before review4167",
+  "candidate_live": true,
+  "candidate_world_flag": false
+}
