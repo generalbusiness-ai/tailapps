@@ -1,0 +1,14 @@
+{"calls":[],"error":"","input":[1,2],"name":"lexical-key-extension-free","output":"{\"2\":3,\"3\":3}","source":"($x := 0; {$string($x := $x+1) \u0026 (false ? \"never\" : \"\"): $x})"}
+{"calls":[],"error":"","input":[1,2],"name":"lexical-key-effects","output":"{\"2\":3,\"3\":3}","source":"($x := 0; {$string($x := $x+1) \u0026 (false ? $probe(\"never\") : \"\"): $x})"}
+{"calls":["same","same"],"error":"","input":[1,2],"name":"two-sites","output":"[\"same\",\"same\"]","source":"[$probe(\"same\"),$probe(\"same\")]"}
+{"calls":[],"error":"","input":[1,2],"name":"false-branch","output":"\"ok\"","source":"false ? $probe(\"unused\") : \"ok\""}
+{"calls":["item","item"],"error":"","input":[1,2],"name":"item-path","output":"[\"item\",\"item\"]","source":"$.($probe(\"item\"))"}
+{"calls":["key","key","key"],"error":"","input":[1,2],"name":"constructor-key","output":"{\"key\":[1,2]}","source":"{$probe(\"key\"):$}"}
+{"calls":["probe-only"],"error":"","input":[1,2],"name":"whole-only-provider","output":"{\"k\":[1,2]}","source":"{$count($)\u003e1 ? $probe(\"probe-only\") : \"k\":$}"}
+{"calls":["value"],"error":"","input":[1,2],"name":"group-value","output":"{\"k\":\"value\"}","source":"{\"k\":$probe(\"value\")}"}
+{"calls":[],"error":"T1003: key in object structure must evaluate to a string; got: 7","input":[1,2],"name":"mixed-key-precheck-refusal","output":"","source":"{$count($)\u003e1 ? 7 : $probe(\"k\"):$}"}
+{"calls":[],"error":"T1003: key in object structure must evaluate to a string; got: 7","input":[1,2],"name":"mixed-key-legacy-control","output":"","source":"{$count($)\u003e1 ? 7 : \"k\":$}"}
+{"calls":[],"error":"T1003: key in object structure must evaluate to a string; got: 7","input":[1,2],"name":"unselected-extension-syntax","output":"","source":"{false ? $probe(\"unused\") : ($count($)\u003e1 ? 7 : \"k\"):$}"}
+{"calls":["k","k"],"error":"","input":[],"name":"empty-key","output":"{}","source":"{$probe(\"k\"):$}"}
+{"calls":["k","k"],"error":"","input":null,"name":"null-key","output":"{\"k\":null}","source":"{$probe(\"k\"):$}"}
+{"calls":["whole"],"error":"T1003: key in object structure must evaluate to a string; got: 7","input":[1,2],"name":"invalid-item-key","output":"","source":"{$count($)\u003e1 ? $probe(\"whole\") : 7:$}"}
