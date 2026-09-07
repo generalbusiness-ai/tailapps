@@ -1,7 +1,0 @@
-=== RUN   TestResourceNumericArchitectureProbe
-    meter_evaluate_test.go:184: source=$round(1.25, 0/0) output=1 error=<nil> used={Work:83953386 Allocation:410464 Depth:0}
-    meter_evaluate_test.go:184: source=$round(1.25, 0) output=1 error=<nil> used={Work:83953252 Allocation:407264 Depth:0}
-    meter_evaluate_test.go:184: source=$round(1.25, -9223372036854775808) output=0 error=<nil> used={Work:83953252 Allocation:407264 Depth:0}
---- PASS: TestResourceNumericArchitectureProbe (0.00s)
-PASS
-ok  	github.com/generalbusiness-ai/jsonata/v206	0.345s
