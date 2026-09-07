@@ -1,8 +1,11 @@
 ---
 date: 2026-09-05
-status: Adopted I7 baseline and callable amendment; group-order amendment pending ordinary adoption. No runtime change is delivered by this note.
+status: Adopted I7 baseline, callable and group-order amendments; tuple value amendment pending ordinary adoption. No runtime change is delivered by this note.
 author: builder
 rests_on:
+  - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:46ea04c2b168dd54c173579532c593fcf6f0a8d9
+  - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:4357cae21cccb883131fe9ad679696ad14ac14a5
+  - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5f18c7a25e3db4273f34173d61ef343a4a23561e
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:155ce10aab90af9a224f36e9893180c1a5e08e1f
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:d57c7611630a752c260c48c7300007a14070e735
   - git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:4b35df409937323e350d2312ab7e78418a4ec624
@@ -39,12 +42,13 @@ through proposal `b9b7fb7c` and ratification `2b8cd0be`; Checker approved it in
 `f087b14c`. It landed through receipt `fe1e8d8e` and publication `d57c7611` under
 #4135. Its policy below is unchanged.
 
-Hugh's child request #4144 commissions the group-order amendment below. That
-exact amendment still needs an ordinary proposal and Hugh's ratification
-before independent Checker review. The commission chooses the direction;
-technical review and source landing do not adopt policy. All four stages and
-eight admission gates remain. Neither amendment replaces or partially closes
-the original I7 implementation.
+Hugh adopted the group-order amendment under #4144 through proposal
+`43168a26` and ratification `501d65f9`. It landed at `3a593721` through receipt
+`5396efab` and publication `4357cae2`. Request #4182 now commissions the narrow
+tuple value amendment below. It still needs an ordinary proposal and Hugh's
+ratification before independent Checker review. A commission or technical
+approval does not adopt policy. All four stages and eight admission gates
+remain; these source amendments do not close the original I7 implementation.
 
 Repository source links open at the immutable head of this note's owning
 artifact. Its source-provenance attachment records the earlier exact revisions
@@ -122,8 +126,8 @@ reports its own cost nor a timer around it supplies that guarantee.
 Consequently, no production extension is admitted on the current evaluator.
 The implementation first needs a narrowly maintained instrumentation patch to
 this evaluator, covering its admitted subset and codecs. Preserve its language
-except for the explicit callable-boundary and group-order compatibility
-changes below; preserve
+except for the explicit callable-boundary, group-order and proposed tuple-value
+compatibility changes below; preserve
 the SQLite pin. A new exact evaluator pin is an essential, corpus-gated change
 only after that patch proves the bounds below; no unreviewed replacement,
 `replace` directive or timer-only fallback qualifies. If this cannot be done,
@@ -236,8 +240,9 @@ Preserve two phases, with this order:
    retains the existing duplicate-key error in the discovery phase; it is
    neither overwrite nor a second value evaluation.
 
-Keep existing undefined-key, invalid-key-type, empty-input and tuple/reduce
-behavior, lexical frames and nested-block scope. Numeric-looking and Unicode
+Keep existing undefined-key, invalid-key-type and empty-input behavior, lexical
+frames and nested-block scope. The proposed tuple value amendment below
+qualifies only tuple/group container alias effects in this preservation rule. Numeric-looking and Unicode
 keys follow encounter order, not numeric or lexical sorting. This order governs
 semantic evaluation; JSON object serialization and canonical encoding remain
 separate. Preserve the adopted callable policy and all syntax refusals.
@@ -264,7 +269,7 @@ failure, including these controls:
 | Repeat one key through the same key expression, interleaved with another key | One value evaluation per key in first-encounter order; retain grouped input sequence order and the original first slot. |
 | Different key expressions collide | The existing duplicate-key refusal occurs during discovery, before group values run. |
 | `($x := 0; {"a": ($x := 1), "b": $x})` | Preserve `a=1,b=0`: the nested block owns its binding. |
-| Undefined or invalid keys; empty input; tuple/reduce and nested groups | Preserve their existing results, key checks and scope rules; complete discovery before values. |
+| Undefined or invalid keys; empty input; tuple/reduce and nested groups | Preserve key checks and scope rules; complete discovery before values. Preserve values except for the explicit alias exception in the proposed tuple value amendment. |
 | Keys such as `"10"` then `"2"`, or Unicode keys in reverse lexical order | An order-sensitive value expression follows encounter order; sorting serialized fields proves nothing about evaluation order. |
 
 Use positive controls that distinguish the chosen order. Intentionally reverse
@@ -284,6 +289,196 @@ component or automatic reset/migration. After exact ordinary adoption, all
 runtime implementation and remaining stage-1 conditions stay on #4043 and
 promise `5cfedb59`. This source amendment authorizes no evaluator/module
 publication, production provider admission, resident operation, reset or release.
+
+## Tuple value amendment for adoption
+
+Recommend **value-semantic accumulation**: grouping and tuple reduction must
+not mutate their inputs or another field's value through a shared container.
+Keep the value and nesting rules below; array backing capacity and Go-map
+traversal must not choose a JSON result. This is one proposed choice, not an
+adoption or delivered evaluator change.
+
+### Evidence and the alternative
+
+At examined Tailapps main `3a593721231326d589541113add606b270490e35`, the
+[current confinement](jsonataddl/confine.go:20) and the
+[pinned module](jsonataddl/go.mod:8) accept:
+
+```jsonata
+($w := [[0,1,2]];
+ $rows := [{"a":$w,"b":$w},{"a":["A"],"b":["B"]}];
+ $rows.a@$a.b@$b{"one":{"a":$a,"b":$b}})
+```
+
+The unchanged pinned [tuple reducer](https://github.com/jsonata-go/jsonata/blob/599f35f32e5f31297f8b2153b5da44ddbb330e28/v206/jsonata.go#L2706)
+shallow-copies the first tuple and appends subsequent field values into those
+borrowed arrays. Here `a` and `b` share a length-3, capacity-4 backing array.
+Appending either field writes slot 3; the later field overwrites both visible
+results. Two 1,000-execution public-evaluator trials produced all-A/all-B counts
+136/864 and 148/852. Hugh independently reproduced 155/845 and 162/838.
+Breakdown `5f18c7a2` (#4179) retains the confinement probe, logs, unchanged
+reducer and source provenance as six attachments. These runs prove existing
+variation, not outcome probabilities, future determinism or host admission.
+
+The proposed result is exactly:
+
+```json
+{"one":{"a":[0,1,2,"A"],"b":[0,1,2,"B"]}}
+```
+
+The alternative is to traverse fields in a fixed order while retaining borrowed
+array appends. Ascending `a,b` produces all-B; descending `b,a` produces all-A
+for the capacity-4 control. Both produce separate A/B arrays at capacity 3 or
+with independent backing arrays. Fixing traversal therefore still lets spare
+capacity choose the result and can overwrite a caller's longer alias into the
+same array. Reject that alternative. Choosing either historical winner would
+encode an allocation accident into the language's JSON-value contract.
+
+There is a second affected path: the pinned
+[group value phase](https://github.com/jsonata-go/jsonata/blob/599f35f32e5f31297f8b2153b5da44ddbb330e28/v206/jsonata.go#L2676)
+reduces a single tuple by returning its original map, then deletes `@` from it.
+The new rule extracts context without deleting a member of an input tuple.
+An unchanged function body alone is therefore insufficient compatibility proof.
+
+### Complete value rule
+
+Process input tuples in encounter order. Field processing within a tuple uses
+ascending raw UTF-8 field-name bytes, without locale or numeric coercion.
+This order governs reduction bookkeeping, copying and failure accounting;
+it does not reorder source expressions, group discovery or group values.
+Field values have already been evaluated. No callback runs while enumerating,
+comparing or copying them.
+
+For each field, presence is distinct from value: a present undefined binding
+shadows its parent just as before; a missing field contributes nothing.
+
+1. The first occurrence of a field supplies its value, with mutable containers
+   copied under the ownership rule below. An absent field in a later tuple
+   leaves that accumulated value alone. A field first seen in a later tuple
+   follows the same first-occurrence rule. Tuple fields are already unique
+   object members; this does not change object-construction duplicate rules.
+2. On each later occurrence, if the accumulated value is an ordinary array,
+   extend it by **one element**, the incoming value. Otherwise make a two-element
+   array containing the accumulated value and the incoming value. An incoming
+   array is one nested element, not a spread. Thus `1` then `[2,3]` gives
+   `[1,[2,3]]`; `[1,2]` then `[3,4]` gives `[1,2,[3,4]]`; `[]` then `[]` gives
+   `[[]]`. Three scalars `1,2,3` give `[1,2,3]`. Do not add a separate hidden
+   accumulator tag that changes these existing array rules.
+3. A singleton tuple retains its field values and context. Read `@` as the value
+   expression's context; omit it only from the newly created lexical frame.
+   Never delete it from an input or sibling map. Empty reduction input remains
+   empty. The legacy helper's non-array pass-through, and ignoring non-object
+   members in a nonempty reduction array, retain their value results; any
+   mutable value passed onward still needs the ownership protection below.
+   This does not broaden which shapes the compiler or tuple producer admits.
+4. Same-key grouping retains the adopted first-encounter slot and accumulates
+   inputs in encounter order. Keep the existing shape rule there too: an
+   existing ordinary array gains the next input as one element; otherwise
+   combine the two inputs into an array. Isolate borrowed containers before
+   accumulation. This includes non-tuple grouping. Finish all key discovery
+   before reducing/evaluating group values, once per group in first-encounter
+   order. Different key expressions colliding still raise `D1009` during
+   discovery. Undefined keys, `T1003` checks and preliminary constructor checks
+   keep their existing evaluations, scope and selected errors.
+5. Apply these rules recursively in nested tuple/group evaluation. Retain the
+   distinction between ordinary arrays and evaluator sequence/tuple wrappers,
+   including their metadata and existing singleton collapse behavior. Do not
+   reinterpret an array-valued field as another tuple stream. Repeated evaluation
+   of the same expression and unchanged input must start from unchanged input
+   values; independent sessions retain their existing isolation.
+
+### Ownership and deterministic charging
+
+Copy all mutable array, sequence and object containers recursively when a
+field or group first adopts a borrowed value, and when appending an incoming
+value. Preserve wrapper metadata. A shared source subgraph is copied separately
+for each owning field/group; do not memoize across those ownership boundaries.
+Nested containers must not provide a route back to an input or sibling value.
+Fresh outer array storage holds each extension; it may carry forward already
+owned descendants of that same accumulator without recopying them. No observer
+or other owner may see a later mutation through those carried descendants.
+
+Immutable scalars, strings and approved immutable callable identities may be
+shared. A callable's established lexical environment is not a JSON container
+to clone: preserve lexical binding and same-session closure semantics under the
+adopted callable policy. This amendment grants no new callable, input shape,
+cycle, native value or host capability. Continue to reject inadmissible input
+cycles at admission; recursive copying has balanced depth reservations and a
+sticky bounded failure if a defective internal graph cycles. It cannot hang or
+invoke a callback. Results never expose the private copying machinery.
+
+Every enumeration, key comparison/lookup, slot insertion, array growth, scalar
+or container copy, and recursive entry is prepaid under the event's existing
+work, allocation and depth budgets. Check count/byte arithmetic and reserve
+storage before allocating. Copy cost includes each occurrence, not only each
+unique pointer; a shared graph is not a free copy. Fail before a disallowed
+operation and publish no partial result. Earlier charges and the first fatal
+resource error remain sticky; no refund, scope reset or fresh budget on retry.
+
+Use the fixed field order for recursive object copies too. If obtaining that
+order needs a temporary vector and sorting, reserve enumeration, all scratch
+storage and a proven worst-case comparison/byte-work bound **before** collecting
+or sorting. Base that reservation on bounded field counts and the admitted key
+byte limit, not randomized comparison counts. Account for any extra work used
+to establish those bounds. Sorting allocation and comparisons cannot run first
+and be charged afterwards. Tuple-field insertion order and backing capacity
+must not change the logical charge schedule or selected resource failure.
+The exact cost constants and their four-build physical mapping remain I7
+implementation/admission proof obligations; this note supplies neither.
+
+### Compatibility and finite acceptance matrix
+
+Preserve old value results where container sharing was unobservable, including
+scalar/array nesting, missing fields, lexical shadowing and pure nested groups.
+Intentionally change results or later observations that depended on shared
+backing storage, cross-field/group mutation, or deletion from an input tuple.
+This includes an alias-dependent result that happened to be stable across map
+trials. Earlier group-order and callable exceptions remain as adopted. There
+is no blanket tuple/group refusal, new identity component or relaxation of
+complete pre-admission and runtime failure contracts.
+
+The following is a finite minimum corpus. Its fixture JSON and unchanged
+legacy controls accompany the candidate artifact. It is a requirement for the
+later exact evaluator head, not a claim that this source note executes it.
+
+| Case | Required result and distinguishing check |
+|---|---|
+| Admitted public reproducer above | Exact separate A/B result; retain both observed legacy outcomes. Run one compiled expression repeatedly, then separate expressions/sessions. |
+| Shared `[0,1,2]`, capacity 3 and 4; independent arrays at both capacities | All four produce `a=[0,1,2,"A"], b=[0,1,2,"B"]`. Force both field orders in the retained legacy control: capacity 4 distinguishes the alternatives. |
+| Caller has a length-4 alias including a sentinel at slot 3 | Sentinel remains unchanged after reduction; caller input and sibling field snapshots remain byte-equal. |
+| First/middle/last missing fields, present undefined and null; three repeated names across tuples | Missing contributes nothing; present values use the two accumulation rules. Undefined still shadows; no conflation with missing or null. |
+| Scalar then array; array then array; empty arrays; nested array/object fields | Exact examples above; nested values retain their shape. No accidental spread, flattening, wrapper conversion or deep-copy alias to input. |
+| Shared nested arrays/objects, overlapping slices and repeated reference inside one input | Preserve values and detach each owning result from all input/sibling mutable descendants. An instrumented write through one result cannot change the others; no production mutation API is added. |
+| Singleton tuple with `@`; repeated evaluation of that same tuple | Same context both times, original `@` remains; new lexical frame excludes only its own context slot. |
+| Same-key interleaved tuple and non-tuple groups; nested groups | First group slot and input encounter order persist. One value evaluation per key; independently shared input containers remain unchanged. |
+| Reversed and shuffled field insertion/enumeration; names `10`, `2`, `é`, `日本` | Same values, canonical reduction/copy order, charges and selected failure; source group pair reversal still has its separately adopted effect. |
+| Key collision, invalid/undefined keys and preliminary check errors | Preserve discovery-phase `D1009`/`T1003` and existing ordinary-error selection; no group value runs before discovery finishes. |
+| Exact and one-below work/allocation/depth limits at enumeration, lookup, growth, recursive copy and value entry | Record actual operations/allocations and no operation past its bound. A second evaluation shares event totals; ordinary errors do not reset them and fatal errors stay sticky. |
+| Actual omitted-copy, omitted-order and omitted-charge variants | Borrowed append must expose the capacity-4/sentinel or nested-alias defect. Reverse/shuffle copy order must change an instrumented traversal/error or budget boundary. Removing each charge must permit a measured otherwise-blocked operation/allocation. Detect omitted singleton isolation by the lost `@` control. |
+
+For omission tests, change the actual later implementation and show the positive
+control and failing mutant at the same limits. A synthetic counter that never
+observes the guarded operation is insufficient. Repeating map trials without
+seeing a difference, sorting serialized output, or checking only final JSON
+cannot prove ownership, ordering or pre-operation bounds.
+
+No semantic choice is left to the implementer in the cases above. Physical cost
+constants, concrete private container layout and exhaustive admitted-path
+coverage are still unproved implementation obligations, not discretion to
+change these outcomes. Any newly discovered admitted case that conflicts with
+this rule must be named on the live I7 commitment and resolved by an explicit
+source decision before implementing a different result.
+
+Revalidate stored programs under the changed evaluator/corpus identity before
+replay writes. Refusal leaves projection and frontier unchanged. Account for
+the change in the already-required `core.jsonata`, grammar, dialect and corpus
+versions wherever affected; retain exactly ten identity components and
+historical identity recognition. Stored-identity refusal and the separate
+acknowledged reset/activation gate still apply. Adoption permits no automatic
+migration, actual reset, module publication/pin/replace, provider admission,
+installation or live service change. Runtime implementation and all remaining
+I7 gates stay on #4043 and promise `5cfedb59`. This child delivers only the
+ordinary-adopted, independently reviewed source amendment.
 
 ## Declaration and immutable loading
 
