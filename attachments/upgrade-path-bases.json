@@ -1,0 +1,44 @@
+{
+  "head": "b583cdc4c3bcb1f6359f3298c067ae2298b02ca7",
+  "bases": [
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:12ce3e5271d36f399c9a9be5c2a5c2a3a76da4d2",
+      "path": "scripts/release_test.go",
+      "commit": "a3b29b3becdd0c298f5e200a9f6f279a1db18b71",
+      "stale": false,
+      "retired": false,
+      "describes_superseded_world": false,
+      "main_ancestor": true,
+      "byte_equal_current": true,
+      "sha256": "e5d1591c6e0ed3b5e7093ec622786dbb58f9050d0526edd35fa9996685753fc7"
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:edd6c2fd2d0cdfb516b1acdd560f8f354660fb4f",
+      "path": "scripts/upgrade.sh",
+      "commit": "4eb742948ed8802397a710129d2c2ec5a744472b",
+      "stale": true,
+      "retired": false,
+      "describes_superseded_world": false,
+      "stale_because": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:fc90f210a69a8bf4faafc65af6edd061e37e5176",
+      "stale_because_path": "scripts/release_test.go",
+      "main_ancestor": true,
+      "byte_equal_current": true,
+      "sha256": "af44031f202a783fecbf72c126ea9eaf74109f190776a6206c91e80cff5ba83a"
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:64bd66b7555d530e8ce8ab656ef02cda9cedf6d0",
+      "path": "scripts/upgrade.sh",
+      "commit": "9be94e8c697d44404ad1a85e0d8e91eb1f5e9e5f",
+      "stale": true,
+      "retired": false,
+      "describes_superseded_world": false,
+      "stale_because": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:f09e335b0303fc14100003234c333fbefbb9a922",
+      "main_ancestor": true,
+      "byte_equal_current": false,
+      "sha256": "c491512bb72d0ed43d97070c347abc4e594adaaa36f96f46a28d276d52ed25e9"
+    }
+  ],
+  "historical_reviewed_upgrade_gap_closure_head": "854f9239501a129584dabe11d981bd214fa2faf3",
+  "historical_main_ancestor": true,
+  "historical_upgrade_bytes_equal_current": true
+}
