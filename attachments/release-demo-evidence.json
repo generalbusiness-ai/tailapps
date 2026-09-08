@@ -1,0 +1,83 @@
+{
+  "checked_utc": "2026-09-08T07:02:14.802308+00:00",
+  "main": "b583cdc4c3bcb1f6359f3298c067ae2298b02ca7",
+  "frontier": {
+    "genesis": "da732b0bdaad4426ed4ad666b892d8a7c68f625f",
+    "head": "c3eab3eaa8571045c4347dba99ceb2c78e19520d",
+    "depth": 4266
+  },
+  "original_request": {
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:61ce7c6662e0f10bd5fdbf801bc72c1b383fa23a",
+    "sequence": 2270,
+    "text": "Builder: establish signed, versioned GitHub release distribution for Tailapps.",
+    "conditions": "At a reviewed exact head, vX.Y.Z tag releases rerun the existing Go test, race, vet, and demo gates; publish verified darwin/amd64, darwin/arm64, linux/amd64, and linux/arm64 archives plus LICENSE, NOTICE, SHA256SUMS, GitHub provenance attestations, and a version-pinned install-script asset. Add a machine-readable tailapp version command and release ldflag stamping so a checkout-built release reports its tag, revision, and source identity. Keep the installer as a release consumer, not a source-build path; test archive naming, checksum generation, and version stamping. Do not publish a release, tag, or alter agent telemetry configuration."
+  },
+  "retirement": {
+    "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:8a8caab45790dc059a993092c8fa9fd738317b91",
+    "timestamp": 1788552393,
+    "actor": "f7448db3afb12995a3b232dbaccbc4511d4c9e0fad25830d1f171ac4533bd673",
+    "type": "supersede",
+    "target": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:61ce7c6662e0f10bd5fdbf801bc72c1b383fa23a",
+    "text": "As original requester, retire this historical delivery obligation at builder's explicit reconciliation request e293c91c. Its independently approved and ratified exact candidate 867c4882fb2658d07c52a393c54172f1ea681a6d is already an ancestor of current main be621e8ae3eb12daba6a59e7e7aa147106a36ede, independently verified by git merge-base --is-ancestor; origin/main matches that head. This is administrative closure of an already-incorporated result, not abandonment of the implementation, a new approval, or a second merge. Source and existing artifacts remain unchanged. The present fold may label this retired commitment cancelled; the evidence here records that its reviewed code is contained in main.",
+    "verdict": "effective",
+    "reason": "authorized supersession"
+  },
+  "finding": "Current release job verifies test/race/vet but never invokes demo; original reviewed867c4882 workflow also omitted it. Branch CI invokes demo but is triggered for main/PR, not tag, and release gate requires ancestry rather than a successful exact-head CI conclusion. Thus original condition that tag releases rerun demo remains undelivered.",
+  "existing_delivery_preserved": "Four-architecture archive, pinned installer, version/provenance and signing work is not reopened. Later dependency and module changes remain intact. This is one release-gate residual, not a claim that all release/setup/upgrade conditions have been audited.",
+  "actual_demo": {
+    "command": "GOWORK=off ./scripts/demo.sh",
+    "exit": 0,
+    "log": "Example projection: OTLP span and metric-point counts\n{\n  \"columns\": [\n    {\n      \"name\": \"source\",\n      \"type\": \"TEXT\"\n    },\n    {\n      \"name\": \"signal\",\n      \"type\": \"TEXT\"\n    },\n    {\n      \"name\": \"event_name\",\n      \"type\": \"TEXT\"\n    },\n    {\n      \"name\": \"event_count\",\n      \"type\": \"INTEGER\"\n    }\n  ],\n  \"complete\": true,\n  \"delivery_head\": 21,\n  \"ineffective_records\": 0,\n  \"interpreted_position\": 21,\n  \"result_bytes\": 75,\n  \"revision\": \"sha256:6c2801cd6a883607373b39a7a6cc0767acf0ad313a9a4a3a2faff50d92346874\",\n  \"rows\": [\n    [\n      \"demo-agent\",\n      \"metric\",\n      \"agent.tokens\",\n      1\n    ],\n    [\n      \"demo-agent\",\n      \"span\",\n      \"agent.run\",\n      1\n    ]\n  ],\n  \"schemas\": null,\n  \"tailapp\": \"signal-counts\",\n  \"truncated\": false\n}\nTailapp demo passed: three OTLP signals, one-shot installs, cross-harness guard, cost, and privacy-preserving activity analytics, joined exports, ineffective diagnostics, runtime metrics, CLI, and MCP.\n",
+    "scope": "Local current-main build and disposable resident/isolated Tailapp home; public root dependency graph; actual CLI/MCP installs, three OTLP signals and expected projections. No production resident or telemetry settings changed; no GitHub tag execution, archive stamping test, attestation, tag or publication."
+  },
+  "bases": [
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5ee15916c3de42606986ff5702b5b2e134f12567",
+      "path": "scripts/build.sh",
+      "commit": "a3b29b3becdd0c298f5e200a9f6f279a1db18b71",
+      "stale": false,
+      "retired": false,
+      "describes_superseded_world": false,
+      "ancestor_main": true,
+      "byte_equal_main": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:0f9b904bebd0b333b0a5c33c18a3fe8d37618d6a",
+      "path": ".github/workflows/release.yml",
+      "commit": "a3b29b3becdd0c298f5e200a9f6f279a1db18b71",
+      "stale": false,
+      "retired": false,
+      "describes_superseded_world": false,
+      "ancestor_main": true,
+      "byte_equal_main": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:90d38b22c8fdfcba739bb25490167871f1110325",
+      "path": ".github/workflows/ci.yml",
+      "commit": "a3b29b3becdd0c298f5e200a9f6f279a1db18b71",
+      "stale": false,
+      "retired": false,
+      "describes_superseded_world": false,
+      "ancestor_main": true,
+      "byte_equal_main": true
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:a76af595318388c5c68b47d617aa2ee8c37f0ff4",
+      "path": "scripts/demo.sh",
+      "commit": "a838bfc9a1c60312fa8f4e0ad913cb72d19d9318",
+      "stale": true,
+      "retired": false,
+      "describes_superseded_world": false,
+      "stale_because_truncated": true,
+      "ancestor_main": true,
+      "byte_equal_main": true
+    }
+  ],
+  "source_sha256": {
+    ".github/workflows/ci.yml": "f5c863b7f182e92ab76cf2703a3f27de8842b23bfdd430221132d569afd68315",
+    "scripts/build.sh": "f5dd3906b07abce1b08226bec195bebff114fbad20acf5d19f6c443c52b3b6f2",
+    ".github/workflows/release.yml": "11766642333b0a8c6421620ec5af80ea4783d2cb238207166b1edbb168aacb2a",
+    "scripts/demo.sh": "637e283a54e6393e579ca56c97d2ab376b6ac28b445ae14fe4012225b1f37ba9"
+  },
+  "duplicate_search": "Historical request texts/conditions through current saved Tailapp4266 scanned for release/demo work; known later module, portability and public-resolution deliveries are distinct. Current sweep4266 no new durable event. No current task found restoring this omitted tag gate."
+}
