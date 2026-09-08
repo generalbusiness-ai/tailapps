@@ -1,0 +1,36 @@
+{
+  "head": "b583cdc4c3bcb1f6359f3298c067ae2298b02ca7",
+  "source_sha256": "24b746f41986f7bd040d4f261122c16472dc66ecd8aecb697eb5ef5fc7286e1e",
+  "method": "Complete pinned installer, local file:// archive with actual checksum verification, stub binary and cosign, fake launchctl that always refuses, actual plist validation. All install/service paths temporary; no real service or app writes. No cryptographic verification claimed.",
+  "results": [
+    {
+      "case": "service_unavailable",
+      "exit_code": 1,
+      "stdout": "installed Tailapps 9.9.9 at /var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/planner-installer-remedy-db35qrmx/service_unavailable/local/lib/tailapp/tailapp-9.9.9\nno bundles were requested; no resident was started.\n",
+      "stderr": "persistent setup is incomplete because no usable user service manager was available; the binary was retained.\n",
+      "binary_retained": true,
+      "binary_calls": [
+        "version",
+        "init"
+      ],
+      "mock_service_calls": [
+        "print gui/501/ai.generalbusiness.tailapp",
+        "bootstrap gui/501 /var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/planner-installer-remedy-db35qrmx/service_unavailable/home/Library/LaunchAgents/ai.generalbusiness.tailapp.plist"
+      ],
+      "foreground_command_present": false
+    },
+    {
+      "case": "explicit_no_service",
+      "exit_code": 0,
+      "stdout": "installed Tailapps 9.9.9 at /var/folders/2x/wylr59t17ds36l1l7ng25y7w0000gn/T/planner-installer-remedy-db35qrmx/explicit_no_service/local/lib/tailapp/tailapp-9.9.9\nno bundles were requested; no resident was started.\n",
+      "stderr": "",
+      "binary_retained": true,
+      "binary_calls": [
+        "version",
+        "init"
+      ],
+      "mock_service_calls": [],
+      "foreground_command_present": false
+    }
+  ]
+}

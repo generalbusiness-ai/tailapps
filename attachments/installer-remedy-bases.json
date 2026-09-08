@@ -1,0 +1,47 @@
+{
+  "head": "b583cdc4c3bcb1f6359f3298c067ae2298b02ca7",
+  "bases": [
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:12ce3e5271d36f399c9a9be5c2a5c2a3a76da4d2",
+      "path": "scripts/release_test.go",
+      "commit": "a3b29b3becdd0c298f5e200a9f6f279a1db18b71",
+      "stale": false,
+      "retired": false,
+      "describes_superseded_world": false,
+      "byte_equal_current": true,
+      "main_ancestor": true,
+      "sha256": "e5d1591c6e0ed3b5e7093ec622786dbb58f9050d0526edd35fa9996685753fc7"
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:d7f4d304f40159f340087b18651c4184eba7f035",
+      "path": "scripts/install.sh",
+      "commit": "4eb742948ed8802397a710129d2c2ec5a744472b",
+      "stale": true,
+      "retired": false,
+      "describes_superseded_world": false,
+      "stale_because": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:fc90f210a69a8bf4faafc65af6edd061e37e5176",
+      "stale_because_path": "scripts/release_test.go",
+      "byte_equal_current": true,
+      "main_ancestor": true,
+      "sha256": "24b746f41986f7bd040d4f261122c16472dc66ecd8aecb697eb5ef5fc7286e1e"
+    }
+  ],
+  "original_condition_request": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:da762593ef8feea5cf5bb47eb19abe912f75bd37",
+  "historical_status": {
+    "request": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:da762593ef8feea5cf5bb47eb19abe912f75bd37",
+    "requester": "d50369731a941ee752b3a07cd33b8c7e9b4dbf1ead69532463a3df851bf2bd2f",
+    "performer": "00721374a520eabbbd4ded64dd018110f47545ff20112bee83c75f478e15f818",
+    "promise": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:e8e76eb0faaf1626ba024f24355ff64b71b94412",
+    "report": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:aca86aa390be1303ed4c2599cc045657fb850581",
+    "status": "satisfied",
+    "stale": true,
+    "target_repo": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f",
+    "target_ref": "refs/heads/main",
+    "legacy": true,
+    "approval": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:a192f3258d36bf7e350af5ffd750d44d778dc951",
+    "candidate": "c234cbf661f37b1af9b95e330886b0a953ece525",
+    "terminal": "landed",
+    "landing_receipt": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:8f107c92b6f3bcf2ccf0221f6794d56972e0d020"
+  },
+  "scope": "One residual foreground-recovery instruction in bundles-none service failure. Other release/setup/upgrade obligations not exhaustively certified by this probe."
+}
