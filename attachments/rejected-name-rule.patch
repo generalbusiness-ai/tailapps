@@ -1,0 +1,112 @@
+diff --git a/internal/profile/runtime_test.go b/internal/profile/runtime_test.go
+index 919b2e9..4ca8ddc 100644
+--- a/internal/profile/runtime_test.go
++++ b/internal/profile/runtime_test.go
+@@ -14,7 +14,7 @@ import (
+ // conscious, reviewed diff of this constant, never a drive-by.
+ const pinnedRuntimeDescriptor = "core.grammar=ddl/2; " +
+ 	"core.interface=jsonata-ddl-application-interface/2026-09-05; " +
+-	"core.jsonata=jsonata-go-v206/bounded-2; " +
++	"core.jsonata=jsonata-go-v206/bounded-3; " +
+ 	"core.sqlite=sqlite-3.53.4/read-authorizer-1; " +
+ 	"core.value-codec=logical-values/2; " +
+ 	"dialect=tailapp-otlp/2+sha256:59524300ac2d079e8abccaafc6c161294f853c560f2ced69105ff43f8eabc464; " +
+@@ -22,7 +22,7 @@ const pinnedRuntimeDescriptor = "core.grammar=ddl/2; " +
+ 	"host.orchestration=two-stage-txn/3; " +
+ 	"host.projection=query-values/1"
+ 
+-const pinnedRuntimeDigest = "jsonata-ddl-runtime:sha256:3e60ce38390fa376d766b5880cb8f79ebd9196f0e4036335beb9285783efbd33"
++const pinnedRuntimeDigest = "jsonata-ddl-runtime:sha256:926e6607bd2cca73c6696285b355e833e1bf4e79dbf4ae7043fd362b7215d70e"
+ 
+ // Keep the historical identity available for recognizing old projections.
+ // The current corpus has its own new identity for the input-contract semantics.
+diff --git a/jsonataddl/confine.go b/jsonataddl/confine.go
+index f58771c..45a8332 100644
+--- a/jsonataddl/confine.go
++++ b/jsonataddl/confine.go
+@@ -45,15 +45,36 @@ func validateJSONataAST(value any) error {
+ 			return nil
+ 		}
+ 		seen[node] = true
++		// Callable names must retain their builtin meaning in every scope.
++		// Reserve them at every AST binding site instead of trying to infer
++		// whether an arbitrary bound expression will return a function.
++		for _, name := range []string{node.Focus, node.Index} {
++			if err := validateJSONataBinding(name); err != nil {
++				return err
++			}
++		}
+ 		switch node.Type {
+ 		case "lambda":
+ 			return errors.New("user-defined JSONata functions are outside the bounded profile")
++		case "bind":
++			if node.LHS != nil {
++				name, _ := node.LHS.Value.(string)
++				if err := validateJSONataBinding(name); err != nil {
++					return err
++				}
++			}
+ 		case "function", "partial":
+ 			if err := validateJSONataCallable(node.Procedure); err != nil {
+ 				return err
+ 			}
+ 		case "apply":
+-			if err := validateJSONataCallable(node.RHS); err != nil {
++			callable := node.RHS
++			// A pipeline RHS may spell the call and its remaining arguments.
++			// This is distinct from invoking the value returned by a call.
++			if callable != nil && callable.Type == "function" {
++				callable = callable.Procedure
++			}
++			if err := validateJSONataCallable(callable); err != nil {
+ 				return err
+ 			}
+ 		}
+@@ -87,6 +108,11 @@ func validateJSONataAST(value any) error {
+ 		}
+ 		for _, stage := range node.Stages {
+ 			if stage != nil {
++				if stage.Type == "index" {
++					if err := validateJSONataBinding(stage.Value); err != nil {
++						return err
++					}
++				}
+ 				children = append(children, stage.Expr)
+ 			}
+ 		}
+@@ -105,11 +131,21 @@ func validateJSONataAST(value any) error {
+ 	return walk(root)
+ }
+ 
++func validateJSONataBinding(name string) error {
++	if allowedJSONataFunctions[strings.ToLower(name)] {
++		return fmt.Errorf("rebinding JSONata builtin $%s is outside the bounded profile", name)
++	}
++	return nil
++}
++
+ func validateJSONataCallable(node *jsonata.ASTNode) error {
+ 	if node == nil {
+ 		return errors.New("dynamic JSONata function application is outside the bounded profile")
+ 	}
+-	if node.Type == "function" || node.Type == "partial" {
++	// A partial application still names its statically known procedure. An
++	// ordinary function call can return an arbitrary callable (e.g. lookup),
++	// so its result is not an admitted procedure.
++	if node.Type == "partial" {
+ 		return validateJSONataCallable(node.Procedure)
+ 	}
+ 	if node.Type != "variable" {
+diff --git a/jsonataddl/identity.go b/jsonataddl/identity.go
+index b23aea5..677c832 100644
+--- a/jsonataddl/identity.go
++++ b/jsonataddl/identity.go
+@@ -110,7 +110,7 @@ func CoreComponents() []Component {
+ 	return []Component{
+ 		{Key: "core.interface", Value: "jsonata-ddl-application-interface/2026-09-05"},
+ 		{Key: "core.grammar", Value: "ddl/2"},
+-		{Key: "core.jsonata", Value: "jsonata-go-v206/bounded-2"},
++		{Key: "core.jsonata", Value: "jsonata-go-v206/bounded-3"},
+ 		{Key: "core.value-codec", Value: "logical-values/2"},
+ 		{Key: "core.sqlite", Value: "sqlite-3.53.4/read-authorizer-1"},
+ 	}

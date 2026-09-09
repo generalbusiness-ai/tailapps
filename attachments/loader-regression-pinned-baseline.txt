@@ -1,0 +1,24 @@
+--- FAIL: TestLoadApplicationConfinesCallableBindings (0.01s)
+    --- FAIL: TestLoadApplicationConfinesCallableBindings/rebound_call (0.00s)
+        callable_test.go:56: callable evasion reached compilation: <nil>
+    --- FAIL: TestLoadApplicationConfinesCallableBindings/rebound_apply (0.00s)
+        callable_test.go:56: callable evasion reached compilation: <nil>
+    --- FAIL: TestLoadApplicationConfinesCallableBindings/nested_binding (0.00s)
+        callable_test.go:56: callable evasion reached compilation: <nil>
+    --- FAIL: TestLoadApplicationConfinesCallableBindings/binding_chain (0.00s)
+        callable_test.go:56: callable evasion reached compilation: <nil>
+    --- FAIL: TestLoadApplicationConfinesCallableBindings/rebound_partial (0.00s)
+        callable_test.go:56: callable evasion reached compilation: <nil>
+    --- FAIL: TestLoadApplicationConfinesCallableBindings/partial_result_call (0.00s)
+        callable_test.go:56: callable evasion reached compilation: <nil>
+    --- FAIL: TestLoadApplicationConfinesCallableBindings/returned_callable (0.00s)
+        callable_test.go:56: callable evasion reached compilation: <nil>
+    --- FAIL: TestLoadApplicationConfinesCallableBindings/returned_callable_apply (0.00s)
+        callable_test.go:56: callable evasion reached compilation: <nil>
+    --- FAIL: TestLoadApplicationConfinesCallableBindings/outside_reference (0.00s)
+        callable_test.go:56: callable evasion reached compilation: <nil>
+    --- FAIL: TestLoadApplicationConfinesCallableBindings/outside_container (0.00s)
+        callable_test.go:56: callable evasion reached compilation: <nil>
+FAIL
+FAIL	github.com/generalbusiness-ai/tailapps/jsonataddl	0.325s
+FAIL

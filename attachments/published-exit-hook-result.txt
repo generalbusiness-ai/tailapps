@@ -1,0 +1,3 @@
+$exists($reverse) => output= error=forbidden callable value guard_function_observations=1
+$exists($reverse[false]) => output=false error=<nil> guard_function_observations=0
+($true := false; $true ? $reverse := 3 : 0; $exists($reverse[false])) => output=false error=<nil> guard_function_observations=0
