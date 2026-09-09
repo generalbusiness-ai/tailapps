@@ -1,0 +1,104 @@
+{
+  "checked_utc": "2026-09-09T16:44:59.218465+00:00",
+  "head": "b583cdc4c3bcb1f6359f3298c067ae2298b02ca7",
+  "command": "GOWORK=off go run /tmp/planner-tail761-shadowed-builtin-probe.go",
+  "cwd": "/Users/hughpyle/play/tailapp/jsonataddl",
+  "toolchain": "go version go1.27.0 darwin/arm64",
+  "scope": "Four bounded synthetic cases through exported core.LoadApplication and Application.Evaluate. No ambient function, external IO, resource exhaustion or nondeterminism exploit claimed. This is not pinned Go 1.26.7 validation or a full security review.",
+  "probe_sha256": "19d7edba6787220e0757707b62858da01af3c8870c40a86cc5dc60c073757f08",
+  "output_sha256": "e64ee1d9ade95247535e040753b7533e61e80e16664866df6fe0530bdc086c36",
+  "source_sha256": {
+    "jsonataddl/compile.go": "aea5c45df18b5c3f69e42da1f2ab9e3a839aa9f266bb7740d33645bd099d8a3b",
+    "jsonataddl/confine.go": "f5f760b9d52c3992bcb2feacff0e117733a6320465afdfb33d78987d07427ad2"
+  },
+  "current_bases": [
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:5f053189530b7fa137bf307edc2967f8f6cbd08c",
+      "path": "jsonataddl/compile.go",
+      "commit": "7ecffd53013fd6ca45693a1a8e28b7c8d52432e8",
+      "stale": false,
+      "retired": false,
+      "describes_superseded_world": false
+    },
+    {
+      "event": "git:sha1:da732b0bdaad4426ed4ad666b892d8a7c68f625f#git:sha1:ae3801cfd041232f9a87aa7d9e3cfb05f9066798",
+      "path": "jsonataddl/confine.go",
+      "commit": "8c6d5e21ec5ae7f80ac1653a0a1d8047e45cbf23",
+      "stale": false,
+      "retired": false,
+      "describes_superseded_world": false
+    }
+  ],
+  "results": [
+    {
+      "case": "direct_keys",
+      "load_accepted": false,
+      "load_error": "program \"observe\": JSONata function $keys is outside the bounded profile",
+      "program": "({\"decision\":\"effective\",\"facts\":[],\"tables\":{\"sessions\":{\"upsert\":[{\"session_id\":$string($keys(event)),\"calls\":1,\"failures\":0}]}}})"
+    },
+    {
+      "case": "allowed_direct",
+      "evaluation_accepted": true,
+      "load_accepted": true,
+      "program": "({\"decision\":\"effective\",\"facts\":[],\"tables\":{\"sessions\":{\"upsert\":[{\"session_id\":$string(event.session_id),\"calls\":1,\"failures\":0}]}}})",
+      "result": {
+        "decision": "effective",
+        "facts": [],
+        "tables": {
+          "sessions": {
+            "upsert": [
+              {
+                "calls": 1,
+                "failures": 0,
+                "session_id": "s1"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "rebound_call",
+      "evaluation_accepted": true,
+      "load_accepted": true,
+      "program": "($lowercase := $keys;{\"decision\":\"effective\",\"facts\":[],\"tables\":{\"sessions\":{\"upsert\":[{\"session_id\":$string($lowercase(event)),\"calls\":1,\"failures\":0}]}}})",
+      "result": {
+        "decision": "effective",
+        "facts": [],
+        "tables": {
+          "sessions": {
+            "upsert": [
+              {
+                "calls": 1,
+                "failures": 0,
+                "session_id": "[\"kind\",\"session_id\",\"source_position\",\"success\",\"tool\"]"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "rebound_apply",
+      "evaluation_accepted": true,
+      "load_accepted": true,
+      "program": "($lowercase := $keys;{\"decision\":\"effective\",\"facts\":[],\"tables\":{\"sessions\":{\"upsert\":[{\"session_id\":$string(event ~> $lowercase),\"calls\":1,\"failures\":0}]}}})",
+      "result": {
+        "decision": "effective",
+        "facts": [],
+        "tables": {
+          "sessions": {
+            "upsert": [
+              {
+                "calls": 1,
+                "failures": 0,
+                "session_id": "[\"success\",\"tool\",\"kind\",\"session_id\",\"source_position\"]"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "historical_disposition": "Original #761 remains satisfied/landed. Its direct apply/lambda fixes are preserved. This newly reproduced callable-rebinding gap needs a separate current-core repair; full I7 #4043 remains open."
+}
