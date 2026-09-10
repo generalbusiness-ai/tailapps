@@ -1,0 +1,51 @@
+{
+  "note": "/tmp/tail4043-qmax-feasibility-bebeed3.md",
+  "note_sha256": "3f90df67259382cdbefe3aac1ccf46a93caf9d985ff3ed77ad7269bc6c01c4b2",
+  "sources": [
+    {
+      "path": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/runtime/malloc.go",
+      "sha256": "67e74184452cc6cb5bedee04fbbd6f395822e1cffbb4f91ad4a484796d7f021f"
+    },
+    {
+      "path": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/runtime/mgcmark.go",
+      "sha256": "68dac83a612229a11677b08cf7ee90101b3001096292cd80e890fb3a5cd4e817"
+    },
+    {
+      "path": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/runtime/mgc.go",
+      "sha256": "8ac2523177e5915edfaf4e122a903eceef08b5abd765f8d7ed96a8cc1ed3a504"
+    },
+    {
+      "path": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/runtime/mgcsweep.go",
+      "sha256": "81139b39aeacd63e86bdadb6e921882e871bb30c87479b454aa5d82adc0c91aa"
+    },
+    {
+      "path": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/runtime/mgclimit.go",
+      "sha256": "fd175a6304a6d4e1f26822cdaa0f94d4959b2d1f5c315f6a0b1c342bda8ae6a7"
+    },
+    {
+      "path": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/runtime/mgcpacer.go",
+      "sha256": "b9399df0e9db1b8fb8bc701accfbebfe4615303b1f649ec1c716024847969e73"
+    },
+    {
+      "path": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/sync/pool.go",
+      "sha256": "d03a971c04ba5be782e997ba2c20e24d313f3540595b0a51b52f0081143a29c2"
+    },
+    {
+      "path": "/Users/hughpyle/play/tailapp-worktrees/i7-metered-evaluator/v206/functions.go",
+      "sha256": "ab9e0728059c1a43e9e0d8288154833cd8d79949433c4e25c459b5485074f0d7"
+    },
+    {
+      "path": "/Users/hughpyle/play/tailapp-worktrees/i7-metered-evaluator/v206/meter.go",
+      "sha256": "9c12cf2e96da8589c5ed69aa526440d4def1c85f293c7fbabafc3c3f4fc533be"
+    },
+    {
+      "path": "/Users/hughpyle/play/tailapp-worktrees/i7-metered-evaluator/v206/meter_evaluate.go",
+      "sha256": "cd12c03488b92b88fb377ad66e06abc4fdee9fada6ae02c20e51629f5ab95a04"
+    },
+    {
+      "path": "/Users/hughpyle/play/tailapp-worktrees/i7-metered-evaluator/v206/meter_json_encode.go",
+      "sha256": "cec5319d0f46671e30fec8772fd508ee860e1f5473f0b3fe53db14b9ee4b5c60"
+    }
+  ],
+  "status": "feasibility gap and unadopted remedy; no runtime counterexample or completed F"
+}
