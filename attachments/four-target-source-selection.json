@@ -1,0 +1,177 @@
+{
+  "scope": "Cross-target go list source selection in one pinned go1.26.7 toolchain; not independent toolchain distribution comparison, target execution, full host profile admission or a full call-graph proof.",
+  "targets": [
+    {
+      "GOOS": "darwin",
+      "GOARCH": "arm64",
+      "CGO_ENABLED": "0",
+      "GOROOT": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64",
+      "sources": [
+        {
+          "path": "runtime/mgc.go",
+          "selected": true,
+          "sha256": "8ac2523177e5915edfaf4e122a903eceef08b5abd765f8d7ed96a8cc1ed3a504"
+        },
+        {
+          "path": "runtime/malloc.go",
+          "selected": true,
+          "sha256": "67e74184452cc6cb5bedee04fbbd6f395822e1cffbb4f91ad4a484796d7f021f"
+        },
+        {
+          "path": "runtime/mgcmark.go",
+          "selected": true,
+          "sha256": "68dac83a612229a11677b08cf7ee90101b3001096292cd80e890fb3a5cd4e817"
+        },
+        {
+          "path": "runtime/mgcsweep.go",
+          "selected": true,
+          "sha256": "81139b39aeacd63e86bdadb6e921882e871bb30c87479b454aa5d82adc0c91aa"
+        },
+        {
+          "path": "runtime/proc.go",
+          "selected": true,
+          "sha256": "b0ea864c1dd251cd9146644863ae9126ca57761dff05862dc80ab0799925fec6"
+        },
+        {
+          "path": "sync/pool.go",
+          "selected": true,
+          "sha256": "d03a971c04ba5be782e997ba2c20e24d313f3540595b0a51b52f0081143a29c2"
+        },
+        {
+          "path": "internal/runtime/gc/sizeclasses.go",
+          "selected": true,
+          "sha256": "7626b00bbb416c25c5279b29aa73a072d74ace3444e58b178a6ff855a2deec2c"
+        }
+      ]
+    },
+    {
+      "GOOS": "darwin",
+      "GOARCH": "amd64",
+      "CGO_ENABLED": "0",
+      "GOROOT": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64",
+      "sources": [
+        {
+          "path": "runtime/mgc.go",
+          "selected": true,
+          "sha256": "8ac2523177e5915edfaf4e122a903eceef08b5abd765f8d7ed96a8cc1ed3a504"
+        },
+        {
+          "path": "runtime/malloc.go",
+          "selected": true,
+          "sha256": "67e74184452cc6cb5bedee04fbbd6f395822e1cffbb4f91ad4a484796d7f021f"
+        },
+        {
+          "path": "runtime/mgcmark.go",
+          "selected": true,
+          "sha256": "68dac83a612229a11677b08cf7ee90101b3001096292cd80e890fb3a5cd4e817"
+        },
+        {
+          "path": "runtime/mgcsweep.go",
+          "selected": true,
+          "sha256": "81139b39aeacd63e86bdadb6e921882e871bb30c87479b454aa5d82adc0c91aa"
+        },
+        {
+          "path": "runtime/proc.go",
+          "selected": true,
+          "sha256": "b0ea864c1dd251cd9146644863ae9126ca57761dff05862dc80ab0799925fec6"
+        },
+        {
+          "path": "sync/pool.go",
+          "selected": true,
+          "sha256": "d03a971c04ba5be782e997ba2c20e24d313f3540595b0a51b52f0081143a29c2"
+        },
+        {
+          "path": "internal/runtime/gc/sizeclasses.go",
+          "selected": true,
+          "sha256": "7626b00bbb416c25c5279b29aa73a072d74ace3444e58b178a6ff855a2deec2c"
+        }
+      ]
+    },
+    {
+      "GOOS": "linux",
+      "GOARCH": "arm64",
+      "CGO_ENABLED": "0",
+      "GOROOT": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64",
+      "sources": [
+        {
+          "path": "runtime/mgc.go",
+          "selected": true,
+          "sha256": "8ac2523177e5915edfaf4e122a903eceef08b5abd765f8d7ed96a8cc1ed3a504"
+        },
+        {
+          "path": "runtime/malloc.go",
+          "selected": true,
+          "sha256": "67e74184452cc6cb5bedee04fbbd6f395822e1cffbb4f91ad4a484796d7f021f"
+        },
+        {
+          "path": "runtime/mgcmark.go",
+          "selected": true,
+          "sha256": "68dac83a612229a11677b08cf7ee90101b3001096292cd80e890fb3a5cd4e817"
+        },
+        {
+          "path": "runtime/mgcsweep.go",
+          "selected": true,
+          "sha256": "81139b39aeacd63e86bdadb6e921882e871bb30c87479b454aa5d82adc0c91aa"
+        },
+        {
+          "path": "runtime/proc.go",
+          "selected": true,
+          "sha256": "b0ea864c1dd251cd9146644863ae9126ca57761dff05862dc80ab0799925fec6"
+        },
+        {
+          "path": "sync/pool.go",
+          "selected": true,
+          "sha256": "d03a971c04ba5be782e997ba2c20e24d313f3540595b0a51b52f0081143a29c2"
+        },
+        {
+          "path": "internal/runtime/gc/sizeclasses.go",
+          "selected": true,
+          "sha256": "7626b00bbb416c25c5279b29aa73a072d74ace3444e58b178a6ff855a2deec2c"
+        }
+      ]
+    },
+    {
+      "GOOS": "linux",
+      "GOARCH": "amd64",
+      "CGO_ENABLED": "0",
+      "GOROOT": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64",
+      "sources": [
+        {
+          "path": "runtime/mgc.go",
+          "selected": true,
+          "sha256": "8ac2523177e5915edfaf4e122a903eceef08b5abd765f8d7ed96a8cc1ed3a504"
+        },
+        {
+          "path": "runtime/malloc.go",
+          "selected": true,
+          "sha256": "67e74184452cc6cb5bedee04fbbd6f395822e1cffbb4f91ad4a484796d7f021f"
+        },
+        {
+          "path": "runtime/mgcmark.go",
+          "selected": true,
+          "sha256": "68dac83a612229a11677b08cf7ee90101b3001096292cd80e890fb3a5cd4e817"
+        },
+        {
+          "path": "runtime/mgcsweep.go",
+          "selected": true,
+          "sha256": "81139b39aeacd63e86bdadb6e921882e871bb30c87479b454aa5d82adc0c91aa"
+        },
+        {
+          "path": "runtime/proc.go",
+          "selected": true,
+          "sha256": "b0ea864c1dd251cd9146644863ae9126ca57761dff05862dc80ab0799925fec6"
+        },
+        {
+          "path": "sync/pool.go",
+          "selected": true,
+          "sha256": "d03a971c04ba5be782e997ba2c20e24d313f3540595b0a51b52f0081143a29c2"
+        },
+        {
+          "path": "internal/runtime/gc/sizeclasses.go",
+          "selected": true,
+          "sha256": "7626b00bbb416c25c5279b29aa73a072d74ace3444e58b178a6ff855a2deec2c"
+        }
+      ]
+    }
+  ]
+}

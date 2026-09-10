@@ -1,0 +1,103 @@
+{
+  "candidate": "/tmp/tail4281-host-boundary-proposal-v2.md",
+  "sha256": "c4107f99ca7ea680be0fe717896ba30c063e807d70e281dd9db495f63d7d2a7a",
+  "sources": [
+    {
+      "path": "notes/2026-09-05-capability-context-contract.md",
+      "commit": "b583cdc4c3bcb1f6359f3298c067ae2298b02ca7",
+      "sha256": "1044a41aef2edd402d1f44fc231f33748f2b4ed063f54297173f4129cef048ca",
+      "working_bytes_equal": true
+    },
+    {
+      "path": "notes/2026-08-28-tailapp-architecture.md",
+      "commit": "b583cdc4c3bcb1f6359f3298c067ae2298b02ca7",
+      "sha256": "d05e10fdd6a2c56e58b0a5a66e1a35ae47d547cb3ef4ab64b53d277a0589d88c",
+      "working_bytes_equal": true
+    },
+    {
+      "path": "jsonataddl/load.go",
+      "commit": "b583cdc4c3bcb1f6359f3298c067ae2298b02ca7",
+      "sha256": "7bddb9bf39794ba95df8e64abce64cbd42b4f9b0c9060f6e825f8f914cd4114a",
+      "working_bytes_equal": true
+    },
+    {
+      "path": "jsonataddl/evaluate.go",
+      "commit": "b583cdc4c3bcb1f6359f3298c067ae2298b02ca7",
+      "sha256": "ef4e5d3e9e6c068d64a87c71924e77c08a7b1f0aa7aabaf782d5dd15cb7a9c89",
+      "working_bytes_equal": true
+    },
+    {
+      "path": "jsonataddl/identity.go",
+      "commit": "b583cdc4c3bcb1f6359f3298c067ae2298b02ca7",
+      "sha256": "fc1a8614586fc8667c160a684b0bac6452b979ac9fe1d6ba8d941aeb5fa20b85",
+      "working_bytes_equal": true
+    },
+    {
+      "path": "internal/profile/runtime.go",
+      "commit": "b583cdc4c3bcb1f6359f3298c067ae2298b02ca7",
+      "sha256": "830bf1e9a679b65365391da415748e90867843a8cc2e1017af884b8aa5c4fd4b",
+      "working_bytes_equal": true
+    },
+    {
+      "path": "internal/engine/engine.go",
+      "commit": "b583cdc4c3bcb1f6359f3298c067ae2298b02ca7",
+      "sha256": "43bda7b1fecae50faa2e6de4c6e675e67a5a5d59c79680c270296b5d1aade7ef",
+      "working_bytes_equal": true
+    },
+    {
+      "path": "internal/projection/projection.go",
+      "commit": "b583cdc4c3bcb1f6359f3298c067ae2298b02ca7",
+      "sha256": "f5dcebc0a4e10f51a411e716063ab66fda7c8c1f1b4094c9430df36e33b1dbd2",
+      "working_bytes_equal": true
+    },
+    {
+      "path": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/runtime/mgc.go",
+      "toolchain": "go1.26.7",
+      "sha256": "8ac2523177e5915edfaf4e122a903eceef08b5abd765f8d7ed96a8cc1ed3a504"
+    },
+    {
+      "path": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/runtime/malloc.go",
+      "toolchain": "go1.26.7",
+      "sha256": "67e74184452cc6cb5bedee04fbbd6f395822e1cffbb4f91ad4a484796d7f021f"
+    },
+    {
+      "path": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/runtime/mgcmark.go",
+      "toolchain": "go1.26.7",
+      "sha256": "68dac83a612229a11677b08cf7ee90101b3001096292cd80e890fb3a5cd4e817"
+    },
+    {
+      "path": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/runtime/mgcsweep.go",
+      "toolchain": "go1.26.7",
+      "sha256": "81139b39aeacd63e86bdadb6e921882e871bb30c87479b454aa5d82adc0c91aa"
+    },
+    {
+      "path": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/runtime/proc.go",
+      "toolchain": "go1.26.7",
+      "sha256": "b0ea864c1dd251cd9146644863ae9126ca57761dff05862dc80ab0799925fec6"
+    },
+    {
+      "path": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/sync/pool.go",
+      "toolchain": "go1.26.7",
+      "sha256": "d03a971c04ba5be782e997ba2c20e24d313f3540595b0a51b52f0081143a29c2"
+    },
+    {
+      "path": "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/internal/runtime/gc/sizeclasses.go",
+      "toolchain": "go1.26.7",
+      "sha256": "7626b00bbb416c25c5279b29aa73a072d74ace3444e58b178a6ff855a2deec2c"
+    },
+    {
+      "path": "jsonataddl/source_snapshot.go",
+      "repository": "/Users/hughpyle/play/tailapp-worktrees/i7-metered-core",
+      "commit": "c9c774d295a24ef3ca30504dcc444fc4ecc01495",
+      "sha256": "85650b52906b9362be98b49046d0f3b6ca602628d99613cb03dd030bcb0e5e5c",
+      "working_bytes_equal": true,
+      "attached_as": "source-snapshot.go"
+    }
+  ],
+  "evidence_scope": "Read-only exact-source design correction. No production change, collector experiment or latency claim. Private evaluator bebeed31322f96ce9d75044acd71382466fde5c2 is background context, not an independently reproduced premise of this design review; its full I7 implementation/proof gate remains open.",
+  "four_target_source_selection": {
+    "attachment": "four-target-source-selection.json",
+    "sha256": "1661b5a2d4d6d834eba82f5e09e2a627f9cd7a8a9641c7bf6690d5c9b7a8436a",
+    "scope": "Seven common files selected by cross-target go list in one pinned toolchain; not four independent distributions or full host profile admission."
+  }
+}
