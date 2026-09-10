@@ -1,0 +1,203 @@
+{
+  "profile": "Go1.26.7 GreenTea spanQueue single-producer/single-consumer count abstraction",
+  "constant_peak_queued_items_per_cycle": 393472,
+  "without_cleanup": [
+    {
+      "items": 393472,
+      "peak_active_chain": 10,
+      "active_after": 1,
+      "dead_retained": 9,
+      "mapped_pointer_bytes": 4186112,
+      "created_total": 10
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 12,
+      "mapped_pointer_bytes": 7331840,
+      "created_total": 13
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 15,
+      "mapped_pointer_bytes": 10477568,
+      "created_total": 16
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 18,
+      "mapped_pointer_bytes": 13623296,
+      "created_total": 19
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 21,
+      "mapped_pointer_bytes": 16769024,
+      "created_total": 22
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 24,
+      "mapped_pointer_bytes": 19914752,
+      "created_total": 25
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 27,
+      "mapped_pointer_bytes": 23060480,
+      "created_total": 28
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 30,
+      "mapped_pointer_bytes": 26206208,
+      "created_total": 31
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 33,
+      "mapped_pointer_bytes": 29351936,
+      "created_total": 34
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 36,
+      "mapped_pointer_bytes": 32497664,
+      "created_total": 37
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 39,
+      "mapped_pointer_bytes": 35643392,
+      "created_total": 40
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 42,
+      "mapped_pointer_bytes": 38789120,
+      "created_total": 43
+    }
+  ],
+  "with_off_phase_cleanup": [
+    {
+      "items": 393472,
+      "peak_active_chain": 10,
+      "active_after": 1,
+      "dead_retained": 0,
+      "mapped_pointer_bytes": 1048576,
+      "created_total": 10
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 0,
+      "mapped_pointer_bytes": 1048576,
+      "created_total": 13
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 0,
+      "mapped_pointer_bytes": 1048576,
+      "created_total": 16
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 0,
+      "mapped_pointer_bytes": 1048576,
+      "created_total": 19
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 0,
+      "mapped_pointer_bytes": 1048576,
+      "created_total": 22
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 0,
+      "mapped_pointer_bytes": 1048576,
+      "created_total": 25
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 0,
+      "mapped_pointer_bytes": 1048576,
+      "created_total": 28
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 0,
+      "mapped_pointer_bytes": 1048576,
+      "created_total": 31
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 0,
+      "mapped_pointer_bytes": 1048576,
+      "created_total": 34
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 0,
+      "mapped_pointer_bytes": 1048576,
+      "created_total": 37
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 0,
+      "mapped_pointer_bytes": 1048576,
+      "created_total": 40
+    },
+    {
+      "items": 393472,
+      "peak_active_chain": 4,
+      "active_after": 1,
+      "dead_retained": 0,
+      "mapped_pointer_bytes": 1048576,
+      "created_total": 43
+    }
+  ],
+  "mark_phase_cleanup_refuses": true,
+  "conclusion": "A bound on peak active queue depth plus completed mark/sweep does not alone bound dead ring history. The distinct cleanup path must be reached or replacement frequency separately bounded.",
+  "limits": "This models queue operations and the phase guard, not scheduler, complete collector, reachable evaluator object graph, elapsed time or actual heap behavior. It is not a native leak witness or proof that an admitted execution realizes this trace."
+}

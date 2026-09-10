@@ -1,0 +1,14 @@
+{
+  "head": "f7e6f4fa58073b010fed88a51f4f7ed0f6fed842",
+  "toolchain": "go1.26.7",
+  "files": {
+    "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/runtime/mgcmark_greenteagc.go": "34cd31c189bfc011739dd738656f5e698521a736c3b05e2a2f3da49fc6011f3b",
+    "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/runtime/mgc.go": "8ac2523177e5915edfaf4e122a903eceef08b5abd765f8d7ed96a8cc1ed3a504",
+    "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/runtime/mgcsweep.go": "81139b39aeacd63e86bdadb6e921882e871bb30c87479b454aa5d82adc0c91aa",
+    "/Users/hughpyle/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.7.darwin-arm64/src/runtime/proc.go": "b0ea864c1dd251cd9146644863ae9126ca57761dff05862dc80ab0799925fec6",
+    "/tmp/tail4043-span-ring-retention-question-f7.md": "d9b56bec28a436e2a697b56e33ed529d0fb03c03cdf924ef0c3bf983c16e31f4",
+    "/tmp/tail4043-span-ring-retention-model-f7.py": "cb7546b2a6b4d789be6a40df609359c74a39f74add3837b6f7abe21cdca1f174",
+    "/tmp/tail4043-span-ring-retention-model-f7.json": "b8cc37f4f581f17f5d02d9e5a1642cb8878d3db6c634b73af73c74435e39dbc7"
+  },
+  "limits": "Source accounting question and count-model omission control; not native evaluator leak or complete runtime scheduling proof."
+}
