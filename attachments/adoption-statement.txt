@@ -1,0 +1,7 @@
+Proposed I7 premise adoption — pending explicit Hugh adoption.
+
+Adopt host-boundary-proposal.md at SHA-256 c4107f99ca7ea680be0fe717896ba30c063e807d70e281dd9db495f63d7d2a7a, as attached to the signed candidate that this act must rest on.
+
+Permit a host-owned completed collection between bounded allocation epochs as an explicit I7 physical-proof premise, subject to every ownership, concurrency, retention, source-acquisition and other-host-allocation obligation in that pinned design. This explicitly narrows the reusable jsonataddl module's I7-admitted public contract: all engines and external consumers in one process share a single allocation domain, with serialized owned epochs; two independently replenished domains in one process are not admitted. Preserve the full four-build physical-proof and admission gates, logical W/A/D semantics, ten-component runtime identity and stage split. This decision authorizes the corresponding stage-1 design correction under the existing assignment; actual host integration, forced projection upgrade-or-reset and any public publication require their existing separate assignments and acceptance. No existing host is deemed admitted by this decision.
+
+This wording is a candidate for a later explicit proposal/adoption act, not an adoption recorded by publication of this attachment or by ratification of the design child.
