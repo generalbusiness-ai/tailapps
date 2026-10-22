@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
         with:
-          go-version: '1.26.7'
+          go-version: '1.27.3'
           cache-dependency-path: |
             go.sum
             jsonataddl/go.sum
@@ -57,7 +57,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v7
         with:
-          go-version: '1.26.7'
+          go-version: '1.27.3'
           cache-dependency-path: |
             go.sum
             jsonataddl/go.sum
@@ -74,6 +74,9 @@ jobs:
 
       - name: Verify root public dependency and paired workspace
         run: ./scripts/check-root-module.sh
+
+      - name: Scan the release dependency graph
+        run: GOWORK=off ./scripts/vulncheck.sh
 
       - name: Build release archives
         run: scripts/release.sh "$GITHUB_REF_NAME" "${RUNNER_TEMP}/dist"

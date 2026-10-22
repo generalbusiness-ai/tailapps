@@ -62,7 +62,7 @@ Example prompt - copy this into an agent connected to Tailapp, or use it as a CL
 
 ## Install and connect
 
-On macOS or Linux with Go 1.26.7 or later, the fastest durable setup is:
+On macOS or Linux with Go 1.27.3 or later, the fastest durable setup is:
 
 ```sh
 scripts/setup-resident.sh
@@ -186,7 +186,7 @@ pinned runtime profile. See the [DDL/JSONata](docs/reference/ddl-jsonata.md) and
 
 ## Develop
 
-The committed Go 1.26.7 workspace keeps root tests and builds on the local
+The committed Go 1.27.3 workspace keeps root tests and builds on the local
 core during paired changes. The root `go.mod` contains no replacement and
 requires public `jsonataddl v0.2.0`; consumers outside this checkout use that
 version. Keep both paths checked:

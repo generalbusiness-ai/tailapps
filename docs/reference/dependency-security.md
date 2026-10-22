@@ -7,8 +7,9 @@ unbounded `-u` upgrade.
 
 The independently published `jsonataddl` module has its own `go.mod` and
 `go.sum`. Run `go mod tidy` in both module directories and review both sums.
-The root module's `replace` keeps Tailapps on the same local core source during
-development; published `jsonataddl` consumers do not use it.
+The committed `go.work` pairs Tailapps with the local core for development.
+The root module has no `replace`; release builds and external consumers resolve
+the verified public `jsonataddl` version.
 Before pushing a module tag, run
 `scripts/check-jsonataddl-version-available.sh vVERSION`. It uses bounded
 HTTPS requests and admits publication only after the exact `origin` tag is
@@ -31,7 +32,8 @@ Run the same reachable-code vulnerability scan locally and in CI with:
 
 ```sh
 scripts/vulncheck.sh
-(cd jsonataddl && ../scripts/vulncheck.sh)
+(cd jsonataddl && GOWORK=off ../scripts/vulncheck.sh)
+GOWORK=off scripts/vulncheck.sh
 ```
 
 The script pins `govulncheck` at `v1.7.0` and defaults to `./...`. It fails
@@ -42,4 +44,7 @@ dependency refresh instead of treating them as a clean bill of health.
 
 The scan needs network access to download the pinned analyzer when it is not
 already cached and to retrieve the current Go vulnerability database. CI runs
-it after tests and vet, before the demonstration step.
+it after tests and vet, before the demonstration step. The third scan checks
+the public dependency graph selected by release builds. Tagged releases repeat
+that scan before building and signing archives. Checkout builds and CI use
+Go 1.27.3; keep the toolchain pins aligned with both modules and the workspace.
