@@ -11,6 +11,24 @@ checksum manifest. It also publishes version-pinned `install.sh` and
 contains the `tailapp` binary, `LICENSE`, and `NOTICE`. The workflow also
 creates GitHub build-provenance attestations for every archive.
 
+## Upgrade from v0.1.4 to v0.2.0
+
+This root release adopts the verified public `jsonataddl v0.2.0` input contract,
+uses Go 1.27.3 and refreshed Go dependencies, and includes the merged fixes for
+bounded pending-inbox reads, JSON storage checks, and URL authority validation.
+
+The runtime identity changes. Existing projections remain queryable but
+upgrade-pending; continuing across that identity change is refused. Review or
+export existing data before an explicitly acknowledged reset. A binary upgrade
+does not reset projections, activate definitions, or replay historical input.
+See [resident upgrades](resident-upgrade.md) for the supported lifecycle.
+
+The root `v0.2.0` release and the separately published `jsonataddl/v0.2.0` module
+are distinct artifacts. This release keeps the existing public core pin and
+its verified checksums.
+
+## Public core module
+
 The declared-input contract targets the separately reviewed nested-module
 release `jsonataddl/v0.2.0`. Hosts moving from v0.1.2 must add their complete
 `Input` contracts and positive `Limits.MaxInputDepth`, then re-pin their
@@ -74,6 +92,8 @@ source arrangement’s restriction. This source change publishes no root tag
 and does not repair older immutable root releases. Use a root version only
 after that version is independently released and verified; `jsonataddl/v0.2.0`
 is the core module’s tag, not a Tailapp command release.
+
+## Verify release archives
 
 Download the archive matching your operating system and CPU together with
 `checksums.txt`, `checksums.txt.sig`, and `checksums.txt.bundle` from the same
